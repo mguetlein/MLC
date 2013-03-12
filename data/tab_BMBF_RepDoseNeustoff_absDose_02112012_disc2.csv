@@ -1,0 +1,724 @@
+"SMILES","CAS","Name","study_pk","route","route2","study_duration","Jahr","a.2u.nephropathy","adrenal.gland","bladder","body.weight","bone","bone.marrow","brain","clinical.chemistry","CNS","female.reproductive.organ","gall.bladder.bile.duct","haematopoiesis","heart","intestine","kidney","liver","lymph.node","male.accessory.gland","male.reproductive.organ","pancreas","pituitary.gland..hypohysis.","RBC","spleen","thymus","thyroid.gland","urine.analysis","WBC"
+"C=O",50000,"Formaldehyde",250,"inhalation","inhalation",90,,,,,1,,,,,,,,,,,,,,,,,,,,,,,
+"C=O",50000,"Formaldehyde",4624,"inhalation","inhalation",90,,,,,1,,,1,1,1,,,,,,,,,,,,,,,,,,
+"c12c(cc(COCCOCCOCCCC)c(CCC)c1)OCO2",51036,"Piperonyl butoxide",4373,"feed","oral",28,,,2,,2,,,2,,,,,,,,2,1,,,,,,,,,,,
+"c12c(cc(COCCOCCOCCCC)c(CCC)c1)OCO2",51036,"Piperonyl butoxide",4381,"feed","oral",90,1981,,,,2,,,,2,,,,,,,2,2,,,,,,2,,,,,
+"Cl.[C@H](CNC)(O)c1cc(c(cc1)O)O",55312,"1-Epinephrine Hydrochloride",1732,"inhalation","inhalation",90,,,1,,1,,,,,,,,,1,,,,,,,,,,,,,,
+"c1(SC)c(C)cc(OP(=S)(OC)OC)cc1",55389,"Fenthion",4393,"inhalation","inhalation",28,,,,,,,,,1,,,,,,,,,,,,,,,,,,,
+"C(C)(O)CO",57556,"Propylene glycol",2177,"inhalation","inhalation",90,,,,,2,,,,2,,,,,,,,,,,,,,,,,,,2
+"C1(=O)C2=C(N(C)C(=O)N1C)NC=N2",58559,"Theophylline",1346,"gavage","oral",90,1981,,,,1,,,1,,,1,,,,,,1,,,,,,1,,1,,,
+"C1(Cl)C(Cl)C(Cl)C(Cl)C(Cl)C1Cl",58899,"Lindane",166,"inhalation","inhalation",90,1981,,,,,,,,,,,,,,,,1,,,,,,,,,,,
+"C1(Cl)C(Cl)C(Cl)C(Cl)C(Cl)C1Cl",58899,"Lindane",168,"feed","oral",90,1981,,,,1,,,,,,,,,,,1,1,,,,,,,,,,,
+"C(=O)(O)c1cccnc1",59676,"Nicotinic acid",1984,"feed","oral",28,1981,,,,2,,,,,,,,,,,,,,,,,,,,,,,
+"C1(C=NNC(N)=O)=CC=C(N(=O)=O)O1",59870,"Nitrofurazone",3648,"feed","oral",90,,,,,1,1,,,,1,1,,,,,,1,,,1,,,,,,,,
+"C(C)O",64175,"Ethanol",3735,"drinking water","oral",90,,2,,,,,,,2,,,,,,,,2,,,,,,2,,2,,,
+"CO",67561,"Methanol",286,"inhalation","inhalation",28,,,,,,,,,,,,,,,,,,,,,,,,2,,,,
+"CO",67561,"Methanol",2302,"inhalation","inhalation",28,,,,,,,,,2,,,,,,,,2,,,,,,,2,,,,
+"C(Cl)(Cl)(Cl)C(Cl)(Cl)Cl",67721,"Hexachloroethane",874,"gavage","oral",90,,,,2,2,,,2,,1,,,,2,,1,1,,,2,,,,,2,,2,
+"C(=O)N(C)C",68122,"N,N-Dimethylformamide",4590,"inhalation","inhalation",90,,,,,2,,,,1,,2,,,2,,2,1,,,2,,,2,,2,,,
+"c1ccccc1",71432,"Benzene",118,"inhalation","inhalation",90,1981,,,,,,2,,,,,,,,,,,,,,,,,,,,,2
+"C(C)Br",74964,"Ethyl bromide",3633,"inhalation","inhalation",90,,,,,2,,2,2,,2,2,,,,,,2,,,2,,,,2,,,,
+"C(C)Cl",75003,"Chloroethane",3653,"inhalation","inhalation",90,,,,,2,,,,,,,,,,,,2,,,,,,,,,,,
+"C(C)#N",75058,"Acetonitrile",140,"inhalation","inhalation",90,1981,,,,2,,2,2,,2,2,,,2,,2,2,,,,,,2,2,2,2,,
+"C(C)#N",75058,"Acetonitrile",142,"inhalation","inhalation",90,1981,,,,1,,,,,,,,,2,,,2,,,,,,,,,,,1
+"C(N)=O",75127,"Formamide",2454,"gavage","oral",90,1998,,,,1,,,,2,,,,,1,,2,2,,,2,,,1,,2,,,2
+"C(Br)(Br)Br",75252,"Tribromomethane",3605,"drinking water","oral",90,,,,,,,,,2,,,,,,,,1,,,,,,,,,1,,1
+"C(=C)(Cl)Cl",75354,"1,1-Dichloroethene",2239,"gavage","oral",90,,,,,2,,,,,,,,,,,,1,,,,,,,,,,,
+"C(=C)(Cl)Cl",75354,"1,1-Dichloroethene",2944,"inhalation","inhalation",90,,,,,,,,,2,,,1,,,,2,2,,,,,,,,,,,
+"CN(=O)=O",75525,"Nitromethane",824,"inhalation","inhalation",90,1981,,,,2,,2,,2,2,,,,,,,,,,2,,,1,,,,,
+"C(Cl)(Cl)(Cl)C(Cl)Cl",76017,"Pentachloroethane",3627,"gavage","oral",28,,,,,,,,,,1,,,,,,1,1,,,,,,,,,,1,
+"C1(Cl)C(Cl)(Cl)C(Cl)=C(Cl)C=1Cl",77474,"Hexachlorocyclopentadiene",1126,"inhalation","inhalation",90,1981,,,,1,,,,,1,,,,,,,,,,,,,,,,,,
+"C1(Cl)C(Cl)(Cl)C(Cl)=C(Cl)C=1Cl",77474,"Hexachlorocyclopentadiene",1127,"gavage","oral",90,,,,,1,,,,,1,,,,,,1,1,,,,,,,,,,,
+"C(=O)(C(CC(=O)OCCCC)(CC(=O)OCCCC)OC(C)=O)OCCCC",77907,"Acetyl Tributyl Citrate",3846,"feed","oral",90,1981,,,,1,,,,2,,,,,,,2,1,,,,,,,,,,1,
+"C(CCCC)(CC)COP(=O)(OCC(CCCC)CC)OCC(CCCC)CC",78422,"Tris(2-ethylhexyl)phosphate",3630,"gavage","oral",90,,,,,2,,,,,,,,,,,,,,,,,,,,,,,
+"C(=O)C(C)C",78842,"Isobutanal",1953,"inhalation","inhalation",90,1981,,,,2,,,2,2,2,2,,,,,2,2,,,2,,,2,,2,,,2
+"C(=C)(C)C=O",78853,"Methacrolein",1145,"inhalation","inhalation",90,1981,,,,1,,,,,1,,,,,,,,,,,,,,,,,,
+"C(=C)(Cl)CCl",78886,"2,3-Dichloro-1-propene",4625,"inhalation","inhalation",90,,,,,,,,,,,,,,,,,,,,,,,,1,,,,
+"C(C)(=O)CC",78933,"Methyl Ethyl Ketone",58,"inhalation","inhalation",90,1981,,,,2,,,2,2,,,,,,,2,2,,,,,,2,2,,,,
+"C(N)(=O)C=C",79061,"Acrylamide",441,"drinking water","oral",90,,,,1,1,,,1,,1,1,,,1,,1,1,,1,1,,,1,,1,,,
+"C(=O)(O)C=C",79107,"Acrylic acid",125,"gavage","oral",90,1981,,,,2,,,,,,,,,,,2,,,,,,,,,,,,
+"C(=O)(O)C=C",79107,"Acrylic acid",127,"drinking water","oral",90,1981,,,,1,,,,,,,,,,,,,,,,,,,,,,,
+"C(=O)(O)C=C",79107,"Acrylic acid",128,"drinking water","oral",90,,,,,2,,,2,2,,,,,2,,2,2,,,2,,,,2,,,2,
+"C(=O)(Cl)OC",79221,"Methyl chloroformate",1723,"inhalation","inhalation",90,1981,,,,1,,,,,,,,,,,,,,,,,,,,,,,
+"C(=O)(Cl)OC",79221,"Methyl chloroformate",1724,"inhalation","inhalation",28,1981,,,,1,,,,1,,,,,,,,,1,,,,,1,,,,,1
+"C(Cl)(Cl)C(Cl)Cl",79345,"1,1,2,2-Tetrachloroethane",2112,"feed","oral",90,1998,,,,1,2,1,,1,,1,1,,,,1,1,,1,1,,,1,1,2,,,1
+"C(=O)(O)C(=C)C",79414,"Methacrylic acid",881,"inhalation","inhalation",90,,,,,,,,,,,,,,,,,2,2,,,,,,,,,,
+"C(=O)(O)C(=C)C",79414,"Methacrylic acid",882,"inhalation","inhalation",90,,,,,2,,,,2,,,,,,,,2,2,,,,,,,,,,
+"C(=O)(O)C(Cl)Cl",79436,"Dichloroacetic acid",1970,"gavage","oral",90,,,2,,1,,,1,1,2,,,,,,2,2,,,2,,,,,,,,
+"c1(C(C)(C)c2cc(Br)c(O)c(Br)c2)cc(Br)c(O)c(Br)c1",79947,"Tetrabromobisphenol A",1694,"feed","oral",28,1995,,,,,,,,,,,,,,,,,,,,,,,,,2,,
+"c1(Cl)ccc(S(=O)(=O)c2ccc(Cl)cc2)cc1",80079,"p,p-Dichlorodiphenyl sulfone",1922,"feed","oral",90,1998,1,,,1,,,,1,,,,,,,1,1,,,1,,,1,,1,,,
+"c1(C)c(N(=O)=O)c(C)ccc1",81209,"2-Nitro-1,3-dimethylbenzene",1048,"feed","oral",28,1981,,,,,,,,1,,,,,,,,2,,,,,,,,,,,
+"c12C(=O)c3c(C(=O)c1c(N)c(Br)cc2Br)cccc3",81492,"1-Amino-2,4-dibromoanthraquinone",1927,"feed","oral",90,,,,,1,,,,,2,,2,1,,2,1,1,,,,,,,,1,,2,
+"c1(N(=O)=O)c(C)c(C)ccc1",83410,"3-Nitro-1,2-dimethylbenzene",1049,"feed","oral",28,1981,,,,2,,,,1,,,,,,,,,,,,,,,,,,,
+"C(=O)(c1c(C(=O)OCCCC)cccc1)OCCCC",84742,"Di-n-butyl phthalate",765,"feed","oral",90,1981,,,,2,,,,1,,,2,,,,2,2,,,2,,,2,,,,,
+"C(=O)(c1c(C(=O)OCc2ccccc2)cccc1)OCCCC",85687,"Butyl benzyl phthalate",3508,"feed","oral",90,1981,,,,2,,,,,,,,,,,2,2,,,,,,,,,,,
+"C(=O)(c1c(C(=O)OCc2ccccc2)cccc1)OCCCC",85687,"Butyl benzyl phthalate",3509,"feed","oral",90,1981,,,,2,,,,,,,,,,1,2,1,,,,2,,2,,,,2,
+"C(=O)(c1c(C(=O)OCc2ccccc2)cccc1)OCCCC",85687,"Butyl benzyl phthalate",3512,"inhalation","inhalation",28,,,,,1,,,,,,,,,,,,,,,,,,,,,,,
+"C(=O)(c1c(C(=O)OCc2ccccc2)cccc1)OCCCC",85687,"Butyl benzyl phthalate",3515,"inhalation","inhalation",90,1981,,,,,,,,1,,,,,,,1,1,,,,,,,,,,,
+"c1(C)c(N)c(C)ccc1",87627,"2,6-Xylidine",3,"gavage","oral",90,1981,,,,1,,,,,,,,,,,,2,,,,,,2,,,,,1
+"c1(N(=O)=O)c(C)cccc1",88722,"o-Nitrotoluene",386,"feed","oral",90,1981,1,,,1,,,,1,,2,,2,,,1,1,,,1,,,2,1,,,,1
+"c1(Cl)c(N(=O)=O)cccc1",88733,"1-Chloro-2-nitrobenzene",258,"inhalation","inhalation",28,1981,,,,,,,,,,,,1,,,1,1,,,,,,1,1,,,,
+"c1(Cl)c(N(=O)=O)cccc1",88733,"1-Chloro-2-nitrobenzene",4600,"inhalation","inhalation",90,,,,,,,,,1,,,,,,,1,1,,,,,,1,1,,,,
+"c1(N(=O)=O)c(O)c(C(C)CC)cc(N(=O)=O)c1",88857,"2-(1-Methylpropyl)-4,6-dinitrophenol",1824,"feed","oral",90,1981,,,,1,,,,1,,,,,1,,1,,,,1,,,1,1,,,1,
+"c1(N)c(N(=O)=O)cc(C)cc1",89623,"2-Nitro-4-methylaniline",1147,"gavage","oral",28,1981,,,,,,,,2,,,,,,,2,2,,,,,,2,,,,2,
+"c1(N)c(N(=O)=O)cc(Cl)cc1",89634,"4-Chloro-2-nitroaniline",1834,"gavage","oral",90,,,,,2,,,1,2,,,,,,,1,1,,,,,,1,1,,,,1
+"C(#N)c1c(C#N)cccc1",91156,"o-Phthalodinitrile",1064,"feed","oral",90,1981,,,,1,,,,1,1,,,,,,1,,,,,,,,,,,,
+"c12c(cc(C)cc1)cccc2",91576,"2-Methylnaphthalene",4622,"inhalation","inhalation",28,2009,,,,,,,,1,,,,,1,,1,1,,,,,,1,1,,,,
+"c1(OC)c(OC)cc(CC=C)cc1",93152,"Methyleugenol",1943,"gavage","oral",90,1998,,1,,1,,,,1,,2,,,,,,1,,,1,,,2,,1,,,
+"c1(O)c(C)cccc1",95487,"o-Cresol",299,"feed","oral",28,1981,,,,2,,,2,,,,,,,,2,2,,,,,,,,,,,
+"c1(O)c(C)cccc1",95487,"o-Cresol",596,"gavage","oral",90,,,,,,,,,,1,,,,,,,,,,,,,,,,,,
+"c1(O)c(C)cccc1",95487,"o-Cresol",2306,"feed","oral",90,1981,,,,2,,,,,,1,,,,,2,2,,,2,,,,,,,,
+"c1(Cl)c(Cl)cccc1",95501,"1,2-Dichlorobenzene",852,"gavage","oral",90,1981,,,,2,,,,1,,,,,,,1,1,,,,,,2,2,,,,
+"c1(Cl)c(Cl)cccc1",95501,"1,2-Dichlorobenzene",854,"gavage","oral",90,1981,,,,2,,,2,1,,2,,,,,2,2,,,,,,1,,2,,2,2
+"c1(Cl)c(N)cccc1",95512,"o-Chloroaniline",549,"inhalation","inhalation",28,1981,,,,2,,1,,2,2,,,,,,,1,,,,,,1,1,,,2,
+"c1(Cl)c(N)cccc1",95512,"o-Chloroaniline",2455,"gavage","oral",90,,,,,1,,1,,1,1,,,2,1,,1,1,,,1,,,1,1,,,,1
+"c1(N)c(C)cc(C)cc1",95681,"2,4-Xylidine",2,"inhalation","inhalation",28,,,,,1,,,,1,1,,,2,,,,1,,,,,,,,,,,
+"C(Cl)(CCl)CCl",96184,"1,2,3-Trichloropropane",60,"gavage","oral",90,1981,,,,1,,,1,1,,,,,1,,1,1,1,,1,,,,,,,,
+"C(Cl)(CCl)CCl",96184,"1,2,3-Trichloropropane",81,"drinking water","oral",90,,,,,1,,,1,2,,,1,,,,1,1,,,,,,,,,2,1,
+"C(Cl)(CCl)CCl",96184,"1,2,3-Trichloropropane",2198,"inhalation","inhalation",90,,,,,1,,,,,,,,1,,,,1,,,,,,,,,,,
+"C(=O)(NC)NC",96311,"1,3-Dimethylurea",1966,"gavage","oral",28,,,,,2,,,,,,,,,,,2,,,,,,,,,,,2,
+"C(=O)(CCl)OC",96344,"Chloroacetic acid, methyl ester",90,"inhalation","inhalation",28,,,,,1,,,,,1,,,,,,,,,,,,,,,,,,
+"C1(=S)NCCN1",96457,"Ethylene thiourea",3490,"inhalation","inhalation",28,1981,,,,1,,,,,,,,,,,,,,,,,2,1,,,1,,
+"C1(CO)=CC=CO1",98000,"Furfuryl alcohol",1701,"inhalation","inhalation",90,1981,,,,1,,,,,,,,,,,,1,,,1,,,,,,,,
+"C(Cl)(Cl)(Cl)c1ccccc1",98077,"(alpha),(alpha),(alpha)-Trichlorotoluene",417,"inhalation","inhalation",28,,,,,1,,,,,,,,,,,,,,,,,,,,,,,
+"C(C)(C)(C)c1cc(O)c(O)cc1",98293,"p-tert-Butylcatechol",1323,"feed","oral",90,1998,,,,1,,,,2,,2,,,,,,2,,,2,,,1,,,,,
+"c1(C(C)C)ccccc1",98828,"Cumene",309,"inhalation","inhalation",90,1981,,2,,,,,,2,,,,,,,2,2,,,,,,,,,,,2
+"C(=C)(C)c1ccccc1",98839,"(alpha)-Methylstyrene",1705,"inhalation","inhalation",90,1981,1,,,,,,,2,,,,,,,2,2,,,,,,2,,,,2,
+"c1(C(C)O)ccccc1",98851,"alpha-Methylbenzyl alcohol",3581,"gavage","oral",90,,,,,2,,,,,2,,,,,,,1,,,,,,,2,,,,
+"c1(C(Cl)Cl)ccccc1",98873,"Benzal chloride",1178,"inhalation","inhalation",28,,,,,1,,,,1,1,,,,,,,,,,,,,,,,,2,
+"C(N)(=O)c1cccnc1",98920,"3-Pyridinecarboxamide",1881,"gavage","oral",28,1981,,2,,2,,,1,2,,,,2,2,,2,2,,,,,,,2,,,,
+"c1(N)cc(N(=O)=O)ccc1",99092,"3-Nitro-benzeneamine",2138,"gavage","oral",28,,,,,1,,1,,,,,,,,,1,1,,,1,,,1,1,,,,
+"c1(C)c(C)cc(N(=O)=O)cc1",99514,"4-Nitro-1,2-dimethylbenzene",1051,"feed","oral",28,1981,,,,,,,,1,,,,,,,,,,,,,,,,,,,
+"c1(N(=O)=O)ccc(C)cc1",99990,"p-Nitrotoluene",3773,"feed","oral",90,1981,1,,,2,,,,1,,2,,1,1,,1,2,,,1,,,2,1,1,,,
+"c1(O)ccc(N(=O)=O)cc1",100027,"4-Nitrophenol",1143,"gavage","oral",28,1981,,,,,,,,2,2,2,,,,,2,1,,,2,,,,,,,,2
+"C(O)CN(CC)CC",100378,"2-Diethylaminoethanol",234,"inhalation","inhalation",90,1981,,,,1,,,,,,,,,,,1,1,,,,,,,,,,,
+"C(=C)C1CC=CCC1",100403,"4-Vinyl-1-cyclohexene",578,"inhalation","inhalation",90,,,,,2,,,,,2,2,,,,,2,2,,,2,,,,,,,,
+"c1(CC)ccccc1",100414,"Ethylbenzene",1841,"inhalation","inhalation",90,1981,,,,,,,,,,,,,,,2,2,,,,,,,,,,,
+"c1(C=C)ccccc1",100425,"Styrene",898,"inhalation","inhalation",90,1981,,,,2,,,,,,,,,,,,,,,,,,,,,,,
+"c1(CCl)ccccc1",100447,"(alpha)-Chlorotoluene",91,"inhalation","inhalation",28,,,,,1,,,,,1,,,,,,,,,,,,,,,,,,
+"C(#N)c1ccccc1",100470,"Benzonitrile",1817,"gavage","oral",90,,1,,,2,,,,,2,,,,,,1,,,,,,,,,,,,
+"c1(C=O)ccccc1",100527,"Benzaldehyde",2216,"gavage","oral",90,,,,,2,,,2,,,,,,,,2,2,,,,,,,,,,,
+"c1(N)ccc(Cc2ccc(N)cc2)cc1",101779,"4,4´-Methylenedianiline",4323,"drinking water","oral",90,1981,,,,1,,,,,,,,,,,,1,,,,,1,,,,1,,
+"c1(Oc2ccc(N)cc2)ccc(N)cc1",101804,"4,4´-Diaminodiphenylether",106,"feed","oral",90,,,,,1,,,,,1,,,,,,,1,,1,1,,1,,,,1,,
+"c1(OCC2CO2)cc(OCC2CO2)ccc1",101906,"1,3-Bis(2,3-epoxypropoxy)benzene",392,"gavage","oral",90,,,,,1,,,,,,,,,,,,,,,,,,,,,,,
+"c1(NC(=O)CC(C)=O)ccccc1",102012,"Acetoacetanilide",1032,"gavage","oral",28,1981,,,,2,,,,1,1,,,1,,,1,1,,,,,,1,1,,,,1
+"c1(NC(=N)Nc2ccccc2)ccccc1",102067,"N,N'-Diphenylguanidine",1910,"feed","oral",90,1981,,,,1,,1,,1,1,1,,,1,,1,1,,1,1,,,1,1,1,,,1
+"c1(N=C=O)ccccc1",103719,"Phenyl isocyanate",985,"inhalation","inhalation",28,1981,,,,1,,,,,,,,,,,,1,,,1,,,1,1,1,,,
+"c1(CN(C)C)ccccc1",103833,"Dimethylbenzylamine",984,"gavage","oral",28,1981,,,,,,,,2,,,,,,,,2,,,,,,,,,,,
+"c1(O)ccc(NC(C)=O)cc1",103902,"Acetaminophen",2151,"feed","oral",90,1981,,,,2,,,,,,2,,,,,2,2,2,,2,,,,,2,,,
+"C(CCCC)(CC)CO",104767,"2-Ethylhexanol",4568,"inhalation","inhalation",90,1981,,,,,,,,2,,,,,,,,,,,,,,,,,,,
+"c1(C)ccc(CC)cn1",104905,"5-Ethyl-2-picoline",1985,"gavage","oral",28,,2,,,2,,,,1,,,,,,,1,1,,,,,,,,,,,
+"c1(O)ccc(N=O)cc1",104916,"p-Nitrosophenol",1030,"gavage","oral",28,1981,,,,,,,,1,,,,,,,1,,,,,,,1,,1,,1,
+"C1(=O)CCCCCN1",105602,"Caprolactam",917,"feed","oral",90,,1,,,2,,,,,,,,,,,1,,,,2,,,,,,,,
+"C1(=O)CCCCCN1",105602,"Caprolactam",919,"feed","oral",90,,,,,2,,,2,,,,,,,,1,1,,,,,,,,,2,,
+"c1(Cl)ccc(N)cc1",106478,"p-Chloroaniline",493,"gavage","oral",90,1981,,,,1,,1,1,,,,,1,1,,1,1,,,,,,1,1,,,,1
+"C1(C2CC3C(CC2)O3)CO1",106876,"4-Vinylcyclohexene Diepoxide",2211,"gavage","oral",90,1981,,,,2,,,2,,2,2,,,2,,2,2,,,2,,,,,2,,,2
+"C1(CC)CO1",106887,"Epoxybutane",1782,"inhalation","inhalation",90,,,,,2,,,,,,,,,,,,,,,,,,,,,,,
+"C(=C)COCC1CO1",106923,"Allyl glycidyl ether",3592,"inhalation","inhalation",90,,,,,1,,,,,,,,,,,,1,,,,,,,,,,,
+"C(Br)CC",106945,"1-Bromopropane",2161,"inhalation","inhalation",90,1981,,,,,,,,,,,,,,,,2,,,,,,,,,,,
+"C(=O)C=C",107028,"Acrolein",3476,"gavage","oral",90,1998,,,,1,,1,,1,1,,,,1,,1,1,,,,,,1,1,1,,,1
+"C(=C)CCl",107051,"Allyl chloride",1243,"inhalation","inhalation",90,,,,,,,,,,,,,,,,2,,,,,,,,,,,,
+"C(Cl)CCl",107062,"1,2-Dichloroethane",4327,"drinking water","oral",90,1981,,,,1,,,,,,,,,,,1,2,,,,,,,,,,,
+"C(Cl)CCl",107062,"1,2-Dichloroethane",4328,"drinking water","oral",90,1981,,,,2,,,,,,,,,,,1,1,,,,,,,,,,,
+"C(Cl)CCl",107062,"1,2-Dichloroethane",4329,"gavage","oral",90,1981,,,,2,,,2,,2,,,,,,1,1,,,,,,,,2,,,
+"C(Cl)CCl",107062,"1,2-Dichloroethane",4330,"drinking water","oral",90,1981,,,,2,,,,,,,,,,,1,1,,,,,,,,,,,
+"C(N)CN",107153,"Ethylenediamine",108,"feed","oral",90,1981,,2,,2,,,2,2,,,,,2,,2,2,,,,,,,2,,,2,
+"C(=C)CO",107186,"Allyl alcohol",3656,"gavage","oral",90,1998,,,,,,,,1,,1,,,,,,1,,,,,,1,,,,,1
+"C(=O)C=O",107222,"Ethane-1,2-dione",241,"drinking water","oral",28,1981,,,,2,,,,,,,,,,,,,,,,,,,,,,,
+"C(C)(C)=CC=O",107868,"3-Methyl-2-butenal",59,"inhalation","inhalation",28,1981,,,,2,,,,,1,,,,,,,,,,,,,,,,,,
+"C(C)(O)COC",107982,"2-Propylene glycol 1-methyl ether",1763,"inhalation","inhalation",90,1981,,,,,,,,2,,,,,,,,2,,,,,,,,,,,
+"C(C)(=O)OC(C)=O",108247,"Acetic anhydride",307,"inhalation","inhalation",90,,,,,1,,,,,,,,,,,,,,,,,,1,,,,,
+"C1(=O)C=CC(=O)O1",108316,"Maleic anhydride",2899,"inhalation","inhalation",28,,,,,1,,,,,,,,,,,,,,,,,,,,,,,
+"C1(=O)C=CC(=O)O1",108316,"Maleic anhydride",2900,"feed","oral",90,,,,,,,,,,,,,,,,2,2,,,,,,,,,,2,
+"c1(O)cc(C)ccc1",108394,"Methylphenol,3-",301,"gavage","oral",90,,,,,1,,,1,,2,,,,,,,2,,,,,,,,,,,
+"c1(O)cc(C)ccc1",108394,"Methylphenol,3-",588,"feed","oral",28,1981,,,,2,,,,,,2,,,,,,2,,,,,,,,,,,
+"c1(Cl)cc(N)ccc1",108429,"m-Chloroaniline",2123,"gavage","oral",90,,,,,1,,1,,1,,,,1,2,,1,1,,,1,,,1,1,1,,,
+"c1(N)cc(N)ccc1",108452,"m-Phenylenediamin",435,"gavage","oral",90,1981,,,,,,,,,,,,,,,1,1,,,,,,,,,,,
+"c1(O)cc(O)ccc1",108463,"Resorcinol",3662,"gavage","oral",90,1981,,1,,,,,,2,2,,,,,,,1,,,,,,,,,,,
+"c1(O)cc(C)cc(C)c1",108689,"3,5-Dimethylphenol",1171,"gavage","oral",28,1981,,,,1,,,,,1,,,,,,,,,,,,,,,,,,
+"c1(N)nc(N)nc(N)n1",108781,"Melamine",3670,"feed","oral",90,,,,2,2,,,,,,,,,,,,,,,,,,,,,,,
+"c1(Cl)ccccc1",108907,"Chlorobenzene",325,"gavage","oral",90,1981,2,,,2,,2,,2,,,,,,,2,2,,,,,,2,1,2,,2,2
+"c1(O)ccccc1",108952,"Phenol",4333,"drinking water","oral",90,,,,,2,,,,,,,,,,,,,,,,,,,,,,,
+"C(C)(C)OCCO",109591,"Ethylene glycol (mono) isopropyl ether",1244,"inhalation","inhalation",28,,,,,,,,,2,,,,2,,,,,,,,,,2,2,,,2,
+"C(C)(C)OCCO",109591,"Ethylene glycol (mono) isopropyl ether",1245,"inhalation","inhalation",28,,,,,,,,,,,,,,,,,,,,,,,1,,,,,
+"C(O)COC",109864,"Ethylene glycol monomethyl ether",2275,"drinking water","oral",90,1981,,,,2,2,1,,1,1,2,,,,,,,2,2,1,,,1,2,1,,2,1
+"C1CCCO1",109999,"Tetrahydrofuran",1785,"inhalation","inhalation",90,1981,,,,,,,,2,,,,,,,,2,,,,,,2,2,2,,,2
+"C1C=COC=1",110009,"Furan",3679,"gavage","oral",90,,,,,1,,,,,1,1,,,,,1,1,,,1,,,,,1,,,
+"C(C)(=O)CCC(C)C",110123,"Methyl Isoamyl Ketone",4630,"inhalation","inhalation",90,,,,,,,,,,,,,,,,2,2,,,,,,,,,,,
+"C(#CCO)CO",110656,"Butynediol",1087,"gavage","oral",28,1981,,,,1,,,,1,,,,,,,1,1,,,,,,1,1,,,,1
+"C(#CCO)CO",110656,"Butynediol",1088,"inhalation","inhalation",28,1981,,,,,,,,,,,,,,,,,,,,,,,,,,1,
+"C(CCC)=NO",110690,"Butanal Oxime",2451,"gavage","oral",90,1998,,,,1,,2,,1,1,,,,,,,2,2,2,2,,,1,1,2,,,1
+"C(O)COCC",110805,"Ethylene glycol monoethyl ether",2278,"drinking water","oral",90,1981,,,,2,,2,,2,,2,,2,,,,2,2,2,2,,,2,2,2,,2,
+"C1CCCCC1",110827,"Cyclohexane",4638,"inhalation","inhalation",90,,,,,,,,,,2,,,,,,,,,,,,,,,,,,
+"c1ccccn1",110861,"Pyridine",3688,"drinking water","oral",90,1998,2,,,1,,,,1,,1,,,1,,1,1,,,1,,,1,,,,,
+"C1CNCCO1",110918,"Morpholine",4632,"inhalation","inhalation",90,,,,,2,,,,,,,,,,,,1,,,,,,,,,,,
+"C(C)(C)=CCCC(C)=O",110930,"6-Methylhept-5-en-2-one",1378,"gavage","oral",90,1998,1,,,2,,,,2,2,,,,,,1,2,,,2,,,,,,,2,
+"C(=O)CCCC=O",111308,"Glutaraldehyde",382,"inhalation","inhalation",90,1981,,,,1,,,,1,,,,,1,,1,,,,1,,,1,,1,,,1
+"C(O)COCCO",111466,"Diethylene glycol",348,"feed","oral",90,,,,,,,,,,,,,,,,2,2,,,,,,,,,,,
+"C(CO)SCCO",111488,"Thiodiglycol",2027,"gavage","oral",28,,,,,,,,,2,,,,,,,,,,,,,,2,,,,,
+"C(CO)SCCO",111488,"Thiodiglycol",2028,"gavage","oral",90,,,2,,2,,,2,,,,,,,,2,2,,,2,,,,,,,2,
+"C(=C)CCCCCC",111660,"1-Octene",1184,"gavage","oral",90,,,,,,,,,2,,,,,,,2,,,,,,,,,,,2,
+"C(#N)CCCCC#N",111693,"1,4-Dicyanobutane",1850,"inhalation","inhalation",90,,,,,,,,,,,,,,,,,,,,,,,1,,,,1,
+"C(CCC)OCCO",111762,"Ethylene glycol (mono) n-butyl ether",1712,"inhalation","inhalation",90,1981,,,,2,2,1,,,1,,,,2,,1,1,,,,,,1,1,2,,1,1
+"C(CCC)OCCO",111762,"Ethylene glycol (mono) n-butyl ether",2282,"drinking water","oral",90,1981,,,,2,,2,,2,,2,,2,,,,1,,,2,,,1,2,2,,1,2
+"C(O)COCCOCC",111900,"Diethylene glycol monoethyl ether",3788,"feed","oral",90,,,,,2,,,,2,,,,,,,2,2,,,2,,,,,,,2,
+"C(O)COCCOCC",111900,"Diethylene glycol monoethyl ether",3789,"feed","oral",90,,,,,2,,,2,,,,,,,,2,,,,,,,2,2,,2,2,
+"C(CCC)NCCCC",111922,"Di-n-Butylamine",4569,"inhalation","inhalation",28,1981,,,,1,,,,,1,,,,,,,,,,,,,,,,,,
+"C(CCC)NCCCC",111922,"Di-n-Butylamine",4570,"inhalation","inhalation",90,1981,,,,1,,,,,1,,,,,,,,,,,,,,,,,,
+"C(C)(=O)OCCOCCCC",112072,"Ethylene glycol monobutyl ether acetate",414,"inhalation","inhalation",28,,,,,,,,,,,,,,,,2,,,,,,,,,,,2,
+"C(CCCCC)OCCO",112254,"Ethylene glycol (mono) n-hexyl ether",1330,"inhalation","inhalation",90,1981,,,,1,,,,,,,,,,,,1,,,,,,,,,,,
+"c1(OC(C)C)c(OC(=O)NC)cccc1",114261,"Propoxur",4401,"inhalation","inhalation",90,,,,,,,,,1,,,,,,,,,,,,,,,,,,,
+"C(=C)C",115071,"Propylene",1794,"inhalation","inhalation",90,,,,,2,,,,,,,,,,,,,,,,,,,,,,,
+"COC",115106,"Dimethyl ether",208,"inhalation","inhalation",90,,,,,,,,,2,,,,,,,,,,,,,,,,,,,2
+"C(C)(C)(O)C#C",115195,"2-Methyl-3-butyn-2-ol",1140,"gavage","oral",28,,,,,2,,,,2,2,,,,,,,,,,,,,2,,,,,2
+"C12(Cl)C(Cl)(Cl)C(Cl)(C(Cl)=C1Cl)C1C(=O)OC(=O)C21",115275,"chlorendic anhydride",2986,"inhalation","inhalation",28,,,,,2,,,,,,,,,,,,1,,,,,,,,,2,,
+"C12(Cl)C(Cl)(Cl)C(Cl)(C(Cl)=C1Cl)C1C2COS(=O)OC1",115297,"Endosulfan",4402,"feed","oral",90,1981,,,,,,,1,1,,,,,,,1,1,,,1,,,1,,,,1,
+"C(F)(F)=C(F)F",116143,"Tetrafluoroethylene",3564,"inhalation","inhalation",90,1981,,,,2,,,,,,,,,2,,2,2,,,,,,2,,,,2,
+"C1(=O)c2c(cccc2)NC(=O)O1",118489,"N-Carboxyanthranilic acid anhydride",1144,"inhalation","inhalation",28,,,,,,,,,,,,,,,,,1,,,,,,,,,,,
+"c1(N(=O)=O)c(C)c(N(=O)=O)cc(N(=O)=O)c1",118967,"2,4,6-Trinitrotoluene",1172,"feed","oral",90,1981,,,,1,,,1,1,,,,,,,1,1,,,1,,,1,1,,,,
+"c1(C(=O)c2ccccc2)ccccc1",119619,"Benzophenone",2039,"feed","oral",90,1998,,,,1,,2,,1,2,,,,1,,1,1,,2,1,,,1,,2,,,
+"c12c(cccc1)CCC(=O)O2",119846,"3,4-Dihydrocoumarin",2450,"gavage","oral",90,1981,,,,2,,,1,1,,,,,,,2,2,,,2,,,2,,,,,2
+"c1(O)c(Cc2ccccc2)cc(Cl)cc1",120321,"o-Benzyl-p-Chlorophenol",2448,"gavage","oral",90,1981,2,,,,,,1,1,,,,,2,,2,,,,1,,,1,,1,,,1
+"c1(Cl)c(Cl)cc(Cl)cc1",120821,"1,2,4-Trichlorobenzene",2204,"feed","oral",90,,,,,,,,,,,,,,,,1,1,,,,,,,,,1,,
+"c1(O)c(Cl)cc(Cl)cc1",120832,"2,4-Dichlorophenol",2185,"feed","oral",90,,,,,2,,2,,,,,,,,,,,,,,,,,,,,,
+"c1(N(C)C)ccccc1",121697,"N,N-Dimethylaniline",3547,"gavage","oral",90,,,,,2,,1,,,2,,,1,,,1,1,,,2,,,,1,,,,
+"c1(Cl)cc(N(=O)=O)ccc1",121733,"m-Chloronitrobenzene",1685,"inhalation","inhalation",90,,,,,,,1,,1,,1,,1,,,1,1,1,,1,,,1,1,1,,,
+"c1(Cl)cc(N(=O)=O)ccc1",121733,"m-Chloronitrobenzene",1688,"gavage","oral",28,1981,,,,1,,,,1,,,,1,,,,1,,,1,,,1,1,,,,
+"C(=O)(c1cc(O)c(O)c(O)c1)OCCC",121799,"Propyl gallate",930,"feed","oral",28,,,,,2,,,,,,,,2,,,2,2,,,,,,2,2,,,,
+"C(=O)(c1cc(O)c(O)c(O)c1)OCCC",121799,"Propyl gallate",931,"feed","oral",90,,,,,,,,,,,,,2,,,,1,,,,,,2,,,,,
+"C(=O)(c1cc(O)c(O)c(O)c1)OCCC",121799,"Propyl gallate",932,"feed","oral",90,,,,,2,,,,,,,,,,2,,,,,,,,,,,,,
+"C(C)OP(OCC)OCC",122521,"Triethylphosphite",1009,"gavage","oral",28,1981,,2,,2,,,,,,,,,,,2,2,,,,,,2,,,,,2
+"c1(O)ccc(N)cc1",123308,"Aminophenol, p-",979,"feed","oral",90,1981,1,,,2,,,2,1,,1,,,,,1,2,,,2,,2,2,,,2,,
+"c1(O)ccc(O)cc1",123319,"Hydroquinone",350,"gavage","oral",90,,2,,,,,,,,2,,,,,,2,1,,,,,,,,,,,
+"C(C)(C)CCO",123513,"3-Methylbutanol-1",1007,"drinking water","oral",90,1981,,,,,,,,,,,,,,,,,,,,,,2,,,,,
+"C(C)(=O)CC(C)=O",123546,"Acetyl acetone",3876,"inhalation","inhalation",90,,,,,2,,,2,,2,,,,,,,,,,,,,,,2,,,
+"C(N)(=O)N=NC(N)=O",123773,"1,1'-Azobisformamide",1071,"inhalation","inhalation",90,,,,,,,,,,,,,,,,,,1,,,,,,,,1,,1
+"C(N)(=O)N=NC(N)=O",123773,"1,1'-Azobisformamide",1073,"gavage","oral",90,,,,,,,,,,,,,,,,2,,,,,,,,,,,,
+"C1COCCO1",123911,"1,4-Dioxane",656,"drinking water","oral",90,,,,,2,,,2,2,,,,,,,2,2,,,,,,,,,,2,
+"C1(C)(C)C2(C)C(OC(C)=O)CC1CC2",125122,"Isobornyl acetate",1074,"gavage","oral",90,,,,,,,,,,,,,,,1,2,2,,,,,,,,,,1,
+"C(C)(C)COP(=O)(OCC(C)C)OCC(C)C",126716,"Triisobutyl phosphate",1035,"feed","oral",90,1981,,,,,,,,2,,,,,,,,,,,,,,1,,,,,2
+"C(CCC)OP(=O)(OCCCC)OCCCC",126738,"Tributyl phosphate",1060,"feed","oral",90,1981,,,1,1,,,,2,,,,,,,,1,,,,,,2,,,,,
+"C(#N)C(=C)C",126987,"Methacrylonitrile",2456,"gavage","oral",90,1998,,,,1,,,,1,1,1,,,1,,2,1,,,1,,,1,,1,,,2
+"C(Cl)(Cl)=C(Cl)Cl",127184,"Tetrachloroethene",1742,"inhalation","inhalation",90,,,,,2,,,,,,,,,,,,2,,,,,,,,,,,
+"C(Cl)(Cl)=C(Cl)Cl",127184,"Tetrachloroethene",1746,"drinking water","oral",90,,,,,2,,,,2,,,,,,,2,2,,,,,,,,,,,
+"c12C(=O)c3c(c(N(=O)=O)cc(N(=O)=O)c3)-c1ccc(N(=O)=O)c2",129793,"Trinitrofluorenone",2034,"feed","oral",90,1981,,1,,1,2,,1,1,,2,,2,2,1,1,1,2,2,1,,2,1,1,1,1,1,
+"C(=O)(c1c(C(=O)OCC=C)cccc1)OCC=C",131179,"Diallyl phtalate",3550,"gavage","oral",90,,,,,2,,,,,,,,,,2,2,1,,,,,,,,,,,
+"c12c(cc(O)cc1)cccc2",135193,"2-Naphthol",1153,"gavage","oral",28,,,,,,,,,2,,,,,,,1,,,,,,,,,,,,
+"c12c(cc(Nc3ccccc3)cc1)cccc2",135886,"N-Phenyl-2-naphthylamine",2145,"feed","oral",90,,2,,,2,,2,,,,,,,,,2,2,,,2,,,,2,2,,,
+"C(C)(C)(c1ccc(O)cc1)CC(C)(C)C",140669,"4-(1,1,3,3-TETRAMETHYLBUTYL)-PHENOL",4501,"gavage","oral",28,,,,,2,,,,,,,,,,,,,,,,,,,,,,,
+"C(C)(C)(c1ccc(O)cc1)CC(C)(C)C",140669,"4-(1,1,3,3-TETRAMETHYLBUTYL)-PHENOL",4502,"gavage","oral",28,1981,,,,,,,,1,,,,,,,1,2,,,,,,,,,,,
+"C(=O)(CC(C)=O)OCC",141979,"Ethyl acetoacetate",903,"gavage","oral",28,1981,,,,,,,,,2,,,,,,,,,,,,,,,,,,
+"C(=O)(CC(C)=O)OCC",141979,"Ethyl acetoacetate",904,"feed","oral",28,,,,2,,,,,,,,,,,2,2,,,,,,,2,,,,,
+"C(=O)C=CC=CC",142836,"2,4-Hexadienal",2449,"gavage","oral",90,1998,,,,1,,,,1,,,,,1,,2,2,,,1,,,2,2,,,,
+"S(=O)(=O)([O-])OCCCCCCCCCCCC.[Na+]",151213,"Sodium Lauryl Sulfate",3813,"feed","oral",90,1998,,,,,,,,2,,,,,,,2,1,,,2,,,,,,,,
+"S(=O)(=O)([O-])OCCCCCCCCCCCC.[Na+]",151213,"Sodium Lauryl Sulfate",3814,"gavage","oral",28,,,2,,2,,,1,2,,2,,,2,2,2,2,,,2,,,2,,,,,2
+"S(=O)(=O)([O-])OCCCCCCCCCCCC.[Na+]",151213,"Sodium Lauryl Sulfate",3817,"feed","oral",90,,,,,,,,,,,,,,,,,2,,,,,,,,,,,
+"C(Cl)=CCl",156605,"1,2-Dichloroethylene",2118,"drinking water","oral",90,,,,,,,,,,,,,,,,2,,,,,,,,,,,,
+"C(Cl)=CCl",156605,"1,2-Dichloroethylene",2119,"feed","oral",90,1998,,,,2,,,,,,,,,,,2,2,,,,,,2,,,,,
+"c12c(C=CO1)cccc2",271896,"Benzofuran",3584,"gavage","oral",90,,2,,,1,,,,,1,,,,,,2,2,,,,,,,,,,,
+"C1=CN=CN1",288324,"Imidazol",2001,"gavage","oral",28,,,,,2,,,,2,2,,,,,,2,2,,,,,,2,,,,,
+"C1=CN=CN1",288324,"Imidazol",2002,"gavage","oral",90,1998,2,,,,,,,2,,,,,,,2,2,,,,,,,,,,2,
+"C(F)(F)(F)C(Cl)Cl",306832,"1,1-Dichloro-2,2,2-trifluoroethane",2223,"inhalation","inhalation",28,,,,,2,,,,,,,,,,,,2,,,,,,,,,,,
+"C(F)(F)(F)C(Cl)Cl",306832,"1,1-Dichloro-2,2,2-trifluoroethane",2225,"inhalation","inhalation",90,,,,,2,,,,,,,,,,,2,2,,,2,,,,,,,,
+"c1(C(C)C)nc(OP(=S)(OCC)OCC)cc(C)n1",333415,"Diazinon",334,"feed","oral",90,,,,,1,,,,1,1,,,,,,1,1,,,,,,1,,,,,1
+"c1(C(C)C)nc(OP(=S)(OCC)OCC)cc(C)n1",333415,"Diazinon",335,"inhalation","inhalation",28,,,,,,,,,1,,,,,,,,,,,,,,,,,,,
+"c1(C(C)C)nc(OP(=S)(OCC)OCC)cc(C)n1",333415,"Diazinon",4336,"inhalation","inhalation",28,,,,,1,,,,1,,,,,,,,,,,,,,,,,,,
+"C(F)(F)(I)C(F)(F)C(F)(F)C(F)(F)F",423392,"Butane, 1,1,1,2,2,3,3,4,4-nonafluoro-4-iodo-",4571,"inhalation","inhalation",28,1981,,,,2,,,,2,2,,,,,,,2,,,,,,,,,2,,
+"C(F)(F)(I)C(F)(F)C(F)(F)C(F)(F)F",423392,"Butane, 1,1,1,2,2,3,3,4,4-nonafluoro-4-iodo-",4587,"inhalation","inhalation",90,2009,,2,,,,,,2,,,,,,,,,,,,,,,,,2,,
+"C(F)(F)(I)C(F)(F)C(F)(F)C(F)(F)F",423392,"Butane, 1,1,1,2,2,3,3,4,4-nonafluoro-4-iodo-",4588,"inhalation","inhalation",28,,,,,2,,,,,2,,,,,,,,,,,,,,,,2,,
+"c1(C2C(=O)c3c(O)cc(O)cc3OC=2)ccc(O)cc1",446720,"Genistein",2180,"feed","oral",90,1998,,2,,2,,,,2,,2,,,2,,2,2,,,2,,,2,,,2,,
+"C(F)(F)(F)CC(F)F",460731,"1,1,1,3,3-Pentafluoropropane",1737,"inhalation","inhalation",28,1981,,,,,,,,2,,,,,,,,,,,,,,2,,,,2,2
+"C(F)(F)(F)CC(F)F",460731,"1,1,1,3,3-Pentafluoropropane",1738,"inhalation","inhalation",90,1981,,,,,,,,2,,,,,2,,,,,,,,,2,2,,,2,2
+"c1(F)ccccc1",462066,"Fluorobenzene",1022,"inhalation","inhalation",28,1981,2,,,,,,,,,,,,,,2,2,,,,,,,,,,,
+"c1(N(=O)=O)c(N(C)N(=O)=O)c(N(=O)=O)cc(N(=O)=O)c1",479458,"Tetryl",33,"feed","oral",90,,,,,1,,,,,,,,,,,1,1,,,,,,1,1,,,,
+"C(N(=O)=O)(N(=O)=O)(N(=O)=O)N(=O)=O",509148,"Tetranitromethane",1158,"inhalation","inhalation",90,,,,,1,,,,,1,,,,,,,1,,,,,,,,,,,
+"C(C)(S)CC",513531,"sec-Butyl mercaptan",4612,"inhalation","inhalation",90,,,,,1,,,2,2,,,,,2,,2,2,,,,,,2,2,,,,
+"C(=O)(O)c1c(C(=O)O)cc(C(=O)O)cc1",528449,"Trimellitic acid",4532,"gavage","oral",28,,,,,,,,,,,,,,,2,,,,,,,,,,,,,
+"C(=O)(O)c1c(C(=O)O)cc(C(=O)O)cc1",528449,"Trimellitic acid",4533,"inhalation","inhalation",90,,,,,,,,,,1,,,,,,,,,,,,,,,,,,
+"c1(N(=O)=O)c(O)c(C)cc(N(=O)=O)c1",534521,"4,6-Dinitro-o-cresol",865,"feed","oral",90,,,,,1,,,,1,,1,,,,,,,,,1,,,,,1,1,,
+"c1(Cl)cc(Cl)ccc1",541731,"1,3-Dichlorobenzene",2333,"gavage","oral",28,1981,,,,2,,,,1,,,,,,,1,1,,,,,,,,,,2,
+"c1(Cl)cc(Cl)ccc1",541731,"1,3-Dichlorobenzene",2334,"gavage","oral",90,1981,,,,2,,,,1,,,,,,,,2,,,,,2,2,,,1,,2
+"C(C)(C)CON=O",542563,"Isobutyl Nitrite",1803,"inhalation","inhalation",90,1981,,,,2,,1,2,1,1,,,,2,,2,2,,,1,,,1,1,2,,,2
+"C(Cl)=CCCl",542756,"1,3-Dichloropropene",4474,"inhalation","inhalation",90,1981,,,,1,,,1,,,1,,,1,,2,2,,,2,,,,,1,,,
+"C1(=O)c2c(C(=O)O1)cc(C(=O)O)cc2",552307,"Trimellitic anhydride",4537,"inhalation","inhalation",90,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+"C1(=O)c2c(C(=O)O1)cc(C(=O)O)cc2",552307,"Trimellitic anhydride",4539,"feed","oral",90,,,,,,,,,,,,,,,,,,,,,,,,,,,,1
+"C(=C)(C)CCl",563473,"3-Chloro-2-methyl-1-propene",3553,"gavage","oral",90,,,,,2,,,,,,,,,,,,2,,,,,,,,,,,
+"c1(C)c(O)c(C)ccc1",576261,"2,6-Dimethylphenol",1170,"gavage","oral",28,1981,,,,2,,,,,2,,,2,,,,2,,,,,,2,,,,,
+"C(N)(N)=NN(=O)=O",583391,"2-Mercaptobenzimidazole",1913,"inhalation","inhalation",90,1981,,1,,1,,,,1,1,,,1,,,1,,,,,,1,1,,1,1,,1
+"C(N)(N)=NN(=O)=O",583391,"2-Mercaptobenzimidazole",1914,"inhalation","inhalation",90,1981,,1,,1,,1,,1,1,1,,,,,1,1,1,,,1,1,1,,1,1,,1
+"C(=C)CCCC",592416,"1-Hexene",1182,"inhalation","inhalation",90,1981,,,,1,,,,1,,,,,,,,,,,1,,,1,,,,,
+"C(=C)CCCC",592416,"1-Hexene",1183,"gavage","oral",28,1981,,,,2,,,,,,,,,,,,,,,,,,,,,,,
+"C(=O)(O)c1c(O)ccc(N=Nc2ccc(S(=O)(=O)Nc3ccccn3)cc2)c1",599791,"Salicylazosulfapyridine",1868,"gavage","oral",90,,,,,1,,,,,,,,,,,2,,,,1,,2,,,,1,,
+"c1(N(=O)=O)c(C)c(N(=O)=O)ccc1",606202,"2,6-Dinitrotoluene",525,"feed","oral",90,,,,,1,,,,1,,,,1,,,,1,,,1,,,1,,,,,
+"c1(Cl)c(CCl)cccc1",611198,"1-Chloro-2-(chloromethyl)-benzene",1862,"inhalation","inhalation",28,1981,,,,1,,,,,1,,,,,,,,1,,,,,1,,,,1,
+"C(#N)c1ccc(C#N)cc1",623267,"p-Phthalodinitrile",1083,"gavage","oral",28,1995,,,,1,,,,1,,,,,,,1,1,,,,,,,,,1,1,
+"CSSC",624920,"Methyl disulfide",4623,"inhalation","inhalation",90,,,1,,1,,,,1,,,,,,1,2,2,,1,,,,1,2,1,,,
+"C(#N)c1cc(C#N)ccc1",626175,"m-Phthalodinitrile",1082,"gavage","oral",28,1995,,2,,2,,,,2,2,,,,,,1,1,,,,,,,,,,1,
+"C(C)OP(=O)OCC",762049,"Diethylphosphite",1010,"gavage","oral",28,1981,,,,2,,,,2,2,,,,,,2,,,,,,,2,,,,,
+"C(=O)(CCOCC)OCC",763699,"Ethyl 3-ethoxypropionate",1719,"inhalation","inhalation",90,,,,,2,,,2,2,2,,,,,,2,2,,,2,,,,,2,,,2
+"C(=O)(CCOCC)OCC",763699,"Ethyl 3-ethoxypropionate",2228,"gavage","oral",28,1981,,,,,,,,2,,,,,,,,,,,,,,,,,,,
+"C1(C)=CNC=N1",822366,"4-Methylimidazole",2019,"feed","oral",90,1998,,,,2,,,,2,2,2,,,,,2,2,,2,1,,,1,2,,2,,
+"c1(Nc2ccccc2)ccc(N(=O)=O)cc1",836306,"4-Nitrodiphenylamine",1038,"feed","oral",28,1981,,,,1,,,,,,,,,,,1,,,,,,,,,,,,
+"c1(Nc2ccccc2)ccc(N(=O)=O)cc1",836306,"4-Nitrodiphenylamine",1039,"feed","oral",90,,,,,1,,,,,,,,,,,2,,,,,,,,,,,,
+"c1(Nc2ccccc2)ccc(N(=O)=O)cc1",836306,"4-Nitrodiphenylamine",1040,"inhalation","inhalation",28,,,,,,,,,,,,,,,,,1,,,,,,,,,,,
+"COP(=O)OC",868859,"Dimethyl hydrogen phosphite",3556,"inhalation","inhalation",28,,,,,1,,,,2,1,,,2,,,1,,,1,1,,,2,,,,,2
+"COP(=O)OC",868859,"Dimethyl hydrogen phosphite",3559,"gavage","oral",90,,,,2,2,,,,,,,,,,,,,,,,,,,,,,,
+"C1(=O)CCCCCCCCCCCN1",947046,"Dodecane-12-lactam",1343,"gavage","oral",90,1981,,,,,,,,1,,,,,,,,1,,,,,,,,,,1,
+"C(Cl)(Cl)(Cl)CCCl",1070786,"1,1,1,3-Tetrachloropropane",4631,"inhalation","inhalation",90,,,,,,,,,,1,,,,1,,,1,,,,,,,,,,,
+"c1(OP(=O)(Oc2ccccc2)OCC(CCCC)CC)ccccc1",1241947,"Diphenyl-2-ethylhexyl phosphate",1011,"feed","oral",90,,,1,,1,,,,2,,1,,,,,,2,,,,,,,,,,,
+"c1c(c(cc(c1)S(=O)(=O)[O-])C)C.[Na+]",1300727,"Xylene sulphonate; sodium",3695,"feed","oral",90,,,,,2,,,,1,,,,,,,,2,,,,,,2,2,,,2,
+"c1c(c(cc(c1)S(=O)(=O)[O-])C)C.[Na+]",1300727,"Xylene sulphonate; sodium",3696,"feed","oral",90,,,,,2,,,,,,,,,,,,,,,,,,,,,,,
+"C(C)(C)(C)OC",1634044,"Methyl-tertiary-butyl ether",456,"gavage","oral",28,1981,,2,,,,,,,,,,,,,2,2,,,,,,,,,,,
+"C(C)(C)(C)OC",1634044,"Methyl-tertiary-butyl ether",669,"inhalation","inhalation",28,,,2,,2,,,,,,,,,,,2,2,,,,,,,,,,,
+"C(C)(C)(C)OC",1634044,"Methyl-tertiary-butyl ether",670,"inhalation","inhalation",90,,,,,,,,,2,,,,,,,,,,,,,,2,,,,,
+"C(C)(C)(C)OC",1634044,"Methyl-tertiary-butyl ether",671,"inhalation","inhalation",90,1981,,2,,2,,,,2,2,2,,,,,2,2,2,,,,,2,2,,,,2
+"C(C)(C)(C)OC",1634044,"Methyl-tertiary-butyl ether",674,"gavage","oral",90,,,,,,,,,2,,,,,,,2,2,,,,,,,,,,,
+"C(F)(F)(Cl)CCl",1649087,"Dichlor-difluorethane",1632,"inhalation","inhalation",90,,,,,2,,,2,2,2,,2,,2,,2,2,,,2,,,,,,,,
+"C1(=O)N(CO)C(O)C(O)N1CO",1854268,"Dimethylol dihydroxyethylene urea",1043,"gavage","oral",90,,,,,2,,,,,,,,,2,,,,,,2,,,,,,,,
+"C(F)(F)(F)I",2314978,"Trifluoroiodomethane",4598,"inhalation","inhalation",90,1981,,,,2,,,2,2,2,,,,,,,2,,,2,,,2,,2,2,,2
+"C(=C)(Cl)C(Cl)CCl",2431507,"2,3,4-Trichloro-1-butene",1307,"inhalation","inhalation",90,,,,,1,,,,1,,,,,,,,,,,,,,1,,,,,1
+"C(=C)(Cl)C(Cl)CCl",2431507,"2,3,4-Trichloro-1-butene",1308,"inhalation","inhalation",28,,,,,,,,,1,,,,,,,,,,,,,,1,,,,1,
+"C(=O)(O)CCCCCCCCCCN",2432997,"11-Aminoundecanoic acid",1939,"feed","oral",90,,,,,2,,,,,,,,,,,2,,,,,,,,,,,,
+"C(=O)(O)CCCCCCCCCCN",2432997,"11-Aminoundecanoic acid",1940,"feed","oral",28,1995,,,,2,,,,2,,,,,,,2,,,,,,,2,,,,,
+"C(Cl)CC[Si](OC)(OC)OC",2530872,"3-Chloropropyltrimethoxysilane",3906,"inhalation","inhalation",90,1981,2,,2,,,,,,,,,,,,2,,,,,,,,,,,,
+"C(Cl)CC[Si](OC)(OC)OC",2530872,"3-Chloropropyltrimethoxysilane",3907,"inhalation","inhalation",28,1981,1,1,1,,,,,,,,,,,,1,2,,,,,,,,,,,
+"C(#N)C(C#N)=Cc1c(Cl)cccc1",2698411,"o-Chlorobenzalmalonitrile",2257,"inhalation","inhalation",90,1981,,,,1,,,,,,,,,,,,,,,,,,,,1,,,
+"C(=O)CCSC",3268493,"3-(Methylthio) propionaldehyde",1879,"gavage","oral",28,,,,,2,,,,1,,,,2,,,,,,,,,,2,2,,,,2
+"C1(C)(C)CC(C)(CN=C=O)CC(N=C=O)C1",4098719,"Isophorone diisocyanate",4639,"inhalation","inhalation",28,1981,,,,1,,,,,,,,,,,,1,,,,,,,,,,,1
+"c1(C=CC)ccc(OC)cc1",4180238,"trans-Anethole",970,"feed","oral",90,,,1,,2,,,1,2,,1,,,1,,2,2,,1,1,,2,2,1,1,2,,
+"c1(C=CC)ccc(OC)cc1",4180238,"trans-Anethole",971,"feed","oral",28,,,1,,2,,,,2,,,,,,,2,2,,,,,,2,,1,,,
+"c12c3c4c(c(N(=O)=O)ccc4ccc3ccc1)cc2",5522430,"1-Nitropyrene",1988,"inhalation","inhalation",90,1981,,,,,,,,,,,,,,,,1,,,,,,,,,,,
+"C(=C)(C)C1CC=C(C)CC1",5989275,"d-Limonene",3539,"gavage","oral",90,,2,,,2,,,,,2,,,,,,2,,,,,,,,,,,,
+"[Cl-].[Cl-].[NH3+]CCCCCC[NH3+]",6055523,"1,6-Hexanediamine Dihydrochloride",2457,"inhalation","inhalation",90,1981,,,,1,,,,1,,,,,1,,,,,,1,,,,,1,,,1
+"C1(O)C(O)C(O)C(OC2C(O)C(O)C(OC3C(O)C(O)C(OC4C(O)C(O)C(OC5C(O)C(O)C(OC6C(O)C(O)C(OC7C(O)C(O)CC(CO)O7)C(CO)O6)C(CO)O5)C(CO)O4)C(CO)O3)C(CO)O2)C(CO)O1",7585399,"beta-Cyclodextrin",1005,"feed","oral",90,1981,,,,,,,,,,,,,,1,,2,2,,,,,,,,,,
+"C(=O)(CS)OCC(CCCC)CC",7659861,"Thioglycolic acid 2-ethylhexyl ester",1055,"feed","oral",28,,,,,,,,,,,,,,,,1,1,,,,,,,,,,,1
+"[N+].[N+].O(OS(=O)(=O)[O-])S(=O)(=O)[O-]",7727540,"Ammonium peroxydisulfate",4611,"inhalation","inhalation",90,,,,,1,,,,,,,,,,,,,,,,,,1,,,,,
+"C12C(O)C(O)C(C(CO)O1)OC1C(O)C(O)C(C(CO)O1)OC1C(O)C(O)C(C(CO)O1)OC1C(O)C(O)C(C(CO)O1)OC1C(O)C(O)C(C(CO)O1)OC1C(O)C(O)C(C(CO)O1)O2",10016203,"alpha-Cyclodextrin",1003,"feed","oral",28,1981,,,,2,,,,2,,,,,2,2,2,2,,,,,,2,,,,2,2
+"C12C(O)C(O)C(C(CO)O1)OC1C(O)C(O)C(C(CO)O1)OC1C(O)C(O)C(C(CO)O1)OC1C(O)C(O)C(C(CO)O1)OC1C(O)C(O)C(C(CO)O1)OC1C(O)C(O)C(C(CO)O1)O2",10016203,"alpha-Cyclodextrin",1004,"feed","oral",90,1981,,,,2,,,,2,,,,,,2,,2,,,,,,,2,,,2,2
+"C1(=CC)C2C=CC(C2)C1",16219753,"5 Ethylidene- 2- norbornene",3886,"inhalation","inhalation",90,1981,,,,,,,,,,,,,,,1,2,,,,,,1,,,1,,2
+"C(Cl)CP(=O)(O)O",16672870,"ethephon",4431,"feed","oral",28,1981,,,,,,,,1,,,,,,,,,,,,,,,,,,,
+"C12C(O)C(O)C(C(CO)O1)OC1C(O)C(O)C(C(CO)O1)OC1C(O)C(O)C(C(CO)O1)OC1C(O)C(O)C(C(CO)O1)OC1C(O)C(O)C(C(CO)O1)OC1C(O)C(O)C(C(CO)O1)OC1C(O)C(O)C(C(CO)O1)OC1C(O)C(O)C(C(CO)O1)O2",17465860,"gamma-Cyclodextrin",1000,"feed","oral",90,1981,,2,,2,,,,2,,,,,,2,,2,,,,,,,,,,2,
+"c1c(cc2c(c1O)C(=O)O[C@H](CCCC(=O)CCCC=C2)C)O",17924924,"Zeralenone",4512,"feed","oral",90,,,,,1,1,,,,,1,,,,,,,,1,1,,1,,,,,,
+"C(=O)(C(O)(c1ccc(Br)cc1)c1ccc(Br)cc1)OC(C)C",18181801,"Bromopropylate",1961,"gavage","oral",28,,,,,1,,,,,,,,,,,,1,,,,,,,,,,2,2
+"C(=O)(c1c(C)n(=O)c2c(cccc2)n1=O)NCCO",23696288,"Olaquindox",373,"gavage","oral",90,,,1,,,,,,,,1,,,,,,,,,,,,,,,,,
+"c1(N2C=NC(OP(=S)(OCC)OCC)=N2)ccccc1",24017478,"Triazophos",3000,"inhalation","inhalation",28,1981,,,,,,,,1,,,,,,,,,,,,,,,,,,,
+"c1(O)ccc(CCCCCCCCC)cc1",25154523,"Nonylphenol",4493,"feed","oral",90,,,,,1,,,,1,,,,,,,1,1,,,,,,,,,,,
+"C1(=O)C=CSN1CCCCCCCC",26530201,"2-Octyl-4-isothiazolin-3-one",290,"inhalation","inhalation",90,,,1,,1,,,,1,,,,,,,1,1,,,,,,,1,,,,
+"[NH-]=[N+]=[NH-].[Na+]",26628228,"Sodium Azide",4510,"gavage","oral",90,,,,,1,,,1,,1,,,,,,,1,,,,,,,,,,,
+"c1(OP(=S)(OC)OC)cc(C)nc(N(CC)CC)n1",29232937,"Pirimiphos-Methyl",4461,"feed","oral",90,,,,,1,,,1,1,,,,,,,,,,,,,,,,,,,
+"C(C)(O)COC(C)COCCC",29911271,"Dipropylene glycol (mono) propyl ether",1340,"drinking water","oral",90,,,,,,,,,2,,,,,,,,2,,,,,,,,,,2,
+"C(C)(=O)OC(C)COCC",54839246,"2-Propylene glycol 1-ethyl ether acetate",1334,"inhalation","inhalation",28,1981,,,,,,,,,2,,,,,,,,,,,,,,,,,,
+"C(I)#CCOC(=O)NCCCC",55406536,"3-Iodo-2-propynyl butylcarbamate",2266,"gavage","oral",90,,,,,1,,,,,,,,,,,,1,,,,,,,,,,,
+"C(C)(C)(C)OCC(C)O",57018527,"Propylene glycol tert-butyl ether",1769,"inhalation","inhalation",90,1981,1,,,2,,,,1,,,,,,,1,1,,,,,,2,,,,1,1
+"c1(-c2c(Br)cc(Br)c(Br)c2)c(Br)cc(Br)c(Br)c1",59080409,"2,2',4,4',5,5'-Hexabromobiphenyl",800,"gavage","oral",28,,,,,,,,,,1,,,,,,,1,,,,,,,,,,,
+"c1(N)nc(N)nc(NC2CC2)n1",66215278,"N-cyclopropyl-1,3,5-triazine-2,4,6-triamine",3009,"inhalation","inhalation",28,,,,,1,,,,,1,,,,,,,1,,,,,1,1,,,,,
+"c1(Cl)c(C(CCC)CN2C=NC=N2)ccc(Cl)c1",66246886,"Penconazole",4446,"feed","oral",90,1981,,,,,,,,1,,,,,,,,1,,,,,,,,,,,
+"c1(Cl)c(C(CCC)CN2C=NC=N2)ccc(Cl)c1",66246886,"Penconazole",4447,"feed","oral",90,1981,,,,1,,,1,1,,,,,,,1,1,,,1,,,,,1,,,
+"c1(F)c(Oc2ccccc2)cc(C(C#N)OC(=O)C2C(C)(C)C2C=C(Cl)Cl)cc1",68359375,"cyfluthrin",3012,"inhalation","inhalation",28,,,,,1,,,,,,,,,,,,1,,,,,,,,,,,
+"",41245,"00-04-1245",2,"gavage","oral",28,1995,,,,2,,,,2,,,,,,,,,,,,,,,,,,,
+"",41268,"00-04-1268",3,"gavage","oral",28,1981,,1,,1,,,,1,,,,,,1,,,,1,,1,,,1,,,,
+"",41292,"00-04-1292",4,"gavage","oral",28,,,2,,,,,,,2,,,,,,,,,,,,,,,,,1,
+"",41292,"00-04-1292",5,"gavage","oral",28,,,2,,,,,,,2,,,,,,,,,,,,,,,,,1,
+"",1041408,"01-04-1408",15,"gavage","oral",28,1995,,,,,,,,,,,,,,,,1,,,,,,,,,,,
+"",3041564,"03-04-1564",23,"gavage","oral",28,1995,,,,,,,,1,,,,,,,1,1,,,,,,,,,,,
+"",3041664,"03-04-1664",30,"gavage","oral",28,1995,,,,1,,,,2,1,,,,,,1,1,,,,,,,,,,,
+"",3041664,"03-04-1664",31,"gavage","oral",90,1998,,,,,,,,,,,,,,,1,1,,,,,,2,,1,,,1
+"",92040480,"92-04-0480",39,"gavage","oral",28,,,,,,,,,1,,,,,,,1,2,,,,,,1,,,,,
+"",99041144,"99-04-1144",43,"gavage","oral",90,1981,,,,2,,,,1,,,,,,,,,,,,,,1,1,,,1,
+"",99041185,"99-04-1185",44,"gavage","oral",28,,,,,2,,,,,2,,,,,,,,,,,,,,,,,1,
+"",2041453,"02-04-1453",57,"gavage","oral",28,1995,,,,,,,,,,,,,,,,1,,,,,,,,,,,
+"",87040056,"87-04-0056",60,"gavage","oral",28,,,,,1,,,,,,,,,,,,,,,,,,,,,,,
+"",87040066,"87-04-0066",61,"gavage","oral",28,,,,,1,,,,,,,,,,,,,,,,,,,,,,,
+"",87040058,"87-04-0058",63,"gavage","oral",28,,,,,,,,,2,,,,,,,2,2,,,,,,,,,,,
+"",94040664,"94-04-0664",66,"gavage","oral",28,,,,,,,,,2,,,,,2,,2,2,,,,,,,,,,,
+"",96040857,"96-04-0857",67,"gavage","oral",28,1981,,2,,2,,,,,2,,,,,,,2,,,,,,,,2,,,
+"",96040902,"96-04-0902",68,"gavage","oral",28,1981,,,,1,,,,,,,,,,,2,,,1,1,,,1,2,,,2,
+"",97040939,"97-04-0939",69,"gavage","oral",28,1995,,,,,,,,,,,,,,,,,,,,,,,,,,2,
+"",97040939,"97-04-0939",71,"feed","oral",90,1998,,,,,,,,,,,,,,,,2,,,,,,,,,,,
+"",93040634,"93-04-0634",73,"gavage","oral",28,,,,,,,,,,,,,,,,2,,,,,,,,,,,,
+"",99041142,"99-04-1142",75,"gavage","oral",28,,,,,1,,,,1,1,,,,,,2,1,,,,,,2,,,,,1
+"",99041142,"99-04-1142",76,"feed","oral",28,1995,,,,1,,,,2,,,,,,,1,1,,,,,,2,,,,,
+"",99041142,"99-04-1142",77,"inhalation","oral",90,,,,,1,,,,1,1,,,,,,,,,,,,,,,,,,
+"",88040119,"88-04-0119",89,"feed","inhalation",90,,,,,,,,,,,,,,,,,,,,,,,2,,,,,
+"",88040122,"88-04-0122",90,"gavage","oral",28,,,1,,,,,,1,,,,,,,,2,,,,,,,,,,,
+"",89040173,"89-04-0173",95,"gavage","oral",28,,,,,2,,,,1,1,,,,,,,1,,,,,,,,,,,
+"",89040217,"89-04-0217",99,"gavage","oral",28,,,,,1,,,,,,,,,1,,,1,,,,,,,,,,,
+"",90040264,"90-04-0264",101,"inhalation","oral",28,,,,,2,,,2,2,,,,,,2,2,2,,,2,,,2,2,2,,2,2
+"",90040264,"90-04-0264",102,"inhalation","inhalation",90,,,1,,,,,,,1,,,,,,1,,,,,,,,,,,,
+"",90040268,"90-04-0268",104,"gavage","inhalation",28,,,,,1,,,,,2,,,,,,,,,,,,,,,,,,
+"",90040300,"90-04-0300",108,"gavage","oral",28,,,,,1,,,,1,,,,,,,1,,,1,1,,,1,1,,,,1
+"",90040310,"90-04-0310",109,"drinking water","oral",28,,,2,,1,,,2,1,,,,,2,,2,2,,,2,,,,2,,,,
+"",90040310,"90-04-0310",110,"drinking water","oral",90,,,,,1,,,,,,,,,,,,,,,,,,,,,,,
+"",87040059,"87-04-0059",112,"feed","oral",28,,,,,,,,,,,,,,,,1,1,,,,,,,,,,,
+"",92040508,"92-04-0508",116,"gavage","oral",28,,,1,,1,,,,1,,,,,,1,1,1,,,1,,,,1,1,,,1
+"",93040563,"93-04-0563",119,"feed","oral",28,,,,,,,,,2,,,,,,2,,,,,,,,,,,,,
+"",93040593,"93-04-0593",120,"gavage","oral",28,1981,,2,,,,,,2,,,,,,,,,,,,,,2,,,,2,2
+"",94040687,"94-04-0687",128,"gavage","oral",28,,,,,,,,,1,,,,,,,1,2,,,,,,1,,,,,
+"",95040746,"95-04-0746",130,"gavage","oral",28,,,,,,,,,,,,,,,2,,,,,,,,,,,,,
+"",95040763,"95-04-0763",132,"gavage","oral",28,,,,,1,,,,,,,,,,,2,2,,,,,,1,2,,,1,
+"",90040293,"90-04-0293",136,"inhalation","oral",28,,,,,1,,,,,,,,,,,,,,,,,,,,,,,
+"",90040293,"90-04-0293",137,"gavage","inhalation",28,,,,,,,,,1,,,,,,,1,1,,,,,,1,,,2,,1
+"",90040293,"90-04-0293",139,"feed","oral",90,,,,,,1,,,2,,,,,,,1,1,,,,,,1,,,1,1,1
+"",90040293,"90-04-0293",141,"inhalation","oral",90,,,,,,1,,,1,1,,,,1,,,,,,,,,,,,,1,1
+"",94040695,"94-04-0695",144,"inhalation","inhalation",28,,,,,1,,,,,1,,,,,,,1,,,,,,,,,,,
+"",94040695,"94-04-0695",145,"feed","inhalation",90,,,,,1,,,,1,,,,,,,,1,,,,,,1,,,,,
+"",86040039,"86-04-0039",150,"gavage","oral",28,,,,,2,,,,2,,,,,,,1,2,,,,,,,,,,1,
+"",85040025,"85-04-0025",153,"feed","oral",28,,,,,2,,,,,,,,,,,,,,,,,,,,,,,
+"",92040503,"92-04-0503",157,"gavage","oral",28,1981,,,,,,,,2,,,,,,,,,,,,,,,,,,,
+"",2041554,"02-04-1554",159,"drinking water","oral",90,1998,,,,,,,,,,,,,,,2,1,,,,,,,,,,,
+"",91040393,"91-04-0393",164,"gavage","oral",28,,,,,1,,,1,1,,,,,1,,,1,,,,,,,1,,,,
+"",97040925,"97-04-0925",169,"gavage","oral",28,1995,,,,,,,,,,,,,,,,2,,,,,,,,,,,
+"",99041211,"99-04-1211",171,"feed","oral",90,1998,1,,,,,,,2,,,,,,,1,,,,1,,,,1,,1,1,
+"",91040404,"91-04-0404",172,"gavage","oral",28,1981,,,,1,,,,1,,,,,,1,,,1,,,,,,,,,1,
+"",91040404,"91-04-0404",173,"gavage","oral",90,1981,,,,1,1,,1,,,1,,,,1,1,1,1,,1,,,,1,1,,1,1
+"",95040733,"95-04-0733",174,"gavage","oral",28,,,,,2,,,,2,,,,,,,,2,,,,,,,2,,,,
+"",99041207,"99-04-1207",175,"gavage","oral",28,1995,,,,,,,,,,,,,,,,,,,,,,2,,,,,
+"",94040659,"94-04-0659",176,"gavage","oral",28,1981,,2,,1,,,,1,2,,,,,2,2,1,,,,,,2,,,,2,2
+"",97040952,"97-04-0952",181,"gavage","oral",28,,,,,1,,,,1,1,,,,,,1,,,,,,,1,,,,,
+"",97040918,"97-04-0918",182,"gavage","oral",28,,,,,,,,,2,,,,,,,,,,,,,,,,,,,
+"",96040885,"96-04-0885",184,"gavage","oral",28,,,,,2,,,,2,,,,,,,,,,,,,,2,,,,,
+"",96040821,"96-04-0821",186,"gavage","oral",28,,,,,,,,,2,,,,,,,,2,,,,,,1,,,,,
+"",96040874,"96-04-0874",187,"gavage","oral",28,,,,,,,,,2,,,,,,,2,2,,,,,,,,,,,
+"",96040894,"96-04-0894",188,"gavage","oral",28,,,,,,,,,2,,,,,,,,,,,,,,,,,,,
+"",97040958,"97-04-0958",191,"gavage","oral",28,,,,,,,,,2,2,,,,,,,,,,,,,,,,,,
+"",98041025,"98-04-1025",195,"gavage","oral",28,,,,,,,,,,,,,,,,,2,,2,,,,,,,,,
+"",98041029,"98-04-1029",196,"gavage","oral",28,,,,,,,,,1,,,,,2,,,2,,,,,,,,,,,2
+"",98041086,"98-04-1086",198,"gavage","oral",28,,,,,,,,,2,2,,,,,,,,,,,,,,,,,2,
+"",99041123,"99-04-1123",202,"gavage","oral",28,,,,,,,,,2,1,,,,,,,2,,,,,,,,,,,1
+"",99041127,"99-04-1127",203,"gavage","oral",28,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+"",99041135,"99-04-1135",204,"gavage","oral",28,,,,,2,,,1,1,2,,,,2,,2,,,,,,,,,2,,,2
+"",99041203,"99-04-1203",207,"gavage","oral",28,,,,,2,,,,,,,,,,,2,,,,2,,,,,2,,,
+"",93040560,"93-04-0560",212,"gavage","oral",90,,,,,,,,,1,,,,,1,,,2,,,,,,1,,,2,,
+"",91040415,"91-04-0415",215,"feed","oral",28,,,,,2,,,,2,2,2,,,2,,,,,,,,,,2,2,,,
+"",91040418,"91-04-0418",216,"gavage","oral",28,,,,,,,,,,2,,,,,,,,,,,,,,,,,,
+"",91040411,"91-04-0411",218,"feed","oral",90,,,,,2,,,,,,,,,,,,,,,,,,,,,,,
+"",93040558,"93-04-0558",221,"gavage","oral",28,1981,,2,,,,,,2,,,,,2,,,,,,2,,,,,,,,
+"",93040558,"93-04-0558",222,"gavage","oral",90,1981,,,,,,,,1,,,,,,1,,1,,,,,,1,,,1,,
+"",93040543,"93-04-0543",223,"gavage","oral",28,,,,,,,,,1,,,,,,,,,,,,,,,,,,,
+"",93040596,"93-04-0596",224,"gavage","oral",28,,,,,,,,,2,2,,,,,,,,,,,,,,,,,1,
+"",99041202,"99-04-1202",225,"feed","oral",28,,,,1,1,,,,2,,,,,,,1,,,,,,,2,,,,1,
+"",95040760,"95-04-0760",228,"gavage","oral",28,,,,,,,,,,,,,,,,,,,,,,,2,,,,,
+"",99041130,"99-04-1130",229,"gavage","oral",28,,,,,1,,,,1,1,,,2,,,2,2,,,,,,1,1,,2,,1
+"",41218,"00-04-1218",231,"gavage","oral",28,1995,,,,2,,,,,2,,,,,,,,,,,,,,,,,,
+"",98041107,"98-04-1107",232,"gavage","oral",28,1995,,,,,,,,1,,,,,,,,,,,,,,1,,,,,
+"",95040780,"95-04-0780",233,"gavage","oral",28,,,,,,,,,,,,,,,,,2,,,,,,,,,,,
+"",98041046,"98-04-1046",235,"gavage","oral",28,,,2,,,,,,1,,,,,,,2,,,,,,,2,,,,,
+"",97040999,"97-04-0999",236,"gavage","oral",28,,,,,,,,,2,2,,,,,,,,,,,,,,,,,,
+"",98041051,"98-04-1051",237,"gavage","oral",28,,,,,1,,,,,1,,,,1,,1,1,,,,,,,,1,,,
+"",98041102,"98-04-1102",239,"gavage","oral",28,,,,,,,,1,2,,,,,2,,,2,,,,,,2,,2,,,
+"",98041085,"98-04-1085",240,"gavage","oral",28,,,,,2,,,,,,,,,,,,2,,,,,,,,,,,
+"",92040505,"92-04-0505",241,"gavage","oral",28,,,,,,,,,,,,,,,,,1,,,,,,,,,1,,
+"",94040681,"94-04-0681",249,"gavage","oral",28,,,,,2,,,,2,,,,,,,,,1,,,,,,,,,,
+"",89040218,"89-04-0218",250,"feed","oral",28,,,,,,,,,,,,,,,,1,,,,,,,,,,,,
+"",89040218,"89-04-0218",251,"feed","oral",90,,,,,1,,,,1,,,,,,,1,2,,,1,,,1,,,,,
+"",99041176,"99-04-1176",253,"gavage","oral",28,,,1,,,,,,,,,,,1,,,1,,,,,,1,1,,,1,
+"",94040680,"94-04-0680",255,"gavage","oral",90,1981,,,,,,,,2,,,,,,,2,,,,2,,,,2,,,1,
+"",41271,"00-04-1271",260,"gavage","oral",28,1981,,,1,,,,,,,,,,,1,2,,,,,,,,,,,,
+"",41231,"00-04-1231",261,"gavage","oral",28,1995,,,,2,,,,1,2,,,,,,2,2,,,,,,2,,,,2,
+"",93040629,"93-04-0629",264,"gavage","oral",28,,,,,2,,,,2,2,,,,,,,,,,,,,2,,,,,2
+"",99041139,"99-04-1139",267,"gavage","oral",28,1995,,,,2,,,,,2,,,,,,2,2,,,,,,,,,,,
+"",1041372,"01-04-1372",268,"gavage","oral",28,,,2,,,,,,2,,,,,,,2,,,,,,,2,,,,1,
+"",1041383,"01-04-1383",269,"gavage","oral",28,1995,,,,,,,,,,,,,,,,2,,,,,,,,,,,
+"",99041178,"99-04-1178",271,"gavage","oral",28,,,,,,,,,2,,,,,,,,,,,,,,,,,,,
+"",1041422,"01-04-1422",273,"gavage","oral",28,1995,,,,,,,,1,,,,,2,,,2,,,,,,2,,,,,
+"",98041110,"98-04-1110",274,"gavage","oral",28,1995,,,,,,,,1,,,,,,,2,,,,2,,,1,,,,2,2
+"",93040598,"93-04-0598",276,"feed","oral",28,,,2,,2,,,,2,2,,,,2,,2,2,,,,,,2,2,,,,
+"",2041451,"02-04-1451",281,"gavage","oral",28,1995,,2,,2,,,,2,,,,2,,,2,2,,,,,,1,1,2,,,2
+"",1041414,"01-04-1414",282,"gavage","oral",28,1995,,,,,,,,1,,,,,,,,,,,,,,,,,,,
+"",2041459,"02-04-1459",283,"gavage","oral",90,1981,,,,1,,,,1,,,,,,,,,,,,1,,,,,,,
+"",2041484,"02-04-1484",285,"gavage","oral",28,1995,,,,,,,,,,,,,,,2,2,,,,,,,,,,,2
+"",98041024,"98-04-1024",287,"gavage","oral",28,,,,,,,,,2,,,,,,,,2,,,,,,,,,,,
+"",2041529,"02-04-1529",292,"gavage","oral",28,1995,,,,,,,,2,,2,,,,,1,2,,,,,,,,,,,
+"",1041420,"01-04-1420",294,"gavage","oral",28,1995,,,,,,,2,1,,,,,,,2,2,,,1,,,2,,,,1,
+"",2041434,"02-04-1434",295,"gavage","oral",28,1995,,2,,1,,,,1,2,2,,,,2,,1,2,,,,,,2,1,,,
+"",97040917,"97-04-0917",296,"gavage","oral",28,1981,,,,,,,,,,,,,,,,,,,,,,,2,,,,
+"",98041095,"98-04-1095",298,"gavage","oral",28,1995,,,,2,,,,2,2,,,,,,,2,,1,,,,2,2,2,,,
+"",3041559,"03-04-1559",299,"gavage","oral",28,1995,,,,1,,,,,,,,1,,,,,,,,,,1,1,,,,
+"",3041669,"03-04-1669",308,"gavage","oral",28,1995,,,,2,,,,,,,,,,2,,,,,,,,,2,2,,,2
+"",91040405,"91-04-0405",309,"gavage","oral",28,1981,,,,,,,,1,2,,,1,,,1,1,,,,,,1,1,,,2,1
+"",3041639,"03-04-1639",313,"gavage","oral",28,1995,,2,2,2,,2,,2,2,,,2,2,,2,2,2,2,2,2,,2,2,2,,,2
+"",2041488,"02-04-1488",317,"gavage","oral",28,1995,,,,,,,,2,2,,,,,,,2,,,,,,,,,,,
+"",41216,"00-04-1216",323,"gavage","oral",28,1995,,,,1,,,1,2,1,,,,,,2,1,,,1,,,1,2,,,1,2
+"",41216,"00-04-1216",325,"gavage","oral",90,1998,,1,,,,,,1,1,,,,,,1,1,,,1,,,1,,,,1,1
+"",87040079,"87-04-0079",332,"gavage","oral",28,,,,,1,,,,,1,,,,,,,,,,,,,,,,,,
+"",97040931,"97-04-0931",333,"gavage","oral",28,,,,,2,,,,1,,,,,,,,,,,,,,1,,,,,
+"",88040148,"88-04-0148",334,"gavage","oral",28,,,,,,,,,1,,,,,,,2,1,,,,,,,,,,2,
+"",89040186,"89-04-0186",336,"gavage","oral",28,,,,,,,,,,2,,,,,2,,,,,,,,,,,,,
+"",92040442,"92-04-0442",338,"oral unspecified","oral",28,,,,,,,,,,,,,2,,1,,,,,,,,1,,,,,
+"",92040450,"92-04-0450",339,"feed","oral",28,,,,,,,,,1,,,,1,,,,1,,,,,,1,,,,,2
+"",92040463,"92-04-0463",340,"gavage","oral",28,,,1,,,,,,1,1,,,,,,2,1,,,,,,2,,,,,
+"",97040995,"97-04-0995",345,"gavage","oral",28,,,1,,2,,,,1,,1,,,,,,2,,2,,,,2,,,1,,
+"",93040632,"93-04-0632",346,"gavage","oral",28,,,,,,,,,1,,,,,,,,,,,,,,2,,,,1,1
+"",93040561,"93-04-0561",347,"gavage","oral",28,,,,,,,,,2,2,,,,,,,1,,,,,,2,,,,,1
+"",90040256,"90-04-0256",349,"gavage","oral",28,,,,,,,,,,,,,,,,,1,,,,,,,,,,,
+"",95040745,"95-04-0745",350,"gavage","oral",28,1981,,,,2,,,,,2,,,,,1,1,1,,,,,,,,1,,,
+"",90040325,"90-04-0325",352,"gavage","oral",28,1981,,,,,,,,2,2,,,,,,1,1,,,,,,,,,,,
+"",94040660,"94-04-0660",354,"gavage","oral",28,,,2,,,,,,2,,,,2,,,1,1,,,,,,1,2,,,1,
+"",92040457,"92-04-0457",355,"gavage","oral",28,1981,,2,,2,,,,2,,,,,,,,1,,,,,,2,,,,2,
+"",92040457,"92-04-0457",356,"gavage","oral",90,1998,,,,,,,,,1,,,,,,,1,,,,,,,,,,,
+"",95040766,"95-04-0766",358,"feed","oral",90,,,,,1,,,,1,,1,,,,,,1,,,,,,1,,,,,
+"",97040981,"97-04-0981",359,"gavage","oral",28,,,,,,,,,,,,,2,,,2,1,,,2,,,1,1,,1,1,
+"",97040927,"97-04-0927",360,"gavage","oral",28,,,,,,,,,1,,,,,2,,1,2,,,,,,,,,,,2
+"",97041007,"97-04-1007",361,"gavage","oral",28,,,,,1,,,,,,,,,,,,,,,,,,,,,,,
+"",98041076,"98-04-1076",362,"gavage","oral",28,,,,,1,,,,,1,,,,,,1,,,,,,,,2,,,,
+"",98041083,"98-04-1083",363,"gavage","oral",28,,,,,,,,,2,,,,,,,,2,,,,,,1,,,,,
+"",93040644,"93-04-0644",364,"gavage","oral",28,,,,,,,,,2,1,,,,,,1,,,,,,,1,,,,1,
+"",95040749,"95-04-0749",365,"feed","oral",28,,,,,1,,,,,,,,,,,,,,,,,,,,,,,
+"",95040735,"95-04-0735",366,"gavage","oral",28,,,,,,,,,1,,,,,,,,,,,,,,2,,,,1,2
+"",96040850,"96-04-0850",367,"gavage","oral",28,,,,,,,,,1,,,,,,,2,,,,1,,,,,,,2,
+"",98041093,"98-04-1093",369,"gavage","oral",28,,,,,,,,,,2,,,,,,,2,,,,,,,,,,,
+"",99041196,"99-04-1196",370,"gavage","oral",28,,,,,,,,1,1,,,,,,,1,2,,,,,,2,1,,,,
+"",99041214,"99-04-1214",378,"feed","oral",28,,,,,2,,,,1,,,,,,,,,,,,,,,,,,2,
+"",97040934,"97-04-0934",383,"gavage","oral",28,,,,,,,,,,,,,,,,1,1,,,,,,,,,,1,1
+"",93040529,"93-04-0529",384,"gavage","oral",28,,,,,,,,,2,,,,,,,,,,,,,,2,,,,,
+"",88040142,"88-04-0142",385,"feed","oral",28,1981,,,,,,,,2,,,,,,,2,2,,,,,,2,,,,,2
+"",98041045,"98-04-1045",386,"gavage","oral",28,,,,,,,,,1,,,,,1,,,2,,,,,,2,,,,,1
+"",98041073,"98-04-1073",387,"gavage","oral",28,1995,,,,,,,,1,,,,,,,,1,,,,,,,,1,,1,
+"",41234,"00-04-1234",388,"gavage","oral",28,1981,,,,,,,,2,1,,,,,,2,1,2,,,,,,,,,,1
+"",41234,"00-04-1234",389,"feed","oral",90,1981,,,1,1,,,,,,,,,,,,1,,,,,,,,,,1,
+"",93040641,"93-04-0641",390,"gavage","oral",90,,,,,1,,,,,1,,,,,1,,1,,,,,,1,1,,,1,
+"",98041103,"98-04-1103",391,"gavage","oral",28,,,,,,,,,,,,,1,,,,1,,,,,,,1,,,,
+"",99041141,"99-04-1141",392,"gavage","oral",28,,,1,,,,1,,1,1,,,1,,,2,2,,,1,,,1,1,,,,1
+"",95040786,"95-04-0786",394,"gavage","oral",28,,,,,,,,,,1,,,,,,1,1,,,,,,,,,,2,
+"",92040489,"92-04-0489",395,"gavage","oral",28,,,1,,1,,,,1,1,,,,,,2,1,,,1,,,2,,1,,,
+"",92040443,"92-04-0443",397,"gavage","oral",90,,,,,1,,,,,,,,,,,1,1,,,,,,,,,,1,
+"",90040235,"90-04-0235",399,"gavage","oral",28,1981,,1,,,,,,,,,,,,,,2,,,,,,,,,,,
+"",90040231,"90-04-0231",404,"feed","oral",28,,,,,,,,,2,,,,,,,,,,,,,,,,,,,
+"",90040238,"90-04-0238",405,"gavage","oral",28,,,,,2,,,,,2,,,,,,,2,,,,,,,,,,,
+"",90040242,"90-04-0242",406,"gavage","oral",90,,,,,,,,,,,,,,,,,,,,,,,2,,,,,
+"",90040315,"90-04-0315",411,"gavage","oral",28,,,,,,,,,,,,,,,,,2,,,,,,2,,,,,
+"",90040321,"90-04-0321",412,"feed","oral",28,,,,,,,,,,,,,,,,,2,,,,,,,,,,,
+"",3041646,"03-04-1646",415,"gavage","oral",28,1995,,,,2,,,,2,,,,,,,2,,,,2,,,2,1,2,,2,2
+"",2041445,"02-04-1445",416,"gavage","oral",28,1981,,,,,,,,1,,,,,,,1,,,,,,,,,,,1,
+"",2041445,"02-04-1445",417,"gavage","oral",90,1998,,,,,,,,1,1,,,,,,1,,1,,,,,,1,,,1,
+"",96040881,"96-04-0881",420,"gavage","oral",28,1981,,,,1,,,,1,,,,,,,,,,,,,,,,,,,
+"",3041610,"03-04-1610",423,"gavage","oral",28,,,,,,,,,2,1,,,,,,,2,,,,,,,,,,,2
+"",93040530,"93-04-0530",424,"gavage","oral",28,,,1,,,,,,1,1,1,,,,1,,1,1,,,2,,1,,1,,1,1
+"",92040454,"92-04-0454",425,"gavage","oral",28,,,,,2,,,,2,,,,,,,2,,,,2,,,2,,,2,1,
+"",91040391,"91-04-0391",426,"gavage","oral",28,,,1,,2,,,,2,,1,,,,,,2,,2,,,,2,,1,1,,
+"",91040395,"91-04-0395",427,"gavage","oral",28,,,2,,,,,,2,2,,,,,2,,2,,,,,,,,,,,
+"",92040476,"92-04-0476",428,"gavage","oral",28,,,1,1,1,,,,1,,,,,,,1,1,1,,,,,,1,1,,,1
+"",93040646,"93-04-0646",429,"feed","oral",90,,,1,,1,,,1,1,,,,,1,,1,1,,,,,,1,1,,,1,1
+"",93040554,"93-04-0554",430,"gavage","oral",28,,,,,,,,,2,,,,,,,,2,,,,,,2,,,,1,1
+"",92040460,"92-04-0460",431,"gavage","oral",28,,,,,,,,,2,,,,,,,1,,,,,,,1,,,,,
+"",20265,"00-02-0265",435,"gavage","oral",28,1995,,1,,1,,,,1,2,,,,,,,,,,,,,,2,2,,1,2
+"",20277,"00-02-0277",437,"gavage","oral",28,1981,,,,2,,,,2,,,,,,,,2,,,,,,,,,,,
+"",20300,"00-02-0300",440,"feed","oral",90,1981,,,,,,,,1,,,1,,,,,1,,,,,,1,,,,,
+"",50361,"00-05-0361",447,"oral unspecified","oral",90,1981,,,,2,,,,1,1,,,,,,,,,,,,,,,,,1,
+"",50365,"00-05-0365",449,"feed","oral",90,1981,,,,2,,2,,2,,,,2,,,,2,,,,,,2,2,,,,
+"",50378,"00-05-0378",451,"gavage","oral",28,1981,,,,2,,,,2,,,,,,,,,,,,,,2,,,,,2
+"",61336,"00-06-1336",457,"gavage","oral",28,1995,,,,1,,,,,,,,,,,,,,,,,,,,,,,
+"",61342,"00-06-1342",458,"gavage","oral",28,1995,,,,,,,,,,,,,,,,2,,,,,,,,,,,
+"",61343,"00-06-1343",459,"gavage","oral",28,1995,,,,1,,,,2,2,,,,,1,1,1,1,1,1,,,2,2,1,,,1
+"",61345,"00-06-1345",460,"oral unspecified","oral",28,1995,,,,,,,,1,,,,1,,,,1,,,,,,1,,,,,
+"",61346,"00-06-1346",461,"gavage","oral",28,1995,,,,,,,,1,,2,,,,,,,,,,,,,,,,,
+"",61350,"00-06-1350",462,"gavage","oral",28,1995,,,,,,,,,,,,,,,,2,1,,,,,,,,,,
+"",61367,"00-06-1367",464,"gavage","oral",28,1995,,,,1,,1,,1,2,,,,,2,1,1,,2,2,,,1,2,1,,,
+"",61377,"00-06-1377",465,"gavage","oral",28,1995,,,,,,,,,,,,,,,,1,,,,,,,,2,,,
+"",61378,"00-06-1378",466,"gavage","oral",28,1995,,,,,,,,2,1,,,,,,2,2,,,,,,,,,2,,
+"",61390,"00-06-1390",467,"gavage","oral",28,1995,,,,,,,,2,2,,,,,,2,2,,,,,,2,2,,,,2
+"",61402,"00-06-1402",469,"gavage","oral",28,1995,,,,,,,,,2,,,,,,,,,,,,,,,,,,
+"",61410,"00-06-1410",471,"gavage","oral",28,1995,,,,,,,,1,2,,,,,,,1,,,,,,1,,,,,
+"",61417,"00-06-1417",473,"gavage","oral",28,1995,,,,1,,,,1,,,,,,,,1,,,,,,,,,,,
+"",61429,"00-06-1429",476,"gavage","oral",28,1995,,,,2,,,,2,2,,,,,,2,2,,,,,,,,,,,
+"",61439,"00-06-1439",478,"gavage","oral",28,1995,,1,,,,,,1,1,,,,,,,,,,,,,1,,,,,
+"",61445,"00-06-1445",481,"gavage","oral",28,1995,,,,2,,2,,2,2,,,,,,,2,,,2,,,2,2,2,,,2
+"",70191,"00-07-0191",482,"oral unspecified","oral",28,,,,,,,,,2,2,,,,,2,,2,,,,,,,2,,,,
+"",70193,"00-07-0193",483,"oral unspecified","oral",28,1981,,,,,,,,2,,,,,,,2,1,,,,,,,1,2,,,2
+"",70206,"00-07-0206",484,"gavage","oral",28,1981,,,,,,,,1,2,,,,,2,2,1,,,,,,,,,,,
+"",1020303,"01-02-0303",491,"gavage","oral",28,1995,,1,,1,,1,,1,1,1,,1,,1,1,1,1,1,,,,,1,1,,,1
+"",1020317,"01-02-0317",494,"gavage","oral",28,1995,,,,,,,,,2,,,,,,,,,,,,,,,,,,
+"",1030485,"01-03-0485",495,"gavage","oral",28,1981,,,,1,,,,,1,,,2,,,,2,2,,,,,1,,,,,
+"",1050400,"01-05-0400",496,"gavage","oral",28,1995,,,,1,,,,1,,,,,,1,1,,,,,,,,,,,1,
+"",1061448,"01-06-1448",499,"gavage","oral",28,1995,,,,,,,,,1,,,,,,,,,,,,,,,,,,
+"",1050405,"01-05-0405",500,"gavage","oral",28,1981,,,,,,,,1,,,,,,,,,,,,,,1,1,,,1,
+"",1061487,"01-06-1487",503,"gavage","oral",28,1995,,,,,,,,,,,,1,,,1,1,,,1,,,1,1,1,2,1,1
+"",1061519,"01-06-1519",504,"gavage","oral",28,1995,,,,,,,,,2,,,,,,,1,,,,,,,,,,,
+"",1061522,"01-06-1522",505,"gavage","oral",28,1995,,,,,,,,,2,,,,,,,1,,,,,,,,,,,
+"",1061532,"01-06-1532",506,"oral unspecified","oral",28,1995,,,,,,,,2,1,,,,,,,2,,,,,,,,,,,
+"",89060179,"89-06-0179",509,"gavage","oral",28,,,,,,,,,1,,,,,,,1,2,,,,,,,,,,1,
+"",89060179,"89-06-0179",510,"feed","oral",90,,,,,1,,,,1,,,,,,,1,,,,,,,,,,,2,
+"",90060244,"90-06-0244",511,"gavage","oral",28,,,2,,,,,,2,,,,,,,2,,,,,,,,,,,,
+"",91060271,"91-06-0271",512,"gavage","oral",28,,,2,,2,,,,2,1,,,,,,,2,,,2,,,2,2,2,2,,
+"",2020331,"02-02-0331",514,"gavage","oral",28,1995,,,,,,,,,2,,,,,,1,1,,2,2,2,,,,2,2,,
+"",2061556,"02-06-1556",518,"gavage","oral",28,1995,,,,2,,,,2,,,,,,,,,,,,,,,,,,,
+"",87060093,"87-06-0093",523,"gavage","oral",28,,,,,,,,,,,,,,,,,2,,,,,,,,,,,
+"",90060249,"90-06-0249",524,"gavage","oral",28,,,,,1,,,1,1,,,,,,,1,1,,,1,,,2,,,,1,
+"",91010159,"91-01-0159",525,"gavage","oral",90,1981,,,,,,,,1,,,,,,,,,,,,,,,,,,,
+"",91060277,"91-06-0277",527,"gavage","oral",28,,,,,1,,,,,1,,,,,2,1,1,2,,,,,,2,2,,,1
+"",92030210,"92-03-0210",530,"gavage","oral",28,,,,,2,,,,,,,,2,2,,1,1,,,,,,2,,,,,
+"",92050175,"92-05-0175",531,"gavage","oral",28,1981,,2,,,,,,2,,,,,,,,2,,,,,,,,,,2,
+"",92060397,"92-06-0397",533,"gavage","oral",28,,,,,2,,,,2,,,,,,,1,,,,,,,,,,,,
+"",92060399,"92-06-0399",534,"gavage","oral",28,,,,,1,,,,2,,,,,,,1,1,,,2,,,,,,,2,
+"",92060400,"92-06-0400",535,"gavage","oral",28,,,,,2,,,,2,2,,,,,,,2,,,,,,,,,,2,
+"",92060413,"92-06-0413",536,"gavage","oral",28,1995,,1,,2,,,,,,,,,,,2,2,,,,,,,,,,,
+"",92060418,"92-06-0418",538,"gavage","oral",28,1981,,,,2,,,,,1,,,,,,,,,,,,,,,,,,
+"",92060418,"92-06-0418",539,"gavage","oral",90,1981,,,,1,,,,,1,,,,,,,2,,,,,,,,,1,,
+"",93020129,"93-02-0129",541,"gavage","oral",28,,,,,,,,,1,,,,,,,,1,,,,,,,,,,,
+"",93020131,"93-02-0131",542,"feed","oral",90,1981,,,,1,,,,,,,,,,,,,,,,,,,,,,,
+"",93050220,"93-05-0220",547,"gavage","oral",28,1981,,1,,,,,,,,,,,,,,,,,,,,,,,,,
+"",93050238,"93-05-0238",550,"gavage","oral",28,1981,,,,,,,,2,2,,,,,,,2,,,,,,,,,,,
+"",93060482,"93-06-0482",551,"feed","oral",90,,,,,,,,1,2,1,,,,,,,,,,,,,2,,,,,
+"",93060534,"93-06-0534",554,"gavage","oral",28,1995,,,,,,,,,,,,,,,,2,,,,,,,,,,,
+"",93060539,"93-06-0539",556,"gavage","oral",28,,1,,2,,,,,2,,2,,,,,1,2,,,,,,2,2,,,1,
+"",93060543,"93-06-0543",557,"gavage","oral",28,1981,,,,2,,,,2,2,,,,,,,2,,,,,,,,,,,
+"",93060552,"93-06-0552",558,"gavage","oral",28,1995,,,,,,,,2,,,,,,,,1,,,,,,,,,,,
+"",93060554,"93-06-0554",559,"gavage","oral",28,1995,,,,,,,,,,,,,,,2,,,,,,,,,,,,
+"",94020140,"94-02-0140",561,"gavage","oral",28,1981,,,,1,,,,1,1,,,,,,,1,,,,,,,,,,,
+"",94020153,"94-02-0153",563,"gavage","oral",28,1981,,,,,,,,,,,,,,,,2,,,,,,,,,,,
+"",94030282,"94-03-0282",564,"gavage","oral",28,1981,,,,1,,,,,,,,,,,,1,,,,,,,,,,,
+"",94050242,"94-05-0242",566,"gavage","oral",28,,,,,2,,,,2,1,,,,,,1,2,,,,,,1,2,,,,2
+"",1070210,"01-07-0210",567,"gavage","oral",28,1981,,,,,,,,1,,,,,,,2,2,,,,,,,2,,,,1
+"",99110170,"99-11-0170",572,"oral unspecified","oral",28,1995,,,,,,,,2,,,,,,,,2,,,,,,,,,,,
+"",99110167,"99-11-0167",573,"oral unspecified","oral",28,1981,,,,1,,,,,1,,,,,,,,,,,,,,,,,,
+"",99080084,"99-08-0084",574,"gavage","oral",28,1995,,,,,,,,2,,,,,,,,2,,,,,,,,,,,
+"",99070184,"99-07-0184",576,"gavage","oral",28,1995,,,,2,,,,2,1,,,,,,2,1,,,,,,,,,,,2
+"",99070183,"99-07-0183",577,"gavage","oral",28,1995,,,,,,,,1,1,,,,,,,,,,,,,,,,,,
+"",99070181,"99-07-0181",578,"gavage","oral",28,1995,,,,,,,,1,,,,2,1,,,1,,,,,,1,1,,,,
+"",99070178,"99-07-0178",580,"gavage","oral",28,1981,,,,,,,,2,,,,,,,,,,,,,,1,,,,,
+"",99070170,"99-07-0170",582,"gavage","oral",28,1995,,,,,,,,1,,,,1,1,,,1,,,,,,1,,,,,
+"",99061316,"99-06-1316",583,"gavage","oral",28,1995,,,,2,,,,2,1,,,,,,1,2,,,2,,,,2,,,,2
+"",99061306,"99-06-1306",584,"gavage","oral",28,1995,2,,,2,,,,2,,,,,,,2,,,,,,,,,,,,1
+"",99061289,"99-06-1289",588,"gavage","oral",28,1995,,,,1,,,,1,1,,,,1,,1,1,,,,,,,1,,,,1
+"",99061281,"99-06-1281",591,"gavage","oral",28,1995,,,,,,,,,,,,,,,,,,,,,,,,1,,,
+"",99061274,"99-06-1274",595,"gavage","oral",28,1995,,,,,,,,1,,,,,,,,,,,,,,,,,,,
+"",99061267,"99-06-1267",596,"gavage","oral",28,1995,,,,,,,,2,,,,,,,,2,,,,,,,,,2,,
+"",99061219,"99-06-1219",601,"gavage","oral",28,1995,,,,,,,,,,2,,,2,,,,,,,,,,,,,,
+"",99050350,"99-05-0350",606,"oral unspecified","oral",28,1995,,,,,,,,,1,,,,,1,,1,1,,,,,,,,,,1
+"",10622,"00-01-0622",607,"gavage","oral",28,1981,,,,2,,,,1,,,,,,,1,1,,,,,,2,,,,,
+"",1140044,"01-14-0044",608,"gavage","oral",28,1995,,1,,1,,,,1,,,,,,,1,1,,,,,,,,1,,,
+"",2070231,"02-07-0231",610,"gavage","oral",28,1995,,,,,,,,2,2,,,,,,2,2,,,,,,,,,,,
+"",2120113,"02-12-0113",612,"gavage","oral",28,1995,,1,,1,,,,1,1,,,,,,1,1,,,,,,1,,,,,1
+"",90070011,"90-07-0011",613,"gavage","oral",28,,,,,,,,,,2,,,,,,,,,,,,,,,,,,
+"",91070023,"91-07-0023",615,"gavage","oral",28,,,,,,,,,1,1,,,,,,1,1,,,,,,,,,,,
+"",94060568,"94-06-0568",619,"gavage","oral",28,1981,,2,,2,,,,1,,,,,,,2,2,,,,,,,,,,,2
+"",94060572,"94-06-0572",620,"gavage","oral",28,1995,,,,,,,,,2,,,,,,,2,,,,,,,,,,,
+"",94060581,"94-06-0581",621,"gavage","oral",28,1995,,,,2,,,,,,,,,,,2,,,,,,,,,,,,
+"",94060587,"94-06-0587",622,"gavage","oral",28,1981,,1,,,,,,,,,,,,,2,1,,,,,,,,,,,
+"",94060592,"94-06-0592",624,"gavage","oral",28,1981,1,,,1,,,,,,,,1,,,,,,,,,,1,1,,,,
+"",94060612,"94-06-0612",627,"feed","oral",90,1998,,,,1,,,,1,,,,,,,,,,,1,,,1,,,,,
+"",94060616,"94-06-0616",628,"feed","oral",28,1995,,,,,,,,,,,,,,,,,,,,,,,1,,,,
+"",94060623,"94-06-0623",629,"gavage","oral",28,1981,,2,2,2,,,,2,2,,2,,,,2,1,,2,2,,,2,2,,,2,2
+"",94060655,"94-06-0655",633,"gavage","oral",28,1981,,1,,1,,,,1,1,,,,,1,1,1,,,1,,,,1,1,,1,1
+"",94070057,"94-07-0057",635,"gavage","oral",28,1981,,,,,,,,2,,,,,,,,,,,,,,2,,,,,
+"",95020152,"95-02-0152",636,"gavage","oral",28,1981,,,,,,,2,2,2,,,,,2,,2,,,,,,2,2,,,,2
+"",95020155,"95-02-0155",638,"gavage","oral",28,1981,,,,,,,,2,,,,,,,,,,,,,,,,,,,
+"",95030312,"95-03-0312",642,"gavage","oral",28,1981,,2,,,,,,2,2,,,,,,2,2,,,,,,,2,,,,2
+"",95030322,"95-03-0322",645,"gavage","oral",28,,,,,,,,,2,2,,,,,,,2,,,,,,2,,,,,
+"",95060661,"95-06-0661",648,"gavage","oral",28,1981,,,,,,,,,,,,,1,,1,,,,,,,,,,,,
+"",95060662,"95-06-0662",649,"gavage","oral",28,1981,,,,,,,,1,,,,,,,,,,,,,,2,2,,,,
+"",95060667,"95-06-0667",651,"gavage","oral",28,1981,,2,,,,,,,,,,,,,,1,,,,,,,,,,,
+"",95060685,"95-06-0685",653,"gavage","oral",28,1981,,,,,,,,,,,,,,1,,,,,,,,,,,,,
+"",95060701,"95-06-0701",655,"gavage","oral",28,1995,,2,,,,,,,,,,,,,2,,,,,,,,,,,,
+"",95060707,"95-06-0707",656,"gavage","oral",28,1995,,,,,,,,,,,,,,,,2,,,,,,,,,,,
+"",95060709,"95-06-0709",657,"gavage","oral",28,1981,,,,1,,,,2,,,,,,1,1,1,,,,,,,2,,,,
+"",95060725,"95-06-0725",659,"gavage","oral",28,1981,,,,,,,,1,,,,,,,1,1,,,,,,,1,,,,1
+"",95060758,"95-06-0758",664,"gavage","oral",28,1981,,,,,,,,,2,,,,,,,2,,,,,,,,,,,
+"",95070064,"95-07-0064",665,"gavage","oral",28,1981,,1,,1,,,,1,1,,,,,,,,,,,,,1,,,,,1
+"",95070066,"95-07-0066",666,"gavage","oral",28,1981,,,,,,,,1,,,,,,,2,2,,,,,,2,,,,,
+"",95070067,"95-07-0067",667,"gavage","oral",28,,,,,,,,,1,,,,,,,,,,,,,,,,,,,
+"",95070078,"95-07-0078",669,"gavage","oral",28,1981,,,,,,,,2,,,,,,,2,,,,,,,,,,,,
+"",95150005,"95-15-0005",671,"gavage","oral",28,1981,,1,,,,,,1,1,,,,,,,,,,,,,,,,,,
+"",96020173,"96-02-0173",673,"gavage","oral",28,,,,,,,,,1,,,,,,,,,,,,,,,,,,1,
+"",96030330,"96-03-0330",677,"gavage","oral",28,,,,,2,,,,2,1,,,,,,2,1,,,,,,2,2,,,2,
+"",96030345,"96-03-0345",678,"gavage","oral",28,1981,,1,,,,,,,,,,,,,,,,,,,,,,,,,
+"",96030346,"96-03-0346",679,"feed","oral",28,1981,,,,1,,,,1,,,,,,1,,1,,,,,,1,1,,,,
+"",96030358,"96-03-0358",681,"gavage","oral",28,1981,,,,,,,,,,,,,,,,2,,,,,,,,,,,
+"",96060781,"96-06-0781",688,"gavage","oral",28,1981,,1,,1,,,,,,,,,,,1,,,,1,,,,,,,,
+"",96060786,"96-06-0786",691,"feed","oral",28,1981,,,,,,,,,,,,,,,,,,,,,,,,,,2,
+"",96060795,"96-06-0795",692,"gavage","oral",28,1981,,,,1,,,,,1,,,,,,,1,,,,,,,,,,,
+"",96060800,"96-06-0800",693,"gavage","oral",28,1981,,,,2,,,,2,,,,,,,,,,,,,,,,2,,,
+"",96060818,"96-06-0818",694,"gavage","oral",28,1981,,,,2,,,,2,2,2,,,,2,2,2,,,2,,,2,2,2,,2,2
+"",96060830,"96-06-0830",695,"gavage","oral",28,1981,,,,1,,,,2,,,,,,,,,,2,2,,,1,,,,,1
+"",96060841,"96-06-0841",697,"gavage","oral",28,1981,,,,2,,,,2,1,,,,,,,1,,,,,,2,,,,2,2
+"",96060842,"96-06-0842",698,"gavage","oral",28,1981,,2,,,,,,,,,,,,,,2,,,,,,,,,,,
+"",96060845,"96-06-0845",699,"gavage","oral",28,1981,,2,,,,,2,1,2,,,,,,2,2,,,1,,,,2,2,,,
+"",96060859,"96-06-0859",702,"gavage","oral",28,1981,,2,,2,,,,,,,,,,,2,2,,,,,,2,,,,,
+"",96060872,"96-06-0872",704,"gavage","oral",28,1995,,,,,,,,,,,1,,,,,1,,,,,,,,,,,
+"",96060876,"96-06-0876",705,"gavage","oral",28,1981,,,,1,,,,2,,,,,,,2,,,,,,,,,,,,
+"",96070087,"96-07-0087",710,"gavage","oral",28,1981,,,,,,,,2,,,,,,,,,,,2,,,,,,,,2
+"",96070088,"96-07-0088",711,"gavage","oral",28,1981,1,,,2,,,,2,,,,,,,2,,,,,,,2,,,,,2
+"",96070090,"96-07-0090",712,"gavage","oral",28,1981,2,,,,,,,,,,,,,,2,,,,,,,,,,,,
+"",96070096,"96-07-0096",714,"gavage","oral",28,1981,2,,,,,,,,2,,,,,,2,,,,,,,2,,,,,
+"",96070101,"96-07-0101",715,"gavage","oral",28,1981,,2,,2,,,,2,,,,2,,,1,1,,,,,,,,,,2,
+"",96110124,"96-11-0124",716,"gavage","oral",28,,,,,2,,2,,2,,,,2,,,1,,,,,,,2,2,,,2,2
+"",96110130,"96-11-0130",717,"gavage","oral",28,,,,,,,,,,,,,,,,1,2,,,,,,,,,,,
+"",96140012,"96-14-0012",719,"gavage","oral",28,1981,,,,,,,,2,,,,,,,2,,,,,,,2,,,,2,
+"",97020200,"97-02-0200",724,"gavage","oral",28,1981,,,,1,,,,1,1,,,,,,,1,,,,1,,,1,1,,,1
+"",97030383,"97-03-0383",729,"gavage","oral",28,1981,,,,,,,,,,,,,,,,,,,,,,2,1,,,,
+"",97030403,"97-03-0403",732,"gavage","oral",28,,,,,,,,,1,,,,,,,,,,,,,,1,,,,,
+"",97050280,"97-05-0280",733,"gavage","oral",28,1981,,,,,,,,,,,,,,,,2,,,,,,,,,,,
+"",97050289,"97-05-0289",737,"feed","oral",28,1981,,,,,,,,2,,,,,,,,2,,,,,,,,,,,
+"",97050293,"97-05-0293",738,"gavage","oral",28,1981,,1,,1,,,,,1,,,,,1,1,1,,,,,,,,,,,
+"",97060897,"97-06-0897",740,"gavage","oral",90,1981,,,,,,,,2,2,,,,,,1,2,,,,,,,,,,,2
+"",97060905,"97-06-0905",742,"gavage","oral",28,1995,,,,1,,,,1,1,,,,,,1,1,,,,,,2,,,,,
+"",97060909,"97-06-0909",743,"gavage","oral",28,1981,,,,,,,,2,1,,,,,,1,2,,,,,,,,,,,
+"",97060912,"97-06-0912",745,"gavage","oral",28,,,,,,,,,2,,1,,,,,,2,2,,,,,,,,,,
+"",97060954,"97-06-0954",748,"oral unspecified","oral",28,1981,,,,,,,,,,,,,,,,,,,,,,,,,,,2
+"",97060977,"97-06-0977",753,"gavage","oral",28,1981,,,,,,,,,2,,,,,,1,,,,,,,,,,,,
+"",97061005,"97-06-1005",761,"gavage","oral",28,1981,,,,,,,,,2,,,,,,,2,,,,,,,,,,,
+"",97061009,"97-06-1009",763,"gavage","oral",28,,2,,,,,,,,,,,,,,1,2,,,,,,,,2,,,
+"",97061017,"97-06-1017",766,"gavage","oral",28,1995,,,,,,,,,1,,,,,,1,1,,,,,,,1,,,,
+"",97061024,"97-06-1024",767,"gavage","oral",28,1995,,,,2,,,,,,,,,1,,,,,,,,,,,,,,
+"",97061026,"97-06-1026",768,"gavage","oral",28,1995,1,,,,,,,2,,,,,,,1,1,,,,,,,,,,,
+"",97070116,"97-07-0116",772,"gavage","oral",28,1981,,,,1,,,,1,,,,,,,,,,,,,,,,,,,
+"",97070126,"97-07-0126",773,"gavage","oral",28,1981,,,,,,,,1,,,,,,,,,,,,,,,,,,2,
+"",97110143,"97-11-0143",775,"gavage","oral",28,,,,,2,,2,,2,2,,,,2,,2,,2,,2,2,,,2,2,,,2
+"",98010505,"98-01-0505",777,"gavage","oral",28,1981,,,,,,,,2,,,,,,,,,,,,,,,,,,2,
+"",98030421,"98-03-0421",780,"gavage","oral",28,1995,,,,1,,,,2,,,,,,,2,2,,,,,,2,2,,,,
+"",98030427,"98-03-0427",782,"gavage","oral",28,1995,,,,1,,,,1,,1,,,,,,1,,1,1,,,1,1,,,,
+"",98030429,"98-03-0429",784,"gavage","oral",28,1995,,,,2,,,,2,,,,,,,,2,,,,,,,,,,,
+"",98050302,"98-05-0302",785,"feed","oral",28,1981,,,,,,,,2,,,,,,,,,,,,,,2,,,,,
+"",98050303,"98-05-0303",786,"gavage","oral",28,1981,,,,,,,,2,2,,,,,,,2,,,,,,,,,,,
+"",98050310,"98-05-0310",789,"gavage","oral",28,,,,,,,,,1,,,,,,,,,,,,,,,,,,,1
+"",98061049,"98-06-1049",796,"gavage","oral",28,1995,,,,,,,,1,,,,,1,,,,,,,,,,,,,,
+"",98061067,"98-06-1067",798,"gavage","oral",28,1995,,,,2,,,,,2,,,,,2,,2,,,,,,,2,,,,
+"",98061079,"98-06-1079",799,"gavage","oral",28,1995,,1,,2,,,,1,,,,,,,1,1,,,,,,1,,,,,
+"",98061108,"98-06-1108",801,"gavage","oral",28,1995,,,,,,,,2,,,,1,,,1,1,,,,,,1,1,,,1,
+"",98061109,"98-06-1109",802,"gavage","oral",90,,,1,,1,,,,1,1,,,,1,1,1,1,1,,,1,,1,1,,,,1
+"",98061116,"98-06-1116",803,"gavage","oral",28,1995,,,,2,,,,1,,,,,2,,1,1,,,,,,,1,,,,2
+"",98061117,"98-06-1117",804,"gavage","oral",28,1995,,,,1,,,,1,,,,,,,1,1,,,,,,1,,,,,1
+"",98061122,"98-06-1122",807,"gavage","oral",28,1995,,,,,,,,,2,,,,,,,1,,,,,,,,,,,
+"",98061136,"98-06-1136",808,"gavage","oral",28,1995,,,,,,,,2,,,,,,,,,,,,,,,,,,,
+"",98061139,"98-06-1139",809,"feed","oral",90,1998,,,,2,,,,,,,,,,,,,,,,,,1,,,,,
+"",98061146,"98-06-1146",810,"gavage","oral",28,1995,,,,,,,,2,,,,,,,,1,,,,,,2,,,1,,
+"",98061147,"98-06-1147",811,"feed","oral",90,1998,,,,1,,,2,,,2,,,2,,2,,,2,,,,,,,2,,
+"",98070139,"98-07-0139",815,"gavage","oral",28,1981,,,,,,,,2,,,,,,,,2,,,,,,,,,,,
+"",98070141,"98-07-0141",817,"gavage","oral",28,,,,,2,,,,2,,,,,,,2,,,,,,,2,,,,,
+"",98070144,"98-07-0144",818,"gavage","oral",28,1981,,,,,,,,,,,,,,,2,2,,,,,,,,,,,
+"",98070146,"98-07-0146",820,"gavage","oral",28,1981,,,,,,,,,1,,,,,,1,1,,,,,,,,,,1,1
+"",98070153,"98-07-0153",821,"gavage","oral",28,1981,,,,1,,,,1,,1,,,,,1,1,,,,,,,1,,,,1
+"",98070159,"98-07-0159",823,"gavage","oral",28,1981,,,,,,,,,1,,,,,,,,,,,,,,,,,,
+"",98140020,"98-14-0020",825,"gavage","oral",28,1981,,,,2,,,,,,,,,,2,2,,,,2,,,,,,,,
+"",99030434,"99-03-0434",830,"oral unspecified","oral",28,1981,,2,,2,,,,1,2,,,1,,,,1,,,,,,1,2,,,,1
+"",99030436,"99-03-0436",831,"gavage","oral",28,1981,,,,,,,,,2,,,,,,1,2,,,,,,,,,,,
+"",99030453,"99-03-0453",838,"feed","oral",28,,,,,,,,,1,,,,,,,,1,,,,,,,,,,,
+"",99050348,"99-05-0348",844,"gavage","oral",28,1981,,,,2,,,,1,,,,,,,1,1,,,,,,1,,,,,1
+"",94010319,"94-01-0319",850,"gavage","oral",28,1981,,,,1,2,,,1,1,,,1,,,,1,,,,,,1,,,,,
+"",94010341,"94-01-0341",854,"gavage","oral",28,1981,,,,,,,,2,,,,,,,,,,,,,,2,,,,,
+"",95010349,"95-01-0349",855,"gavage","oral",28,,,2,,2,,2,,2,,,,,,2,1,1,2,1,2,,,2,2,,1,2,2
+"",95010351,"95-01-0351",856,"gavage","oral",28,,,,,1,,,,,,,,,,,,,,,,,,,,,,,
+"",95010352,"95-01-0352",857,"gavage","oral",28,,,1,,1,,,,1,,1,,,1,,1,1,,,,,,1,1,,1,1,1
+"",95010365,"95-01-0365",861,"oral unspecified","oral",28,,,2,,1,,,,1,,,,2,,,1,1,,,2,,,1,,,,,
+"",95010375,"95-01-0375",863,"gavage","oral",28,1981,,1,,,,,,,,,,,,,,2,,,,,,2,,,,,
+"",96010384,"96-01-0384",864,"gavage","oral",90,1981,,,,,,,,,2,,,,,,,,,,,,,,,,,,
+"",96010391,"96-01-0391",867,"gavage","oral",28,1981,,2,,,,,,2,,,,,,,1,2,,,,,,,1,,,2,
+"",96010394,"96-01-0394",868,"gavage","oral",28,1981,,2,,2,,,,2,2,,,2,,,2,2,,,2,,,2,2,,,,2
+"",96010404,"96-01-0404",870,"gavage","oral",28,1981,,2,,,,,,1,,,,,,,,,,,,,,,,,1,,
+"",96010417,"96-01-0417",873,"gavage","oral",28,1981,,,,,,,,2,,,,,,,,,,,,,,,,,,,
+"",96010420,"96-01-0420",874,"gavage","oral",28,1981,,,,,,,,,2,,,,,,2,2,,,,,,,,,2,,
+"",96010422,"96-01-0422",875,"gavage","oral",28,1981,,,,,,,,1,,,,,,,,,,,,,,,,,,,
+"",97010449,"97-01-0449",879,"gavage","oral",28,,,1,,1,,,,1,,,,,,,1,1,,,,,,,2,,,,2
+"",90010136,"90-01-0136",881,"gavage","oral",28,,,,,,,,,1,,,,,,,,2,,,,,,,,,,,
+"",97010463,"97-01-0463",882,"gavage","oral",28,,,,,,,,,2,,,,,,,,2,,,,,,,,,,,
+"",97010476,"97-01-0476",884,"gavage","oral",28,1981,,,,,,,,,1,,,,,,1,1,,,,,,,,,,,
+"",97010478,"97-01-0478",885,"gavage","oral",28,1981,,,,,,,,2,,,,,,,,2,,,,,,2,,,,,2
+"",97010499,"97-01-0499",887,"gavage","oral",28,1981,,,,,,,,,1,,,,,,,,,,,,,,,,,,
+"",98010523,"98-01-0523",888,"gavage","oral",28,1981,,,,,,,,2,,,,,,,,,,,,,,,,,,,
+"",98010528,"98-01-0528",889,"feed","oral",28,,,,,,,,,1,,,,,,,,2,,,,,,,,,,,
+"",98010543,"98-01-0543",890,"gavage","oral",28,1981,,,,,,,,1,,,,,,,,,,,,,,,,,,,
+"",99010562,"99-01-0562",893,"gavage","oral",28,,,,,,,,,1,,,,,1,,,1,,,,,,2,2,2,,,
+"",99010564,"99-01-0564",894,"oral unspecified","oral",28,1981,,,,,,,,2,2,1,,,,,,2,,,,,,,,,,,
+"",99010583,"99-01-0583",898,"feed","oral",28,1981,,,,1,,,,,,,,,,,,2,,,,,,,,,,,
+"",99010585,"99-01-0585",899,"gavage","oral",28,1981,,1,,,,,,1,,,,,,1,2,2,,,,,,,,,,,1
+"",94010311,"94-01-0311",900,"oral unspecified","oral",28,1981,,1,,,,,,1,1,,,1,,,,1,,,,,,1,,,,,

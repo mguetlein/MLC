@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project MLC with Jar-in-Jar Loader">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <target name="create_run_jar">
+        <jar destfile="/home/martin/workspace/MLC/mlc.jar">
+            <manifest>
+                <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
+                <attribute name="Rsrc-Main-Class" value="RunMLC"/>
+                <attribute name="Class-Path" value="."/>
+                <attribute name="Rsrc-Class-Path" value="./ madec.jar commons-math-1.2.jar forms-1.2.1.jar iText-2.1.5.jar jcommon-1.0.16.jar jfreechart-1.0.13-experimental.jar jfreechart-1.0.13-swt.jar jfreechart-1.0.13.jar junit.jar servlet.jar swtgraphics2d.jar commons-codec-1.6.jar commons-net-3.1.jar cdk-1.4.7_mod.jar weka.jar weka-3.7.6.jar jcommon-1.0.16.jar jfreechart-1.0.13.jar"/>
+            </manifest>
+            <zipfileset src="jar-in-jar-loader.zip"/>
+            <fileset dir="/home/martin/workspace/MLC/bin"/>
+            <zipfileset dir="/home/martin/software/mlcbmad/lib" includes="madec.jar"/>
+            <fileset dir="/home/martin/workspace/JavaLib/bin"/>
+            <zipfileset dir="/home/martin/workspace/JavaLib/lib/commons-math-1.2" includes="commons-math-1.2.jar"/>
+            <zipfileset dir="/home/martin/workspace/JavaLib/lib/forms-1.2.1" includes="forms-1.2.1.jar"/>
+            <zipfileset dir="/home/martin/workspace/JavaLib/lib/jfreechart-1.0.13/lib" includes="iText-2.1.5.jar"/>
+            <zipfileset dir="/home/martin/workspace/JavaLib/lib/jfreechart-1.0.13/lib" includes="jcommon-1.0.16.jar"/>
+            <zipfileset dir="/home/martin/workspace/JavaLib/lib/jfreechart-1.0.13/lib" includes="jfreechart-1.0.13-experimental.jar"/>
+            <zipfileset dir="/home/martin/workspace/JavaLib/lib/jfreechart-1.0.13/lib" includes="jfreechart-1.0.13-swt.jar"/>
+            <zipfileset dir="/home/martin/workspace/JavaLib/lib/jfreechart-1.0.13/lib" includes="jfreechart-1.0.13.jar"/>
+            <zipfileset dir="/home/martin/workspace/JavaLib/lib/jfreechart-1.0.13/lib" includes="junit.jar"/>
+            <zipfileset dir="/home/martin/workspace/JavaLib/lib/jfreechart-1.0.13/lib" includes="servlet.jar"/>
+            <zipfileset dir="/home/martin/workspace/JavaLib/lib/jfreechart-1.0.13/lib" includes="swtgraphics2d.jar"/>
+            <zipfileset dir="/home/martin/workspace/JavaLib/lib/commons-codec-1.6" includes="commons-codec-1.6.jar"/>
+            <zipfileset dir="/home/martin/workspace/JavaLib/lib/commons-net-3.1" includes="commons-net-3.1.jar"/>
+            <zipfileset dir="/home/martin/workspace/CheS-Map/lib/cdk-jar-1.4.7" includes="cdk-1.4.7_mod.jar"/>
+            <zipfileset dir="/home/martin/workspace/JavaLib/lib/weka-3-7-6" includes="weka.jar"/>
+            <fileset dir="/home/martin/workspace/Mulan/bin"/>
+            <zipfileset dir="/home/martin/workspace/external/mulan-1.4.0" includes="weka-3.7.6.jar"/>
+            <zipfileset dir="/home/martin/workspace/external/jfreechart-1.0.13/lib" includes="jcommon-1.0.16.jar"/>
+            <zipfileset dir="/home/martin/workspace/external/jfreechart-1.0.13/lib" includes="jfreechart-1.0.13.jar"/>
+        </jar>
+    </target>
+</project>
