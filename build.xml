@@ -3,6 +3,8 @@
 	
    <property name="src" location="src;JavaLib/src;Mulan/src"/>
    <property name="build" location="build"/>
+   <property name="build_lib" location="build_lib"/>
+   <property name="deploy" location="."/>
    <path id="classpath">
   	 <fileset dir="JavaLib/lib">
         <include name="**/*.jar"/>
@@ -26,6 +28,23 @@
 	
   <!-- Build jar with internal jars -->
   <target name="build_internal_jar" depends="compile" >
+    
+    <mkdir dir="${build_lib}"/>
+    <copy todir="${build_lib}">
+		<fileset dir="lib">
+			<include name="**/*.jar"/>
+		</fileset>
+  	</copy>
+	<copy todir="${build_lib}">
+		<fileset dir="Mulan/lib">
+			<include name="**/*.jar"/>
+		</fileset>
+  	</copy>
+	<copy todir="${build_lib}">
+		<fileset dir="JavaLib/lib">
+			<include name="**/*.jar"/>
+		</fileset>
+  	</copy>
     
 	<tstamp>
       <format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
@@ -69,7 +88,7 @@
 		<zipfileset src="jar-in-jar-loader.zip"/>
         <fileset dir="${build}"/>
 		<fileset dir="JavaLib" includes="data/"/>
-		<zipfileset dir="${deploy}/ches-mapper_lib" includes="**/*.jar"/>
+		<zipfileset dir="${build_lib}" includes="**/*.jar"/>
   	</jar>
 	</target>	
 	
