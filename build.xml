@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project default="create_run_jar" name="Create Runnable Jar for Project MLC with Jar-in-Jar Loader">
+<project default="built_internal_jar" name="Create Runnable Jar for Project MLC with Jar-in-Jar Loader">
 	
    <property name="src" location="src;JavaLib/src;Mulan/src"/>
    <property name="build" location="build"/>
@@ -23,6 +23,55 @@
       <javac srcdir="${src}" destdir="${build}" classpathref="classpath">
 	  </javac>  
     </target>
+	
+  <!-- Build jar with internal jars -->
+  <target name="build_internal_jar" depends="compile" >
+    
+	<tstamp>
+      <format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
+    </tstamp>
+    
+	<!-- hack to get the paths in the mainfest right --> 
+	<path id="jar_classpath_mlc">
+  	 <fileset dir="lib">
+		<include name="**/*.jar"/>
+     </fileset>
+	 </path>
+ 	<manifestclasspath property="jar.classpath.mlc" jarfile="lib/mlc.jar">
+	   <classpath refid="jar_classpath_mlc"/>
+    </manifestclasspath>   	
+	<path id="jar_classpath_mulan">
+  	 <fileset dir="Mulan/lib">
+		<include name="**/*.jar"/>
+     </fileset>
+	 </path>
+ 	<manifestclasspath property="jar.classpath.mulan" jarfile="Mulan/lib/mlc.jar">
+	   <classpath refid="jar_classpath_mulan"/>
+    </manifestclasspath>   	
+	<path id="jar_classpath_lib">
+  	 <fileset dir="JavaLib/lib">
+		<include name="**/*.jar"/>
+     </fileset>
+	 </path>
+ 	<manifestclasspath property="jar.classpath.lib" jarfile="JavaLib/lib/mlc.jar">
+	   <classpath refid="jar_classpath_lib"/>
+    </manifestclasspath>   	
+	<!-- end hack -->    
+    
+	<jar destfile="${deploy}/mlc.jar">
+        <manifest>
+            <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
+            <attribute name="Rsrc-Main-Class" value="RunMLC"/>
+            <attribute name="Class-Path" value="."/>
+            <attribute name="Rsrc-Class-Path" value="./ ${jar.classpath.mlc} ${jar.classpath.mulan} ${jar.classpath.lib}"/>
+			<attribute name="Built-Date" value="${TODAY}"/>
+        </manifest>
+		<zipfileset src="jar-in-jar-loader.zip"/>
+        <fileset dir="${build}"/>
+		<fileset dir="JavaLib" includes="data/"/>
+		<zipfileset dir="${deploy}/ches-mapper_lib" includes="**/*.jar"/>
+  	</jar>
+	</target>	
 	
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
