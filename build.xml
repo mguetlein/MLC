@@ -63,7 +63,7 @@
 			<attribute name="Built-Date" value="${TODAY}"/>
         </manifest>
         <fileset dir="${build}"/>
-		<fileset dir="Mulan/bin"/>
+		<fileset dir="Mulan/src"/>
 		
     </jar>
 	</target>
