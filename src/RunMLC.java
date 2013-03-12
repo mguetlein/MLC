@@ -159,7 +159,7 @@ public class RunMLC
 	@SuppressWarnings("unchecked")
 	public static void main(String args[]) throws Exception
 	{
-		//		args = "-e data/yeast.endpoints.missing.mini.csv -f data/yeast.features.mini.csv -n 3 -m 1 -x 1 -o /tmp/result -r /tmp/3endpoints_1missingAllowed.arff -i 0 -u 3 -a BR,ECC"
+		//		args = "-e tab_BMBF_RepDoseNeustoff_absDose_02112012_disc2.csv -f RepDoseNeustoff.csv_pc_descriptors_2013-01-28_17-24-01.IDs.clean.csv -n 22 -m 21 -x 1 -o /tmp/result -r arff/tab_BMBF_RepDoseNeustoff_absDose_02112012_disc2.csv_RepDoseNeustoff.csv_pc_descriptors_2013-01-28_17-24-01.IDs.clean.csv_22endpoints_21missingAllowed.arff -i 0 -u 3 -a ECC,BR"
 		//				.split(" ");
 
 		if (args == null || args.length < 6)
