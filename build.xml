@@ -1,8 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project default="create_run_jar" name="Create Runnable Jar for Project MLC with Jar-in-Jar Loader">
+	
+   <property name="src" location="src;JavaLib/src;Mulan/src"/>
+   <property name="build" location="build"/>
+   <path id="classpath">
+  	 <fileset dir="JavaLib/lib">
+        <include name="**/*.jar"/>
+      </fileset>	  
+      <fileset dir="Mulan/lib">
+        <include name="**/*.jar"/>
+      </fileset>
+      <fileset dir="lib">
+        <include name="**/*.jar"/>
+      </fileset>      
+    </path>
+    <presetdef name="javac">
+      <javac includeantruntime="false" />
+    </presetdef>
+  
+	<target name="compile" description="compile the source" >
+  	  <mkdir dir="${build}"/>
+      <javac srcdir="${src}" destdir="${build}" classpathref="classpath">
+	  </javac>  
+    </target>
+	
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
-    <target name="create_run_jar">
+    <target name="create_run_jar" depends="compile" >
         <jar destfile="/home/martin/workspace/MLC/mlc.jar">
             <manifest>
                 <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
