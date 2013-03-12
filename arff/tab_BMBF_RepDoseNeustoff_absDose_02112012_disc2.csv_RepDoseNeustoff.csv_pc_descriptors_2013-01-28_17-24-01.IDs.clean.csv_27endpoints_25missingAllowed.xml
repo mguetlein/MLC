@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<labels xmlns="http://mulan.sourceforge.net/labels">
+<label name="liver"></label>
+<label name="clinical_chemistry"></label>
+<label name="body_weight"></label>
+<label name="kidney"></label>
+<label name="RBC"></label>
+<label name="CNS"></label>
+<label name="WBC"></label>
+<label name="spleen"></label>
+<label name="urine_analysis"></label>
+<label name="male_reproductive_organ"></label>
+<label name="adrenal_gland"></label>
+<label name="thymus"></label>
+<label name="heart"></label>
+<label name="brain"></label>
+<label name="female_reproductive_organ"></label>
+<label name="haematopoiesis"></label>
+<label name="intestine"></label>
+<label name="thyroid_gland"></label>
+<label name="bone_marrow"></label>
+<label name="lymph_node"></label>
+<label name="a_2u_nephropathy"></label>
+<label name="male_accessory_gland"></label>
+<label name="bladder"></label>
+<label name="pituitary_gland__hypohysis_"></label>
+<label name="bone"></label>
+<label name="pancreas"></label>
+<label name="gall_bladder_bile_duct"></label>
+</labels>

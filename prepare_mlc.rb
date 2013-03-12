@@ -88,12 +88,12 @@ map = nil
 if(endpoint_file =~ /disc2/)
   map = {"1" => "0", "2" => "1"}
 end
-arff_file = toArff.to_arff(num_endpoints, num_missing_allowed, "/tmp/",map)
+arff_file = toArff.to_arff(num_endpoints, num_missing_allowed, "arff/",map)
 
 if (run_eval)
-  cmd = "java -jar mlc.jar -e #{endpoint_file} -f #{feature_file} -n #{num_endpoints} -m #{num_missing_allowed} -x #{num_cores} "+
+  cmd = "java -jar mlc.jar -e #{File.basename(endpoint_file)} -f #{File.basename(feature_file)} -n #{num_endpoints} -m #{num_missing_allowed} -x #{num_cores} "+
     "-o /tmp/result -r #{arff_file} -i #{min_cv_seed} -u #{max_cv_seed_exclusive} -a #{mlc_algorithm}"
   puts cmd
-  exec cmd
+#  exec cmd
 end
 #ProcessUtil.run("")

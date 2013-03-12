@@ -7,6 +7,8 @@ class ToArff
   
   def initialize(endpoint_file, feature_file)
     
+    @title = File.basename(endpoint_file)+"_"+File.basename(feature_file)
+    
     @files = [feature_file, endpoint_file]
     key_pattern = /(CAS|ID)/
     
@@ -121,7 +123,8 @@ class ToArff
       end
     end
   
-    title = "#{num_endpoints}endpoints_#{num_missing_allowed}missingAllowed"
+    #title = Time.now.strftime("%Y-%m-%d_%H-%M-%S")+"__#{num_endpoints}endpoints_#{num_missing_allowed}missingAllowed"
+    title = @title+"_#{num_endpoints}endpoints_#{num_missing_allowed}missingAllowed"
     
     not_numeric = {}
     endpoints.each do |e|
