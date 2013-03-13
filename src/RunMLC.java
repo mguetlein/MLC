@@ -45,7 +45,8 @@ public class RunMLC
 
 	public void eval() throws Exception
 	{
-		parallel = new ParallelHandler(numCores);
+		if (numCores > 1)
+			parallel = new ParallelHandler(numCores);
 
 		String xmlFile = arffFile.replace(".arff", ".xml");
 		final MultiLabelInstances dataset = new MultiLabelInstances(arffFile, xmlFile);
@@ -150,18 +151,21 @@ public class RunMLC
 							}
 						}
 					};
-					parallel.addJob(r);
+					if (parallel != null)
+						parallel.addJob(r);
+					else
+						r.run();
 				}
 			}
 		}
 
-		parallel.waitForAll();
+		if (parallel != null)
+			parallel.waitForAll();
 	}
 
-	@SuppressWarnings("unchecked")
 	public static void main(String args[]) throws Exception
 	{
-		//		args = "-e tab_BMBF_RepDoseNeustoff_absDose_02112012_disc2.csv -f RepDoseNeustoff.csv_pc_descriptors_2013-01-28_17-24-01.IDs.clean.csv -n 22 -m 21 -x 1 -o /tmp/result -r arff/tab_BMBF_RepDoseNeustoff_absDose_02112012_disc2.csv_RepDoseNeustoff.csv_pc_descriptors_2013-01-28_17-24-01.IDs.clean.csv_22endpoints_21missingAllowed.arff -i 0 -u 3 -a ECC,BR"
+		//		args = "-x 1 -o /tmp/result -r arff/tab_BMBF_RepDoseNeustoff_absDose_02112012_disc2.csv_RepDoseNeustoff.csv_pc_descriptors_2013-01-28_17-24-01.IDs.clean.csv_22endpoints_21missingAllowed.arff -i 0 -u 3 -a ECC,BR"
 		//				.split(" ");
 
 		if (args == null || args.length < 6)

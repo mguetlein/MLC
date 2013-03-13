@@ -137,7 +137,7 @@ class ToArff
     #$stderr.puts "num selected fields #{sel_key_order.size}/#{@key_order.size}"
     #$stderr.puts "fields: #{sel_key_order.inspect}"
     
-    $stderr.puts "print to "+outfile+".arff"
+    #$stderr.puts "print to "+outfile+".arff"
     f = File.open(outfile+".arff","w+") 
     
     f.puts "% merged from:"
@@ -195,7 +195,7 @@ class ToArff
     f.close
     $stderr.puts "printed #{num_data}/#{@sum} instances"
     
-    $stderr.puts "print to "+outfile+".xml"
+    #$stderr.puts "print to "+outfile+".xml"
     f = File.open(outfile+".xml","w+")
     f.puts '<?xml version="1.0" encoding="utf-8"?>'
     f.puts '<labels xmlns="http://mulan.sourceforge.net/labels">'
