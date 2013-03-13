@@ -85,11 +85,13 @@ puts "Num missing allowed: #{num_missing_allowed==-1 ? "all" : num_missing_allow
 toArff = ToArff.new(endpoint_file, feature_file)
 num_endpoints = num_endpoints=="all" ? toArff.num_max_endpoints : num_endpoints.to_i
 num_missing_allowed = num_missing_allowed=="all" ? num_endpoints : num_missing_allowed.to_i
+relation_name = "endpoint-file:#{File.basename(endpoint_file)}#feature-file:#{File.basename(feature_file)}#num-endpoints:#{num_endpoints}#num-missing-allowed:#{num_missing_allowed}"
+outfile = "tmp/input"
 map = nil
 if(endpoint_file =~ /disc2/)
   map = {"1" => "0", "2" => "1"}
 end
-arff_file = toArff.to_arff(num_endpoints, num_missing_allowed, "arff/",map)
+arff_file = toArff.to_arff(num_endpoints, num_missing_allowed, relation_name, outfile, map)
 
 puts arff_file
 

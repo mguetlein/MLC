@@ -21,6 +21,7 @@ import org.jfree.chart.title.TextTitle;
 import org.jfree.chart.title.Title;
 
 import util.ArrayUtil;
+import util.IntegerUtil;
 import util.ListUtil;
 import util.StringUtil;
 import util.SwingUtil;
@@ -44,8 +45,26 @@ public class MLCData
 		List<Double> histData2;
 		HashMap<String, Integer> histData2b;
 
+		String endpointFile;
+		String featureFile;
+		int numEndpoints;
+		int numMissingAllowed;
+
 		public DatasetInfo(MultiLabelInstances dataset)
 		{
+			String s[] = dataset.getDataSet().relationName().split("#");
+			for (String string : s)
+			{
+				if (string.startsWith("endpoint-file:"))
+					endpointFile = string.substring("endpoint-file:".length());
+				if (string.startsWith("feature-file:"))
+					featureFile = string.substring("feature-file:".length());
+				if (string.startsWith("num-endpoints:"))
+					numEndpoints = IntegerUtil.parseInteger(string.substring("num-endpoints:".length()));
+				if (string.startsWith("num-missing-allowed:"))
+					numMissingAllowed = IntegerUtil.parseInteger(string.substring("num-missing-allowed:".length()));
+			}
+
 			this.dataset = dataset;
 
 			zeroOnes = new ArrayList<String>();
@@ -76,7 +95,7 @@ public class MLCData
 				labels[j] = j + "";
 			//labels[j] = j + "/" + dataset.getNumLabels() + " active";
 
-			numMissing = new int[50];
+			numMissing = new int[dataset.getNumLabels() + 1];
 
 			for (int i = 0; i < dataset.getNumInstances(); i++)
 			{
@@ -119,6 +138,11 @@ public class MLCData
 
 		public void print()
 		{
+			System.out.println("enpoint-file: " + endpointFile);
+			System.out.println("feature-file: " + featureFile);
+			System.out.println("num-endpoints: " + numEndpoints);
+			System.out.println("num-missing-allowed: " + numMissingAllowed);
+
 			System.out.println("#instances: " + dataset.getNumInstances());
 			System.out.println();
 			System.out.println("#labels: " + dataset.getNumLabels());
@@ -177,7 +201,7 @@ public class MLCData
 			}
 		}
 
-		public void plotMissing() throws IOException
+		public File plotMissing(boolean toTmpFile) throws IOException
 		{
 			//			System.out.println(ArrayUtil.toString(histData));
 
@@ -204,15 +228,22 @@ public class MLCData
 			c.setSubtitles(ArrayUtil.toList(new Title[] { new TextTitle(dataset.getNumLabels() + " endpoint values"),
 					new TextTitle(dataset.getNumInstances() + " compounds"), }));
 
-			ChartUtilities.saveChartAsPNG(new File("/home/martin/tmp/pic.png"), p.getChartPanel().getChart(),
-					dim.width, dim.height);
-
-			//HistogramPanel p = new HistogramPanel("test", null, "x", "y", "caption", histData, dataset.getNumLabels());
-			JFrame f = new JFrame("Correlation of " + dataset.getNumLabels() + " endpoint values");
-			f.add(p);
-			f.setSize(dim);
-			f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			f.setVisible(true);
+			if (toTmpFile)
+			{
+				File f = File.createTempFile("pic", "png");
+				ChartUtilities.saveChartAsPNG(f, p.getChartPanel().getChart(), dim.width, dim.height);
+				return f;
+			}
+			else
+			{
+				//HistogramPanel p = new HistogramPanel("test", null, "x", "y", "caption", histData, dataset.getNumLabels());
+				JFrame f = new JFrame("Correlation of " + dataset.getNumLabels() + " endpoint values");
+				f.add(p);
+				f.setSize(dim);
+				f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+				f.setVisible(true);
+				return null;
+			}
 		}
 	}
 
@@ -236,7 +267,7 @@ public class MLCData
 			MultiLabelInstances dataset = new MultiLabelInstances(data + ".arff", data + ".xml");
 			DatasetInfo di = new DatasetInfo(dataset);
 			di.print();
-			di.plotMissing();
+			di.plotMissing(false);
 		}
 	}
 

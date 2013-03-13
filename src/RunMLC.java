@@ -29,8 +29,8 @@ public class RunMLC
 	//	private String endpointFile;
 	//	private String featureFile;
 	private int numCores;
-	private String arffFile;
-	private String resultFile = "results.out";
+	private String arffFile = "tmp/input.arff";
+	private String resultFile = "tmp/results";
 	private String wekaClassifier = "SMO";
 	private String mlcAlgorithm = "ECC";
 	private int minSeed = 0;
@@ -50,7 +50,8 @@ public class RunMLC
 
 		String xmlFile = arffFile.replace(".arff", ".xml");
 		final MultiLabelInstances dataset = new MultiLabelInstances(arffFile, xmlFile);
-		MLCData.DatasetInfo di = new MLCData.DatasetInfo(dataset);
+
+		final MLCData.DatasetInfo di = new MLCData.DatasetInfo(dataset);
 		di.print();
 
 		final ResultSet res = new ResultSet();
@@ -103,11 +104,11 @@ public class RunMLC
 								for (int fold = 0; fold < numFolds; fold++)
 								{
 									int resCount = res.addResult();
-									//							res.setResultValue(resCount, "endpoint-file", endpointFile);
-									//							res.setResultValue(resCount, "feature-file", featureFile);
-									//							res.setResultValue(resCount, "num-endpoints", numEndpoints);
-									//							res.setResultValue(resCount, "num-missing-allowed", numMissingAllowed);
-									res.setResultValue(resCount, "arff-file", arffFile);
+									res.setResultValue(resCount, "endpoint-file", di.endpointFile);
+									res.setResultValue(resCount, "feature-file", di.featureFile);
+									res.setResultValue(resCount, "num-endpoints", di.numEndpoints);
+									res.setResultValue(resCount, "num-missing-allowed", di.numMissingAllowed);
+									//									res.setResultValue(resCount, "arff-file", arffFile);
 									res.setResultValue(resCount, "runtime", System.currentTimeMillis() - start);
 
 									res.setResultValue(resCount, "classifier", classifierString);
@@ -165,8 +166,7 @@ public class RunMLC
 
 	public static void main(String args[]) throws Exception
 	{
-		//		args = "-x 1 -o /tmp/result -r arff/tab_BMBF_RepDoseNeustoff_absDose_02112012_disc2.csv_RepDoseNeustoff.csv_pc_descriptors_2013-01-28_17-24-01.IDs.clean.csv_22endpoints_21missingAllowed.arff -i 0 -u 3 -a ECC,BR"
-		//				.split(" ");
+		args = "-x 1 -i 0 -u 3 -a ECC,BR".split(" ");
 
 		if (args == null || args.length < 6)
 			throw new Exception("params missing");
@@ -182,8 +182,8 @@ public class RunMLC
 			//				run.featureFile = opt.getOptionArg();
 			if (o == 'x')
 				run.numCores = Integer.parseInt(opt.getOptionArg());
-			else if (o == 'r')
-				run.arffFile = opt.getOptionArg();
+			//else if (o == 'r')
+			//	run.arffFile = opt.getOptionArg();
 			//			else if (o == 'o')
 			//				run.resultFile = opt.getOptionArg();
 			else if (o == 'c')

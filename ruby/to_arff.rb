@@ -7,8 +7,6 @@ class ToArff
   
   def initialize(endpoint_file, feature_file)
     
-    @title = File.basename(endpoint_file)+"_"+File.basename(feature_file)
-    
     @files = [feature_file, endpoint_file]
     key_pattern = /(CAS|ID)/
     
@@ -109,7 +107,7 @@ class ToArff
     @endpoints.size
   end
   
-  def to_arff(num_endpoints, num_missing_allowed, outfile_directory, endpoint_value_map=nil)
+  def to_arff(num_endpoints, num_missing_allowed, relation_name, outfile, endpoint_value_map=nil)
   
     raise if num_endpoints>@endpoints.size
     raise if num_missing_allowed>num_endpoints
@@ -124,25 +122,22 @@ class ToArff
     end
   
     #title = Time.now.strftime("%Y-%m-%d_%H-%M-%S")+"__#{num_endpoints}endpoints_#{num_missing_allowed}missingAllowed"
-    title = @title+"_#{num_endpoints}endpoints_#{num_missing_allowed}missingAllowed"
     
     not_numeric = {}
     endpoints.each do |e|
       not_numeric[e] = ["0","1"]
     end
     
-    outfile = File.join(outfile_directory,title)
-    
     $stderr.puts "selected endpoints: #{endpoints.inspect}"
     #$stderr.puts "num selected fields #{sel_key_order.size}/#{@key_order.size}"
     #$stderr.puts "fields: #{sel_key_order.inspect}"
     
-    #$stderr.puts "print to "+outfile+".arff"
+    $stderr.puts "print to "+outfile+".arff"
     f = File.open(outfile+".arff","w+") 
     
     f.puts "% merged from:"
     @files.each{|file| f.puts "% #{file}"}
-    f.puts "@RELATION #{title}"
+    f.puts "@RELATION #{relation_name}"
     f.puts ""
     
     sel_key_order.each do |k|
@@ -195,7 +190,7 @@ class ToArff
     f.close
     $stderr.puts "printed #{num_data}/#{@sum} instances"
     
-    #$stderr.puts "print to "+outfile+".xml"
+    $stderr.puts "print to "+outfile+".xml"
     f = File.open(outfile+".xml","w+")
     f.puts '<?xml version="1.0" encoding="utf-8"?>'
     f.puts '<labels xmlns="http://mulan.sourceforge.net/labels">'
@@ -206,7 +201,7 @@ class ToArff
     f.close
     
     $stderr.puts ""
-    outfile+".arff"
+    #outfile+".arff"
   end      
   
 end

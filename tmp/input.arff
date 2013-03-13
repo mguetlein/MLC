@@ -1,7 +1,7 @@
 % merged from:
 % data/RepDoseNeustoff.csv_pc_descriptors_2013-01-28_17-24-01.IDs.clean.csv
 % data/tab_BMBF_RepDoseNeustoff_absDose_02112012_disc2.csv
-@RELATION tab_BMBF_RepDoseNeustoff_absDose_02112012_disc2.csv_RepDoseNeustoff.csv_pc_descriptors_2013-01-28_17-24-01.IDs.clean.csv_22endpoints_21missingAllowed
+@RELATION endpoint-file:tab_BMBF_RepDoseNeustoff_absDose_02112012_disc2.csv#feature-file:RepDoseNeustoff.csv_pc_descriptors_2013-01-28_17-24-01.IDs.clean.csv#num-endpoints:22#num-missing-allowed:21
 
 @ATTRIBUTE "ALogP" NUMERIC
 @ATTRIBUTE "ALogp2_log" NUMERIC
