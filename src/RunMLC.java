@@ -166,7 +166,7 @@ public class RunMLC
 
 	public static void main(String args[]) throws Exception
 	{
-		args = "-x 1 -i 0 -u 3 -a ECC,BR".split(" ");
+		//args = "-x 1 -i 0 -u 3 -a ECC,BR".split(" ");
 
 		if (args == null || args.length < 6)
 			throw new Exception("params missing");
@@ -200,6 +200,7 @@ public class RunMLC
 			//				run.numMissingAllowed = Integer.parseInt(opt.getOptionArg());
 		}
 		run.eval();
+		System.exit(0);
 	}
 
 }
