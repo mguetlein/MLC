@@ -35,12 +35,12 @@ feature_file = nil
 num_endpoints = nil
 num_missing_allowed = nil
 
-num_cores = nil
-min_cv_seed = 0
-max_cv_seed_exclusive = 3
-mlc_algorithm = "ECC"
+#num_cores = nil
+#min_cv_seed = 0
+#max_cv_seed_exclusive = 3
+#mlc_algorithm = "ECC"
 
-run_eval = false
+#run_eval = false
 
 opts.each do |opt, arg|
   case opt
@@ -52,19 +52,20 @@ opts.each do |opt, arg|
     num_endpoints = arg
   when '--num-missing-allowed'
     num_missing_allowed = arg
-  when '--num-cores'
-    num_cores = arg
-    run_eval = true
-  when '--min-cv-seed'
-    min_cv_seed = arg.to_i
-    run_eval = true
-  when '--max-cv-seed-exclusive'
-    max_cv_seed_exclusive = arg
-    run_eval = true
-  when '--mlc-algorithm'
-    mlc_algorithm = arg
-    run_eval = true
-  end  
+  end
+#  when '--num-cores'
+#    num_cores = arg
+#    run_eval = true
+#  when '--min-cv-seed'
+#    min_cv_seed = arg.to_i
+#    run_eval = true
+#  when '--max-cv-seed-exclusive'
+#    max_cv_seed_exclusive = arg
+#    run_eval = true
+#  when '--mlc-algorithm'
+#    mlc_algorithm = arg
+#    run_eval = true
+#  end  
 end
 
 raise "enpoint-file missing\n"+usage unless endpoint_file
@@ -90,10 +91,12 @@ if(endpoint_file =~ /disc2/)
 end
 arff_file = toArff.to_arff(num_endpoints, num_missing_allowed, "arff/",map)
 
-if (run_eval)
-  cmd = "java -jar mlc.jar -e #{File.basename(endpoint_file)} -f #{File.basename(feature_file)} -n #{num_endpoints} -m #{num_missing_allowed} -x #{num_cores} "+
-    "-o /tmp/result -r #{arff_file} -i #{min_cv_seed} -u #{max_cv_seed_exclusive} -a #{mlc_algorithm}"
-  puts cmd
-#  exec cmd
-end
+puts arff_file
+
+#if (run_eval)
+#  cmd = "java -jar mlc.jar -e #{File.basename(endpoint_file)} -f #{File.basename(feature_file)} -n #{num_endpoints} -m #{num_missing_allowed} -x #{num_cores} "+
+#    "-o /tmp/result -r #{arff_file} -i #{min_cv_seed} -u #{max_cv_seed_exclusive} -a #{mlc_algorithm}"
+#  puts cmd
+##  exec cmd
+#end
 #ProcessUtil.run("")

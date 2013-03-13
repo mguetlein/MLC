@@ -26,8 +26,8 @@ public class RunMLC
 	MLCData.DatasetInfo data;
 	ParallelHandler parallel;
 
-	private String endpointFile;
-	private String featureFile;
+	//	private String endpointFile;
+	//	private String featureFile;
 	private int numCores;
 	private String arffFile;
 	private String resultFile;
@@ -35,8 +35,9 @@ public class RunMLC
 	private String mlcAlgorithm = "ECC";
 	private int minSeed = 0;
 	private int maxSeedExclusive = 3;
-	private int numEndpoints;
-	private int numMissingAllowed;
+
+	//	private int numEndpoints;
+	//	private int numMissingAllowed;
 
 	public RunMLC()
 	{
@@ -44,7 +45,7 @@ public class RunMLC
 
 	public void eval() throws Exception
 	{
-		//		parallel = new ParallelHandler(numCores);
+		parallel = new ParallelHandler(numCores);
 
 		String xmlFile = arffFile.replace(".arff", ".xml");
 		final MultiLabelInstances dataset = new MultiLabelInstances(arffFile, xmlFile);
@@ -54,7 +55,7 @@ public class RunMLC
 		final ResultSet res = new ResultSet();
 		final File resFile = new File(resultFile);
 
-		for (String classifierString : wekaClassifier.split(","))
+		for (final String classifierString : wekaClassifier.split(","))
 		{
 			final Classifier classifier;
 			if (classifierString.equals("SMO"))
@@ -64,7 +65,7 @@ public class RunMLC
 			else
 				throw new Error("WTF");
 
-			for (String mlcAlgorithmStr : mlcAlgorithm.split(","))
+			for (final String mlcAlgorithmStr : mlcAlgorithm.split(","))
 			{
 				final MultiLabelLearner mlcAlgorithm;
 				if (mlcAlgorithmStr.equals("BR"))
@@ -77,83 +78,84 @@ public class RunMLC
 				for (int s = minSeed; s < maxSeedExclusive; s++)
 				{
 					final int seed = s;
-					//					Runnable r = new Runnable()
-					//					{
-					//						@Override
-					//						public void run()
-					//						{
-					System.out.println();
-					System.out.println(classifier.getClass().getSimpleName());
-					System.out.println(mlcAlgorithm.getClass().getSimpleName());
-					System.out.println();
-
-					long start = System.currentTimeMillis();
-
-					//mulan.evaluation.Evaluator eval = new mulan.evaluation.Evaluator();
-					MissingCapableEvaluator eval = new MissingCapableEvaluator();
-					eval.setSeed(seed);
-					int numFolds = 3;
-					MultipleEvaluation ev = eval.crossValidate(mlcAlgorithm, dataset, numFolds);
-					//				ev.calculateStatistics();
-
-					synchronized (res)
+					Runnable r = new Runnable()
 					{
-						for (int fold = 0; fold < numFolds; fold++)
+						@Override
+						public void run()
 						{
-							int resCount = res.addResult();
-							res.setResultValue(resCount, "endpoint-file", endpointFile);
-							res.setResultValue(resCount, "feature-file", featureFile);
-							res.setResultValue(resCount, "num-endpoints", numEndpoints);
-							res.setResultValue(resCount, "num-missing-allowed", numMissingAllowed);
-							res.setResultValue(resCount, "runtime", System.currentTimeMillis() - start);
+							System.out.println();
+							System.out.println(classifier.getClass().getSimpleName());
+							System.out.println(mlcAlgorithm.getClass().getSimpleName());
+							System.out.println();
 
-							res.setResultValue(resCount, "classifier", classifierString);
-							res.setResultValue(resCount, "mlc-algorithm", mlcAlgorithmStr);
+							long start = System.currentTimeMillis();
 
-							res.setResultValue(resCount, "cv-seed", seed);
-							res.setResultValue(resCount, "num-folds", numFolds);
-							res.setResultValue(resCount, "fold", fold);
+							//mulan.evaluation.Evaluator eval = new mulan.evaluation.Evaluator();
+							MissingCapableEvaluator eval = new MissingCapableEvaluator();
+							eval.setSeed(seed);
+							int numFolds = 3;
+							MultipleEvaluation ev = eval.crossValidate(mlcAlgorithm, dataset, numFolds);
+							//				ev.calculateStatistics();
 
-							res.setResultValue(resCount, "num-compounds", dataset.getNumInstances());
-							res.setResultValue(resCount, "num-labels", dataset.getNumLabels());
-							for (int i = 0; i < dataset.getNumLabels(); i++)
-								res.setResultValue(resCount, "label#" + i,
-										dataset.getDataSet().attribute(dataset.getLabelIndices()[i]).name());
+							synchronized (res)
+							{
+								for (int fold = 0; fold < numFolds; fold++)
+								{
+									int resCount = res.addResult();
+									//							res.setResultValue(resCount, "endpoint-file", endpointFile);
+									//							res.setResultValue(resCount, "feature-file", featureFile);
+									//							res.setResultValue(resCount, "num-endpoints", numEndpoints);
+									//							res.setResultValue(resCount, "num-missing-allowed", numMissingAllowed);
+									res.setResultValue(resCount, "arff-file", arffFile);
+									res.setResultValue(resCount, "runtime", System.currentTimeMillis() - start);
 
-							res.setResultValue(resCount, "cardinality", dataset.getCardinality());
+									res.setResultValue(resCount, "classifier", classifierString);
+									res.setResultValue(resCount, "mlc-algorithm", mlcAlgorithmStr);
 
-							res.setResultValue(resCount, "num-predictions", ev.getData(fold).getNumInstances());
+									res.setResultValue(resCount, "cv-seed", seed);
+									res.setResultValue(resCount, "num-folds", numFolds);
+									res.setResultValue(resCount, "fold", fold);
 
-							res.setResultValue(resCount, "hamming-loss",
-									ev.getResult(new HammingLoss().getName(), fold));
-							res.setResultValue(resCount, "subset-accuracy",
-									ev.getResult(new SubsetAccuracy().getName(), fold));
-							//res.setResultValue(resCount, "accuracy", ev.getMean(new ExampleBasedAccuracy().getName()));
-							//res.setResultValue(resCount, "precision", ev.getMean(new ExampleBasedPrecision().getName()));
-							//res.setResultValue(resCount, "recall", ev.getMean(new ExampleBasedRecall().getName()));
+									res.setResultValue(resCount, "num-compounds", dataset.getNumInstances());
+									res.setResultValue(resCount, "num-labels", dataset.getNumLabels());
+									for (int i = 0; i < dataset.getNumLabels(); i++)
+										res.setResultValue(resCount, "label#" + i,
+												dataset.getDataSet().attribute(dataset.getLabelIndices()[i]).name());
 
-							res.setResultValue(resCount, "macro-accuracy",
-									ev.getResult(new MacroAccuracy(dataset.getNumLabels()).getName(), fold));
+									res.setResultValue(resCount, "cardinality", dataset.getCardinality());
 
-							for (int i = 0; i < dataset.getNumLabels(); i++)
-								res.setResultValue(resCount, "macro-accuracy#" + i,
-										ev.getResult(new MacroAccuracy(dataset.getNumLabels()).getName(), fold, i));
+									res.setResultValue(resCount, "num-predictions", ev.getData(fold).getNumInstances());
 
-							res.setResultValue(resCount, "micro-accuracy",
-									ev.getResult(new MicroAccuracy(dataset.getNumLabels()).getName(), fold));
+									res.setResultValue(resCount, "hamming-loss",
+											ev.getResult(new HammingLoss().getName(), fold));
+									res.setResultValue(resCount, "subset-accuracy",
+											ev.getResult(new SubsetAccuracy().getName(), fold));
+									//res.setResultValue(resCount, "accuracy", ev.getMean(new ExampleBasedAccuracy().getName()));
+									//res.setResultValue(resCount, "precision", ev.getMean(new ExampleBasedPrecision().getName()));
+									//res.setResultValue(resCount, "recall", ev.getMean(new ExampleBasedRecall().getName()));
+
+									res.setResultValue(resCount, "macro-accuracy",
+											ev.getResult(new MacroAccuracy(dataset.getNumLabels()).getName(), fold));
+
+									for (int i = 0; i < dataset.getNumLabels(); i++)
+										res.setResultValue(resCount, "macro-accuracy#" + i, ev.getResult(
+												new MacroAccuracy(dataset.getNumLabels()).getName(), fold, i));
+
+									res.setResultValue(resCount, "micro-accuracy",
+											ev.getResult(new MicroAccuracy(dataset.getNumLabels()).getName(), fold));
+								}
+								System.out.println("\nprinting " + res.getNumResults() + " to " + resFile);
+								System.out.println(res.toNiceString());
+								ResultSetIO.printToFile(resFile, res, true);
+							}
 						}
-						System.out.println("\nprinting " + res.getNumResults() + " to " + resFile);
-						System.out.println(res.toNiceString());
-						ResultSetIO.printToFile(resFile, res, true);
-					}
-					//						}
-					//					};
-					//					parallel.addJob(r);
+					};
+					parallel.addJob(r);
 				}
 			}
 		}
 
-		//		parallel.waitForAll();
+		parallel.waitForAll();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -169,11 +171,11 @@ public class RunMLC
 		int o = -1;
 		while ((o = opt.getNextOption()) != -1)
 		{
-			if (o == 'e')
-				run.endpointFile = opt.getOptionArg();
-			else if (o == 'f')
-				run.featureFile = opt.getOptionArg();
-			else if (o == 'x')
+			//			if (o == 'e')
+			//				run.endpointFile = opt.getOptionArg();
+			//			else if (o == 'f')
+			//				run.featureFile = opt.getOptionArg();
+			if (o == 'x')
 				run.numCores = Integer.parseInt(opt.getOptionArg());
 			else if (o == 'r')
 				run.arffFile = opt.getOptionArg();
@@ -187,10 +189,10 @@ public class RunMLC
 				run.minSeed = Integer.parseInt(opt.getOptionArg());
 			else if (o == 'u')
 				run.maxSeedExclusive = Integer.parseInt(opt.getOptionArg());
-			else if (o == 'n')
-				run.numEndpoints = Integer.parseInt(opt.getOptionArg());
-			else if (o == 'm')
-				run.numMissingAllowed = Integer.parseInt(opt.getOptionArg());
+			//			else if (o == 'n')
+			//				run.numEndpoints = Integer.parseInt(opt.getOptionArg());
+			//			else if (o == 'm')
+			//				run.numMissingAllowed = Integer.parseInt(opt.getOptionArg());
 		}
 		run.eval();
 	}
