@@ -33,6 +33,7 @@ public class RunMLC
 	private String resultFile = "tmp/results";
 	private String wekaClassifier = "SMO";
 	private String mlcAlgorithm = "ECC";
+	private int numFolds = 10;
 	private int minSeed = 0;
 	private int maxSeedExclusive = 3;
 
@@ -95,7 +96,6 @@ public class RunMLC
 							//mulan.evaluation.Evaluator eval = new mulan.evaluation.Evaluator();
 							MissingCapableEvaluator eval = new MissingCapableEvaluator();
 							eval.setSeed(seed);
-							int numFolds = 3;
 							MultipleEvaluation ev = eval.crossValidate(mlcAlgorithm, dataset, numFolds);
 							//				ev.calculateStatistics();
 
@@ -172,7 +172,7 @@ public class RunMLC
 			throw new Exception("params missing");
 		RunMLC run = new RunMLC();
 		//GetOpt opt = new GetOpt(args, "n:e:f:x:r:o:c:a:i:u:m:");
-		GetOpt opt = new GetOpt(args, "x:r:c:a:i:u:");
+		GetOpt opt = new GetOpt(args, "x:r:c:a:i:u:f:");
 		int o = -1;
 		while ((o = opt.getNextOption()) != -1)
 		{
@@ -190,6 +190,8 @@ public class RunMLC
 				run.wekaClassifier = opt.getOptionArg();
 			else if (o == 'a')
 				run.mlcAlgorithm = opt.getOptionArg();
+			else if (o == 'f')
+				run.numFolds = Integer.parseInt(opt.getOptionArg());
 			else if (o == 'i')
 				run.minSeed = Integer.parseInt(opt.getOptionArg());
 			else if (o == 'u')

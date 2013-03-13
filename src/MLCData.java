@@ -11,7 +11,7 @@ import javax.swing.JFrame;
 
 import mulan.data.MultiLabelInstances;
 
-import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
@@ -23,6 +23,7 @@ import org.jfree.chart.title.Title;
 import util.ArrayUtil;
 import util.IntegerUtil;
 import util.ListUtil;
+import util.StringLineAdder;
 import util.StringUtil;
 import util.SwingUtil;
 import weka.core.Attribute;
@@ -41,6 +42,7 @@ public class MLCData
 
 		double[] histData;
 		String[] labels;
+		String[] labelNames;
 
 		List<Double> histData2;
 		HashMap<String, Integer> histData2b;
@@ -49,6 +51,10 @@ public class MLCData
 		String featureFile;
 		int numEndpoints;
 		int numMissingAllowed;
+
+		int[] ones_per_label;
+		int[] zeros_per_label;
+		int[] missings_per_label;
 
 		public DatasetInfo(MultiLabelInstances dataset)
 		{
@@ -64,26 +70,40 @@ public class MLCData
 				if (string.startsWith("num-missing-allowed:"))
 					numMissingAllowed = IntegerUtil.parseInteger(string.substring("num-missing-allowed:".length()));
 			}
+			if (numEndpoints != dataset.getNumLabels())
+				throw new IllegalStateException();
 
 			this.dataset = dataset;
 
 			zeroOnes = new ArrayList<String>();
+
+			ones_per_label = new int[dataset.getNumLabels()];
+			zeros_per_label = new int[dataset.getNumLabels()];
+			missings_per_label = new int[dataset.getNumLabels()];
+			labelNames = new String[dataset.getNumLabels()];
+
 			for (int j = 0; j < dataset.getNumLabels(); j++)
 			{
+				Attribute labelAttr = dataset.getDataSet().attribute(dataset.getLabelIndices()[j]);
+
 				int one = 0;
 				int zero = 0;
 				int missing = 0;
 				for (int i = 0; i < dataset.getNumInstances(); i++)
 				{
-					if (dataset.getDataSet().get(i).isMissing((Attribute) dataset.getLabelAttributes().toArray()[j]))
+					if (dataset.getDataSet().get(i).isMissing(labelAttr))
 						missing++;
-					else if (dataset.getDataSet().get(i)
-							.stringValue((Attribute) dataset.getLabelAttributes().toArray()[j]).equals("1"))
+					else if (dataset.getDataSet().get(i).stringValue(labelAttr).equals("1"))
 						one++;
 					else
 						zero++;
 				}
 				zeroOnes.add("(" + zero + "/" + one + " missing:" + missing + ")");
+
+				labelNames[j] = labelAttr.name();
+				ones_per_label[j] = one;
+				zeros_per_label[j] = zero;
+				missings_per_label[j] = missing;
 			}
 
 			distinct = new HashMap<String, Integer>();
@@ -91,6 +111,7 @@ public class MLCData
 			histData2 = new ArrayList<Double>();
 			histData2b = new HashMap<String, Integer>();
 			labels = new String[dataset.getNumLabels() + 1];
+
 			for (int j = 0; j < dataset.getNumLabels() + 1; j++)
 				labels[j] = j + "";
 			//labels[j] = j + "/" + dataset.getNumLabels() + " active";
@@ -136,36 +157,48 @@ public class MLCData
 			}
 		}
 
-		public void print()
+		public String toString(boolean details)
 		{
-			System.out.println("enpoint-file: " + endpointFile);
-			System.out.println("feature-file: " + featureFile);
-			System.out.println("num-endpoints: " + numEndpoints);
-			System.out.println("num-missing-allowed: " + numMissingAllowed);
-
-			System.out.println("#instances: " + dataset.getNumInstances());
-			System.out.println();
-			System.out.println("#labels: " + dataset.getNumLabels());
-			System.out.println("labels: ");
-			for (int j = 0; j < dataset.getNumLabels(); j++)
+			StringLineAdder s = new StringLineAdder();
+			s.add("endpoint-file: " + endpointFile);
+			s.add("feature-file: " + featureFile);
+			s.add("num-endpoints: " + numEndpoints);
+			s.add("num-missing-allowed: " + numMissingAllowed);
+			s.add("num-instances: " + dataset.getNumInstances());
+			if (details)
 			{
-				System.out.print((Attribute) dataset.getLabelAttributes().toArray()[j] + " ");
-				System.out.println(zeroOnes.get(j));
+				s.add();
+				s.add("labels: ");
+				for (int j = 0; j < dataset.getNumLabels(); j++)
+				{
+					Attribute labelAttr = dataset.getDataSet().attribute(dataset.getLabelIndices()[j]);
+					s.add(labelAttr.name() + " " + zeroOnes.get(j));
+				}
+				s.add("cardinality: " + dataset.getCardinality());
+				s.add();
+				s.add("#distinct combinations: " + distinct.size() + " / " + (int) Math.pow(2, dataset.getNumLabels()));
+				//			s.add("distinct combinations: ");
+				//			String distinctA[] = new String[distinct.size()];
+				//			distinct.keySet().toArray(distinctA);
+				//			Arrays.sort(distinctA);
+				//			for (String comb : distinctA)
+				//				System.out.print(comb + "(" + distinct.get(comb) + "), ");
+				s.add("\n");
 			}
-			System.out.println("cardinality: " + dataset.getCardinality());
-			System.out.println();
-			System.out.println("#distinct combinations: " + distinct.size() + " / "
-					+ (int) Math.pow(2, dataset.getNumLabels()));
-			//			System.out.println("distinct combinations: ");
-			//			String distinctA[] = new String[distinct.size()];
-			//			distinct.keySet().toArray(distinctA);
-			//			Arrays.sort(distinctA);
-			//			for (String comb : distinctA)
-			//				System.out.print(comb + "(" + distinct.get(comb) + "), ");
-			System.out.println("\n");
+			return s.toString();
 		}
 
-		public void plotCorrelation() throws IOException
+		public String toString()
+		{
+			return toString(true);
+		}
+
+		public void print()
+		{
+			System.out.println(toString(true));
+		}
+
+		public ChartPanel plotCorrelation() throws IOException
 		{
 			if (histData2.size() > 0)
 			{
@@ -190,37 +223,15 @@ public class MLCData
 
 				//			BarPlotPanel p = new BarPlotPanel(title, "num compounds", histData, labels);
 
-				//			ChartUtilities.saveChartAsPNG(new File("/home/martin/workspace/BMBFUtil/results/" + title + ".png"), p
-				//					.getChartPanel().getChart(), dim.width, dim.height);
-				//HistogramPanel p = new HistogramPanel("test", null, "x", "y", "caption", histData, dataset.getNumLabels());
-				JFrame f = new JFrame("Correlation of " + dataset.getNumLabels() + " endpoint values");
-				f.add(p);
-				f.setSize(dim);
-				f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				f.setVisible(true);
+				return p.getChartPanel();
 			}
+			else
+				return null;
 		}
 
-		public File plotMissing(boolean toTmpFile) throws IOException
+		public ChartPanel plotMissingPerCompound() throws IOException
 		{
-			//			System.out.println(ArrayUtil.toString(histData));
-
-			Dimension dim = new Dimension(800, 600);
-			//					HistogramPanel p = new HistogramPanel("Correlation of " + dataset.getNumLabels() + " endpoint values",
-			//							null, "Ratio active-compounds", "num compounds",
-			//							"All compounds with at least 2 non-missing endpoint values (" + histData2.size() + ")",
-			//							ArrayUtil.toPrimitiveDoubleArray(ListUtil.toArray(histData2)), 9);
-			//					XYPlot plot = ((XYPlot) p.getChart().getPlot());
-			//					plot.getDomainAxis().setRange(0.0, 1.0);
-
-			//				String keys[] = CollectionUtil.toArray(histData2b.keySet());
-			//				Arrays.sort(keys);
-			//				double values[] = new double[keys.length];
-			//				for (int i = 0; i < values.length; i++)
-			//					values[i] = histData2b.get(keys[i]);
-			//				BarPlotPanel p = new BarPlotPanel(title, "num compounds", values, keys);
-
-			BarPlotPanel p = new BarPlotPanel("Num missing values", "num compounds",
+			BarPlotPanel p = new BarPlotPanel("Num missing values for each compound", "num compounds",
 					ArrayUtil.toPrimitiveDoubleArray(ArrayUtil.toDoubleArray(ArrayUtil.toIntegerArray(numMissing))),
 					labels);
 
@@ -228,48 +239,51 @@ public class MLCData
 			c.setSubtitles(ArrayUtil.toList(new Title[] { new TextTitle(dataset.getNumLabels() + " endpoint values"),
 					new TextTitle(dataset.getNumInstances() + " compounds"), }));
 
-			if (toTmpFile)
-			{
-				File f = File.createTempFile("pic", "png");
-				ChartUtilities.saveChartAsPNG(f, p.getChartPanel().getChart(), dim.width, dim.height);
-				return f;
-			}
-			else
-			{
-				//HistogramPanel p = new HistogramPanel("test", null, "x", "y", "caption", histData, dataset.getNumLabels());
-				JFrame f = new JFrame("Correlation of " + dataset.getNumLabels() + " endpoint values");
-				f.add(p);
-				f.setSize(dim);
-				f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				f.setVisible(true);
-				return null;
-			}
+			return p.getChartPanel();
+		}
+
+		public ChartPanel plotMissingPerLabel() throws IOException
+		{
+			LinkedHashMap<String, List<Double>> plotData = new LinkedHashMap<String, List<Double>>();
+			plotData.put("0", ArrayUtil.toList(ArrayUtil.toDoubleArray(ArrayUtil.toIntegerArray(zeros_per_label))));
+			plotData.put("1", ArrayUtil.toList(ArrayUtil.toDoubleArray(ArrayUtil.toIntegerArray(ones_per_label))));
+			plotData.put("missing",
+					ArrayUtil.toList(ArrayUtil.toDoubleArray(ArrayUtil.toIntegerArray(missings_per_label))));
+
+			StackedBarPlot sbp = new StackedBarPlot("Missing values", "endpoints", "num compounds", plotData,
+					labelNames);
+
+			CategoryPlot plot = (CategoryPlot) sbp.getChartPanel().getChart().getPlot();
+			CategoryAxis xAxis = (CategoryAxis) plot.getDomainAxis();
+			xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+
+			return sbp.getChartPanel();
 		}
 	}
 
-	public static void plotCorrelation(List<File> files) throws Exception
-	{
-		for (File file : files)
-		{
-			String data = file.getAbsolutePath().substring(0, file.getAbsolutePath().lastIndexOf("."));
-			MultiLabelInstances dataset = new MultiLabelInstances(data + ".arff", data + ".xml");
-			DatasetInfo di = new DatasetInfo(dataset);
-			di.print();
-			di.plotCorrelation();
-		}
-	}
-
-	public static void plotMissingPerFile(List<File> files) throws Exception
-	{
-		for (File file : files)
-		{
-			String data = file.getAbsolutePath().substring(0, file.getAbsolutePath().lastIndexOf("."));
-			MultiLabelInstances dataset = new MultiLabelInstances(data + ".arff", data + ".xml");
-			DatasetInfo di = new DatasetInfo(dataset);
-			di.print();
-			di.plotMissing(false);
-		}
-	}
+	//	public static void plotCorrelation(List<File> files) throws Exception
+	//	{
+	//		for (File file : files)
+	//		{
+	//			String data = file.getAbsolutePath().substring(0, file.getAbsolutePath().lastIndexOf("."));
+	//			MultiLabelInstances dataset = new MultiLabelInstances(data + ".arff", data + ".xml");
+	//			DatasetInfo di = new DatasetInfo(dataset);
+	//			di.print();
+	//			di.plotCorrelation();
+	//		}
+	//	}
+	//
+	//	public static void plotMissingPerFile(List<File> files) throws Exception
+	//	{
+	//		for (File file : files)
+	//		{
+	//			String data = file.getAbsolutePath().substring(0, file.getAbsolutePath().lastIndexOf("."));
+	//			MultiLabelInstances dataset = new MultiLabelInstances(data + ".arff", data + ".xml");
+	//			DatasetInfo di = new DatasetInfo(dataset);
+	//			di.print();
+	//			di.plotMissingPerCompound();
+	//		}
+	//	}
 
 	public static void plotMissing(List<File> files, List<String> titles, int maxNumMissing) throws Exception
 	{
