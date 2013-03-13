@@ -30,7 +30,7 @@ public class RunMLC
 	//	private String featureFile;
 	private int numCores;
 	private String arffFile;
-	private String resultFile;
+	private String resultFile = "results.out";
 	private String wekaClassifier = "SMO";
 	private String mlcAlgorithm = "ECC";
 	private int minSeed = 0;
@@ -171,7 +171,8 @@ public class RunMLC
 		if (args == null || args.length < 6)
 			throw new Exception("params missing");
 		RunMLC run = new RunMLC();
-		GetOpt opt = new GetOpt(args, "n:e:f:x:r:o:c:a:i:u:m:");
+		//GetOpt opt = new GetOpt(args, "n:e:f:x:r:o:c:a:i:u:m:");
+		GetOpt opt = new GetOpt(args, "x:r:c:a:i:u:");
 		int o = -1;
 		while ((o = opt.getNextOption()) != -1)
 		{
@@ -183,8 +184,8 @@ public class RunMLC
 				run.numCores = Integer.parseInt(opt.getOptionArg());
 			else if (o == 'r')
 				run.arffFile = opt.getOptionArg();
-			else if (o == 'o')
-				run.resultFile = opt.getOptionArg();
+			//			else if (o == 'o')
+			//				run.resultFile = opt.getOptionArg();
 			else if (o == 'c')
 				run.wekaClassifier = opt.getOptionArg();
 			else if (o == 'a')
