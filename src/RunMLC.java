@@ -166,7 +166,7 @@ public class RunMLC
 
 	public static void main(String args[]) throws Exception
 	{
-		//args = "-x 1 -i 0 -u 3 -a ECC,BR".split(" ");
+		//		args = "-x 1 -f 2 -i 0 -u 1 -a BR -r tmp/input2013-03-13_10-11-46.arff".split(" ");
 
 		if (args == null || args.length < 6)
 			throw new Exception("params missing");

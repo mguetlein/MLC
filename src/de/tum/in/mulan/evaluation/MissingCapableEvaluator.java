@@ -14,10 +14,6 @@ import mulan.data.MultiLabelInstances;
 import mulan.evaluation.Evaluation;
 import mulan.evaluation.Evaluator;
 import mulan.evaluation.measure.Coverage;
-import mulan.evaluation.measure.ExampleBasedAccuracy;
-import mulan.evaluation.measure.ExampleBasedFMeasure;
-import mulan.evaluation.measure.ExampleBasedPrecision;
-import mulan.evaluation.measure.ExampleBasedRecall;
 import mulan.evaluation.measure.HammingLoss;
 import mulan.evaluation.measure.MacroAccuracy;
 import mulan.evaluation.measure.Measure;
@@ -162,10 +158,10 @@ public class MissingCapableEvaluator extends Evaluator
 				// add example-based measures
 				measures.add(new HammingLoss());
 				measures.add(new SubsetAccuracy());
-				measures.add(new ExampleBasedPrecision());
-				measures.add(new ExampleBasedRecall());
-				measures.add(new ExampleBasedFMeasure());
-				measures.add(new ExampleBasedAccuracy());
+				//				measures.add(new ExampleBasedPrecision());
+				//				measures.add(new ExampleBasedRecall());
+				//				measures.add(new ExampleBasedFMeasure());
+				//				measures.add(new ExampleBasedAccuracy());
 
 				int numOfLabels = data.getNumLabels();
 				measures.add(new MicroAccuracy(numOfLabels));
@@ -255,8 +251,10 @@ public class MissingCapableEvaluator extends Evaluator
 				{
 					try
 					{
-						m.update(MissingCapableEvaluator.getOutputForKnown(output, isMissing),
-								MissingCapableEvaluator.getCutBoolean(trueLabels, isMissing));
+						//						m.update(MissingCapableEvaluator.getOutputForKnown(output, isMissing),
+						//								MissingCapableEvaluator.getCutBoolean(trueLabels, isMissing));
+
+						m.update(output, trueLabels, isMissing);
 					}
 					catch (final Exception ex)
 					{

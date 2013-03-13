@@ -41,4 +41,9 @@ public class MacroAccuracy extends LabelBasedAccuracy implements MacroAverageMea
 		return accuracy(labelIndex);
 	}
 
+	public void updateBipartition(boolean[] bipartition, boolean[] truth)
+	{
+		super.updateBipartition(bipartition, truth);
+	}
+
 }
