@@ -48,6 +48,8 @@ public class RunMLC
 	{
 		if (numCores > 1)
 			parallel = new ParallelHandler(numCores);
+		final ResultSet res = new ResultSet();
+		final File resFile = new File(resultFile);
 
 		for (final String arffFileStr : arffFile.split(","))
 		{
@@ -56,9 +58,6 @@ public class RunMLC
 
 			final MLCData.DatasetInfo di = new MLCData.DatasetInfo(dataset);
 			di.print();
-
-			final ResultSet res = new ResultSet();
-			final File resFile = new File(resultFile);
 
 			for (final String classifierString : wekaClassifier.split(","))
 			{
@@ -174,7 +173,8 @@ public class RunMLC
 
 	public static void main(String args[]) throws Exception
 	{
-		//		args = "-x 1 -f 2 -i 0 -u 1 -a BR -r tmp/input2013-03-13_10-11-46.arff".split(" ");
+		//		args = "-x 1 -f 2 -i 0 -u 1 -a BR -r tmp/input2013-03-13_10-11-46.arff,tmp/input2013-03-13_16-14-29.arff"
+		//				.split(" ");
 
 		if (args == null || args.length < 6)
 			throw new Exception("params missing");
