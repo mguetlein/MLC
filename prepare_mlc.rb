@@ -86,7 +86,7 @@ toArff = ToArff.new(endpoint_file, feature_file)
 num_endpoints = num_endpoints=="all" ? toArff.num_max_endpoints : num_endpoints.to_i
 num_missing_allowed = num_missing_allowed=="all" ? num_endpoints : num_missing_allowed.to_i
 relation_name = "endpoint-file:#{File.basename(endpoint_file)}#feature-file:#{File.basename(feature_file)}#num-endpoints:#{num_endpoints}#num-missing-allowed:#{num_missing_allowed}"
-outfile = "tmp/input"
+outfile = "tmp/input#{Time.now.strftime("%Y-%m-%d_%H-%M-%S")}"
 map = nil
 if(endpoint_file =~ /disc2/)
   map = {"1" => "0", "2" => "1"}

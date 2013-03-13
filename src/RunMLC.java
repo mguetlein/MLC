@@ -29,7 +29,7 @@ public class RunMLC
 	//	private String endpointFile;
 	//	private String featureFile;
 	private int numCores;
-	private String arffFile = "tmp/input.arff";
+	private String arffFile;
 	private String resultFile = "tmp/results";
 	private String wekaClassifier = "SMO";
 	private String mlcAlgorithm = "ECC";
@@ -108,7 +108,7 @@ public class RunMLC
 									res.setResultValue(resCount, "feature-file", di.featureFile);
 									res.setResultValue(resCount, "num-endpoints", di.numEndpoints);
 									res.setResultValue(resCount, "num-missing-allowed", di.numMissingAllowed);
-									//									res.setResultValue(resCount, "arff-file", arffFile);
+									res.setResultValue(resCount, "arff-file", arffFile);
 									res.setResultValue(resCount, "runtime", System.currentTimeMillis() - start);
 
 									res.setResultValue(resCount, "classifier", classifierString);
@@ -182,8 +182,8 @@ public class RunMLC
 			//				run.featureFile = opt.getOptionArg();
 			if (o == 'x')
 				run.numCores = Integer.parseInt(opt.getOptionArg());
-			//else if (o == 'r')
-			//	run.arffFile = opt.getOptionArg();
+			else if (o == 'r')
+				run.arffFile = opt.getOptionArg();
 			//			else if (o == 'o')
 			//				run.resultFile = opt.getOptionArg();
 			else if (o == 'c')
