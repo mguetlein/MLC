@@ -130,6 +130,9 @@ public class RunMLC
 
 									res.setResultValue(resCount, "hamming-loss",
 											ev.getResult(new HammingLoss().getName(), fold));
+									res.setResultValue(resCount, "1-hamming-loss",
+											1 - ev.getResult(new HammingLoss().getName(), fold));
+
 									res.setResultValue(resCount, "subset-accuracy",
 											ev.getResult(new SubsetAccuracy().getName(), fold));
 									//res.setResultValue(resCount, "accuracy", ev.getMean(new ExampleBasedAccuracy().getName()));
