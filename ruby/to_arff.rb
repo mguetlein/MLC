@@ -49,17 +49,15 @@ class ToArff
           end
         end    
       end
-    
+      
       #puts keys.inspect
     
       sel_keys = []  
       keys.each do |k|
-        sel_keys << k unless ["SMILES","Name","study_pk","route","route2","study_duration","Jahr"].include?(k)
+        sel_keys << k unless ["SMILES","Name","study_pk","route","route2","study_duration","Jahr","reliability", "dummy"].include?(k)
       end
     
       @endpoints = sel_keys - [keys[id_index]] if file==endpoint_file
-      
-      #puts @endpoints.inspect
       
       @key_order += sel_keys
       @key_file_index += Array.new(keys.size,file_count)
@@ -75,10 +73,13 @@ class ToArff
     @num_occ.each do |k,v|
       @sum += v
     end
-    sort_endpoints
     
     $stderr.puts "num instances (compounds plus duplicates) #{@sum}"
     $stderr.puts "num features #{@key_order.size-(@endpoints.size+1)}"
+
+    puts @endpoints.size.to_s+" endpoints"
+    #puts @endpoints.inspect    
+    sort_endpoints
     @key_order = (@key_order - @endpoints) + @endpoints 
     #$stderr.puts "fields: #{@key_order.inspect}"
     #$stderr.puts ""
@@ -89,6 +90,7 @@ class ToArff
     @endpoints.each do |e|
       nil_count = 0
       @id_order.each do |id|
+        next unless @store[ [id,e] ] # not stored in endpoint file
         @num_occ[id].times do |i|
           if @store[ [id,e] ].size==1
             nil_count+=1 if @store[ [id,e] ][0]==nil
@@ -153,6 +155,7 @@ class ToArff
     
     f.puts "@DATA"
     @id_order.each do |id|
+      next unless @store[ [id,endpoints[0]] ] # not stored in endpoint file
       @num_occ[id].times do |i|
         nil_count = 0
         endpoints.each do |e|
@@ -166,7 +169,8 @@ class ToArff
           num_data += 1
           s = ""
           sel_key_order.each do |k|
-            raise unless @store[ [id,k] ].size==1 || @store[ [id,k] ].size==@num_occ[id]
+            raise "#{id} missing: #{k}" unless @store[ [id,k] ]
+            raise "#{id}" unless @store[ [id,k] ].size==1 || @store[ [id,k] ].size==@num_occ[id]
             if @store[ [id,k] ].size==1
               v = (@store[ [id,k] ][0] ? @store[ [id,k] ][0] : "?") 
             else
