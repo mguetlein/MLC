@@ -9,20 +9,22 @@ import mulan.evaluation.loss.HammingLoss;
 import mulan.evaluation.measure.MacroAccuracy;
 import mulan.evaluation.measure.MicroAccuracy;
 import mulan.evaluation.measure.SubsetAccuracy;
+
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.Options;
+
 import util.ParallelHandler;
 import weka.classifiers.Classifier;
 import weka.classifiers.functions.SMO;
 import weka.classifiers.trees.RandomForest;
-
-import com.sun.org.apache.xalan.internal.xsltc.cmdline.getopt.GetOpt;
-
 import datamining.ResultSet;
 import datamining.ResultSetIO;
 import de.tum.in.mulan.evaluation.MissingCapableEvaluator;
 
 public class RunMLC
 {
-
 	MLCData.DatasetInfo data;
 	ParallelHandler parallel;
 
@@ -178,37 +180,31 @@ public class RunMLC
 
 		if (args == null || args.length < 6)
 			throw new Exception("params missing");
+
+		Options options = new Options();
+		options.addOption("x", "num-cores", true, "Number of cores");
+		options.addOption("r", "arff-file", true, "Arff file");
+		options.addOption("i", "min-cv-seed", true, "Min seed for cv");
+		options.addOption("u", "max-cv-seed-exclusive", true, "Max seed for cv, exclusive");
+		options.addOption("a", "mlc-algorithm", true, "MLC algortihm");
+		options.addOption("f", "num-folds", true, "Num folds for cv");
+		CommandLineParser parser = new BasicParser();
+		CommandLine cmd = parser.parse(options, args);
+
 		RunMLC run = new RunMLC();
-		//GetOpt opt = new GetOpt(args, "n:e:f:x:r:o:c:a:i:u:m:");
-		GetOpt opt = new GetOpt(args, "x:r:c:a:i:u:f:");
-		int o = -1;
-		while ((o = opt.getNextOption()) != -1)
-		{
-			//			if (o == 'e')
-			//				run.endpointFile = opt.getOptionArg();
-			//			else if (o == 'f')
-			//				run.featureFile = opt.getOptionArg();
-			if (o == 'x')
-				run.numCores = Integer.parseInt(opt.getOptionArg());
-			else if (o == 'r')
-				run.arffFile = opt.getOptionArg();
-			//			else if (o == 'o')
-			//				run.resultFile = opt.getOptionArg();
-			else if (o == 'c')
-				run.wekaClassifier = opt.getOptionArg();
-			else if (o == 'a')
-				run.mlcAlgorithm = opt.getOptionArg();
-			else if (o == 'f')
-				run.numFolds = Integer.parseInt(opt.getOptionArg());
-			else if (o == 'i')
-				run.minSeed = Integer.parseInt(opt.getOptionArg());
-			else if (o == 'u')
-				run.maxSeedExclusive = Integer.parseInt(opt.getOptionArg());
-			//			else if (o == 'n')
-			//				run.numEndpoints = Integer.parseInt(opt.getOptionArg());
-			//			else if (o == 'm')
-			//				run.numMissingAllowed = Integer.parseInt(opt.getOptionArg());
-		}
+		if (cmd.hasOption("x"))
+			run.numCores = Integer.parseInt(cmd.getOptionValue("x"));
+		if (cmd.hasOption("r"))
+			run.arffFile = cmd.getOptionValue("r");
+		if (cmd.hasOption("i"))
+			run.minSeed = Integer.parseInt(cmd.getOptionValue("i"));
+		if (cmd.hasOption("u"))
+			run.maxSeedExclusive = Integer.parseInt(cmd.getOptionValue("u"));
+		if (cmd.hasOption("f"))
+			run.numFolds = Integer.parseInt(cmd.getOptionValue("f"));
+		if (cmd.hasOption("a"))
+			run.mlcAlgorithm = cmd.getOptionValue("a");
+
 		run.eval();
 		System.exit(0);
 	}

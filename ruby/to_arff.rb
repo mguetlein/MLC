@@ -32,6 +32,9 @@ class ToArff
         raise if row.length<2
         if row_index==0
           keys = row
+          keys.each do |k|
+            raise "duplicate key: #{k} in #{file}" if keys.count(k)>1
+          end
           keys.each_with_index do |k,i|
             if k=~key_pattern
               id_index = i
@@ -43,9 +46,11 @@ class ToArff
           id = row[id_index]
           ids << id
           row.each_with_index do |r,i|
-            @store[ [ id,keys[i] ] ] = [] unless @store.has_key?([ id,keys[i] ])
-            @store[ [ id,keys[i] ] ] << r unless i==id_index and @store[ [ id,keys[i] ] ].size>0 
-            @num_occ[ id ] = [ (@num_occ[ id ] ? @num_occ[ id ] : 0) , @store[ [ id,keys[i] ] ].size ].max
+            if i!=id_index
+              @store[ [ id,keys[i] ] ] = [] unless @store.has_key?([ id,keys[i] ])
+              @store[ [ id,keys[i] ] ] << r unless i==id_index and @store[ [ id,keys[i] ] ].size>0 
+              @num_occ[ id ] = [ (@num_occ[ id ] ? @num_occ[ id ] : 0) , @store[ [ id,keys[i] ] ].size ].max
+            end
           end
         end    
       end
@@ -54,7 +59,7 @@ class ToArff
     
       sel_keys = []  
       keys.each do |k|
-        sel_keys << k unless ["SMILES","Name","study_pk","route","route2","study_duration","Jahr","reliability", "dummy"].include?(k)
+        sel_keys << k unless ["CAS","ID","SMILES","Name","study_pk","route","route2","study_duration","Jahr","reliability", "dummy"].include?(k)
       end
     
       @endpoints = sel_keys - [keys[id_index]] if file==endpoint_file
@@ -170,7 +175,7 @@ class ToArff
           s = ""
           sel_key_order.each do |k|
             raise "#{id} missing: #{k}" unless @store[ [id,k] ]
-            raise "#{id}" unless @store[ [id,k] ].size==1 || @store[ [id,k] ].size==@num_occ[id]
+            raise "#{id} num-occurences: #{@num_occ[id]} values for #{k} : #{@store[ [id,k] ].inspect}" unless @store[ [id,k] ].size==1 || @store[ [id,k] ].size==@num_occ[id]
             if @store[ [id,k] ].size==1
               v = (@store[ [id,k] ][0] ? @store[ [id,k] ][0] : "?") 
             else

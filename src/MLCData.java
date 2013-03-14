@@ -27,6 +27,7 @@ import util.StringLineAdder;
 import util.StringUtil;
 import util.SwingUtil;
 import weka.core.Attribute;
+import datamining.ResultSet;
 import freechart.BarPlotPanel;
 import freechart.HistogramPanel;
 import freechart.StackedBarPlot;
@@ -174,8 +175,8 @@ public class MLCData
 					Attribute labelAttr = dataset.getDataSet().attribute(dataset.getLabelIndices()[j]);
 					s.add(labelAttr.name() + " " + zeroOnes.get(j));
 				}
-				s.add("cardinality: " + dataset.getCardinality());
 				s.add();
+				s.add("cardinality: " + dataset.getCardinality());
 				s.add("#distinct combinations: " + distinct.size() + " / " + (int) Math.pow(2, dataset.getNumLabels()));
 				//			s.add("distinct combinations: ");
 				//			String distinctA[] = new String[distinct.size()];
@@ -255,10 +256,24 @@ public class MLCData
 
 			CategoryPlot plot = (CategoryPlot) sbp.getChartPanel().getChart().getPlot();
 			CategoryAxis xAxis = (CategoryAxis) plot.getDomainAxis();
-			xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+			xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
 
 			return sbp.getChartPanel();
 		}
+
+		public ResultSet getMissingPerLabel()
+		{
+			ResultSet rs = new ResultSet();
+			for (int i = 0; i < labelNames.length; i++)
+			{
+				int r = rs.addResult();
+				rs.setResultValue(r, "Endpoint", labelNames[i]);
+				rs.setResultValue(r, "0/1", zeros_per_label[i] + "/" + ones_per_label[i]);
+				rs.setResultValue(r, "Missing", missings_per_label[i]);
+			}
+			return rs;
+		}
+
 	}
 
 	//	public static void plotCorrelation(List<File> files) throws Exception
