@@ -154,8 +154,8 @@ public class RunMLC
 										res.setResultValue(resCount, "micro-accuracy",
 												ev.getResult(new MicroAccuracy(dataset.getNumLabels()).getName(), fold));
 									}
-									System.out.println("\nprinting " + res.getNumResults() + " to " + resFile);
-									System.out.println(res.toNiceString());
+									System.out.println("\nprinting " + res.getNumResults() + " results to " + resFile);
+									//System.out.println(res.toNiceString());
 									ResultSetIO.printToFile(resFile, res, true);
 								}
 							}
