@@ -4,6 +4,7 @@ import mulan.classifier.MultiLabelLearner;
 import mulan.classifier.transformation.BinaryRelevance;
 import mulan.classifier.transformation.EnsembleOfClassifierChains;
 import mulan.data.MultiLabelInstances;
+import mulan.evaluation.MissingCapableEvaluator;
 import mulan.evaluation.MultipleEvaluation;
 import mulan.evaluation.loss.HammingLoss;
 import mulan.evaluation.measure.MacroAccuracy;
@@ -21,7 +22,6 @@ import weka.classifiers.functions.SMO;
 import weka.classifiers.trees.RandomForest;
 import datamining.ResultSet;
 import datamining.ResultSetIO;
-import de.tum.in.mulan.evaluation.MissingCapableEvaluator;
 
 public class RunMLC
 {
