@@ -89,11 +89,9 @@ public class RunMLC
 							@Override
 							public void run()
 							{
-								System.out.println();
-								System.out.println(arffFileStr);
-								System.out.println(classifier.getClass().getSimpleName());
-								System.out.println(mlcAlgorithm.getClass().getSimpleName());
-								System.out.println();
+								System.out.println(seed + " " + arffFileStr + " "
+										+ classifier.getClass().getSimpleName() + " "
+										+ mlcAlgorithm.getClass().getSimpleName());
 
 								long start = System.currentTimeMillis();
 
