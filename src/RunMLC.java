@@ -21,6 +21,7 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Options;
 
 import util.ParallelHandler;
+import util.StringUtil;
 import weka.classifiers.Classifier;
 import weka.classifiers.functions.SMO;
 import weka.classifiers.lazy.IBk;
@@ -62,8 +63,9 @@ public class RunMLC
 		for (final String dataFileStr : dataFile.split(","))
 		{
 			final MultiLabelInstances dataset = new MultiLabelInstances(dataFileStr + ".arff", dataFileStr + ".xml");
-			final SinglePredictionTracker tracker = new SinglePredictionTracker(dataFileStr, dataset, maxSeedExclusive
-					- minSeed);
+			int numRepetitions = (maxSeedExclusive - minSeed) * (StringUtil.numOccurences(classifier, ",") + 1)
+					* (StringUtil.numOccurences(mlcAlgorithm, ",") + 1);
+			final SinglePredictionTracker tracker = new SinglePredictionTracker(dataFileStr, dataset, numRepetitions);
 			trackers.add(tracker);
 
 			final MLCData.DatasetInfo di = new MLCData.DatasetInfo(dataset);
@@ -191,7 +193,8 @@ public class RunMLC
 
 	public static void main(String args[]) throws Exception
 	{
-		//		args = "-x 1 -f 10 -i 0 -u 1 -a BR -c SMO -r tmp/input2013-03-15_10-24-23".split(" ");
+		//		args = "-x 1 -f 3 -i 0 -u 2 -a BR,ECC -c SMO,IBk -r tmp/input2013-03-15_12-26-20,tmp/input2013-03-15_12-27-52"
+		//				.split(" ");
 
 		if (args == null || args.length < 6)
 			throw new Exception("params missing");
