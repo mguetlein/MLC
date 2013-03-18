@@ -1,10 +1,15 @@
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import mulan.classifier.MultiLabelLearner;
+import mulan.classifier.lazy.MLkNN;
+import mulan.classifier.meta.HOMER;
+import mulan.classifier.meta.HierarchyBuilder;
 import mulan.classifier.transformation.BinaryRelevance;
 import mulan.classifier.transformation.EnsembleOfClassifierChains;
+import mulan.classifier.transformation.MultiLabelStacking;
 import mulan.data.MultiLabelInstances;
 import mulan.evaluation.MissingCapableEvaluator;
 import mulan.evaluation.MultipleEvaluation;
@@ -44,12 +49,91 @@ public class RunMLC
 	private int numFolds = 10;
 	private int minSeed = 0;
 	private int maxSeedExclusive = 3;
+	private String mlcAlgorithmParams;
 
 	//	private int numEndpoints;
 	//	private int numMissingAllowed;
 
 	public RunMLC()
 	{
+	}
+
+	private MultiLabelLearner getMLCAlgorithms(String mlcAlgorithmStr, String mlcAlgorithmParamsStr,
+			Classifier classifier)
+	{
+		HashMap<String, String> mlcParamHash = new HashMap<String, String>();
+		if (mlcAlgorithmParamsStr != null && mlcAlgorithmParamsStr.length() > 0)
+		{
+			for (String keyValue : mlcAlgorithmParamsStr.split(";"))
+			{
+				if (StringUtil.numOccurences(keyValue, "=") != 1)
+					throw new IllegalArgumentException();
+				int index = keyValue.indexOf("=");
+				String key = keyValue.substring(0, index);
+				String value = keyValue.substring(index + 1);
+				mlcParamHash.put(key, value);
+			}
+		}
+		if (mlcAlgorithmStr.equals("BR"))
+		{
+			if (mlcParamHash.size() > 0)
+				throw new IllegalArgumentException();
+			return new BinaryRelevance(classifier);
+		}
+		else if (mlcAlgorithmStr.equals("ECC"))
+		{
+			int numChains = 10;
+			if (mlcParamHash.size() > 0)
+			{
+				for (String keys : mlcParamHash.keySet())
+				{
+					if (keys.equals("num-chains"))
+						numChains = Integer.parseInt(mlcParamHash.get(keys));
+					else
+						throw new IllegalArgumentException();
+				}
+			}
+			return new EnsembleOfClassifierChains(classifier, numChains, false, false);
+		}
+		else if (mlcAlgorithmStr.equals("MLkNN"))
+		{
+			int numNeighbors = 10;
+			if (mlcParamHash.size() > 0)
+			{
+				for (String keys : mlcParamHash.keySet())
+				{
+					if (keys.equals("num-neighbors"))
+						numNeighbors = Integer.parseInt(mlcParamHash.get(keys));
+					else
+						throw new IllegalArgumentException();
+				}
+			}
+			return new MLkNN(numNeighbors, 1.0);
+		}
+		else if (mlcAlgorithmStr.equals("MLS"))
+		{
+			return new MultiLabelStacking(classifier, classifier);
+		}
+		else if (mlcAlgorithmStr.equals("HOMER"))
+		{
+			int numClusters = 10;
+			MultiLabelLearner method = new BinaryRelevance(classifier);
+			if (mlcParamHash.size() > 0)
+			{
+				for (String keys : mlcParamHash.keySet())
+				{
+					if (keys.equals("num-clusters"))
+						numClusters = Integer.parseInt(mlcParamHash.get(keys));
+					else if (keys.equals("method"))
+						method = getMLCAlgorithms(mlcParamHash.get(keys), null, classifier);
+					else
+						throw new IllegalArgumentException("illegal param for HOMER: '" + keys + "'");
+				}
+			}
+			return new HOMER(method, numClusters, HierarchyBuilder.Method.BalancedClustering);
+		}
+		else
+			throw new Error("WTF");
 	}
 
 	public void eval() throws Exception
@@ -83,15 +167,24 @@ public class RunMLC
 				else
 					throw new Error("WTF");
 
-				for (final String mlcAlgorithmStr : mlcAlgorithm.split(","))
+				String mlcAlgs[] = mlcAlgorithm.split(",");
+				String mlcParams[] = null;
+				if (mlcAlgorithmParams != null)
 				{
-					final MultiLabelLearner mlcAlgorithm;
-					if (mlcAlgorithmStr.equals("BR"))
-						mlcAlgorithm = new BinaryRelevance(classifier);
-					else if (mlcAlgorithmStr.equals("ECC"))
-						mlcAlgorithm = new EnsembleOfClassifierChains(classifier, 10, false, false);
-					else
-						throw new Error("WTF");
+					mlcParams = mlcAlgorithmParams.split(",");
+					if (mlcParams.length != mlcAlgs.length)
+						throw new IllegalArgumentException("num mlc-algorithms " + mlcAlgs.length
+								+ " != num mlc-algorithm-params " + mlcParams.length);
+				}
+				else
+					mlcParams = new String[mlcAlgs.length];
+
+				for (int mlcAlgorithmIndex = 0; mlcAlgorithmIndex < mlcAlgs.length; mlcAlgorithmIndex++)
+				{
+					final String mlcAlgorithmStr = mlcAlgs[mlcAlgorithmIndex];
+					final String mlcAlgorithmParamsStr = mlcParams[mlcAlgorithmIndex];
+					final MultiLabelLearner mlcAlgorithm = getMLCAlgorithms(mlcAlgorithmStr, mlcAlgorithmParamsStr,
+							classifier);
 
 					for (int s = minSeed; s < maxSeedExclusive; s++)
 					{
@@ -128,6 +221,7 @@ public class RunMLC
 
 										res.setResultValue(resCount, "classifier", classifierString);
 										res.setResultValue(resCount, "mlc-algorithm", mlcAlgorithmStr);
+										res.setResultValue(resCount, "mlc-algorithm-params", mlcAlgorithmParamsStr);
 
 										res.setResultValue(resCount, "cv-seed", seed);
 										res.setResultValue(resCount, "num-folds", numFolds);
@@ -193,7 +287,24 @@ public class RunMLC
 
 	public static void main(String args[]) throws Exception
 	{
-		//		args = "-x 1 -f 10 -i 0 -u 10 -a BR,ECC -c IBk -r tmp/input2013-03-15_12-26-20".split(" ");
+		//		String a = "";
+		//		String p = "";
+		//		for (int numClusters : new int[] { 3, 6, 9 })
+		//		{
+		//			for (String method : new String[] { "BR", "ECC", "MLkNN" })
+		//			{
+		//				a += "HOMER,";
+		//				p += "num-clusters=" + numClusters + ";method=" + method;
+		//			}
+		//		}
+		//		a = a.substring(0, a.length() - 1);
+		//		p = p.substring(0, p.length() - 1);
+		//		System.out.println("-x 1 -f 10 -i 0 -u 1 -a " + a + " -p " + p + " IBk -r tmp/input2013-03-18_16-37-02");
+		//		if (true == true)
+		//			System.exit(0);
+		//		args = ("-x 1 -f 10 -i 0 -u 1 -a HOMER,HOMER,HOMER,HOMER,HOMER,HOMER,HOMER,HOMER,HOMER"
+		//				+ "-p num-clusters=3;method=BRnum-clusters=3;method=ECCnum-clusters=3;method=MLkNNnum-clusters=6;method=BRnum-clusters=6;method=ECCnum-clusters=6;method=MLkNNnum-clusters=9;method=BRnum-clusters=9;method=ECCnum-clusters=9;method=MLkN "
+		//				+ "IBk -r tmp/input2013-03-18_16-37-02").split(" ");
 
 		if (args == null || args.length < 6)
 			throw new Exception("params missing");
@@ -204,6 +315,7 @@ public class RunMLC
 		options.addOption("i", "min-cv-seed", true, "Min seed for cv");
 		options.addOption("u", "max-cv-seed-exclusive", true, "Max seed for cv, exclusive");
 		options.addOption("a", "mlc-algorithm", true, "MLC algortihm");
+		options.addOption("p", "mlc-algorithm-params", true, "MLC algortihm params");
 		options.addOption("f", "num-folds", true, "Num folds for cv");
 		options.addOption("c", "classifier", true, "Classifier, default:SMO");
 		CommandLineParser parser = new BasicParser();
@@ -222,11 +334,12 @@ public class RunMLC
 			run.numFolds = Integer.parseInt(cmd.getOptionValue("f"));
 		if (cmd.hasOption("a"))
 			run.mlcAlgorithm = cmd.getOptionValue("a");
+		if (cmd.hasOption("p"))
+			run.mlcAlgorithmParams = cmd.getOptionValue("p");
 		if (cmd.hasOption("c"))
 			run.classifier = cmd.getOptionValue("c");
 
 		run.eval();
 		System.exit(0);
 	}
-
 }

@@ -20,6 +20,7 @@ import util.StringLineAdder;
 import com.itextpdf.text.DocumentException;
 
 import datamining.ResultSet;
+import datamining.ResultSetIO;
 import freechart.FreeChartUtil;
 
 public class ReportMLC
@@ -91,19 +92,35 @@ public class ReportMLC
 			for (String p : RESULT_PROPERTIES)
 				results.movePropertyBack(p);
 
+			CountedSet<Object> mlcAlgorithms = results.getResultValues("mlc-algorithm");
+			CountedSet<Object> mlcAlgorithmParams = results.getResultValues("mlc-algorithm-params");
+			if (mlcAlgorithms.size() > 1 && mlcAlgorithmParams.size() > 1)
+				throw new IllegalStateException("compare either algs or alg-params, plz!");
+			String algCmp = null;
+			CountedSet<Object> algSet = null;
+			if (mlcAlgorithmParams.size() <= 1)
+			{
+				algCmp = "mlc-algorithm";
+				algSet = mlcAlgorithms;
+			}
+			else
+			{
+				algCmp = "mlc-algorithm-params";
+				algSet = mlcAlgorithmParams;
+			}
+
 			for (Object arffFile : arffFiles.values())
 			{
 				ResultSet res = results.copy();
 				res.exclude("arff-file", arffFile);
-				addBoxPlots(res, "mlc-algorithm", " for Dataset " + res.getUniqueValue("Dataset"));
+				addBoxPlots(res, algCmp, " for Dataset " + res.getUniqueValue("Dataset"));
 			}
 
-			CountedSet<Object> mlcAlgorithms = results.getResultValues("mlc-algorithm");
-			for (Object mlcAlgorithm : mlcAlgorithms.values())
+			for (Object mlcAlg : algSet.values())
 			{
 				ResultSet res = results.copy();
-				res.exclude("mlc-algorithm", mlcAlgorithm);
-				addBoxPlots(res, "Dataset", " for mlc-algorithm = " + mlcAlgorithm);
+				res.exclude(algCmp, mlcAlg);
+				addBoxPlots(res, "Dataset", " for " + algCmp + " = " + mlcAlg);
 			}
 
 			int i = 0;
@@ -162,7 +179,7 @@ public class ReportMLC
 		}
 
 		report.addSection("Compare " + compareProp + titleSuffix, "", tables, images);
-		//		report.newPage();
+		report.newPage();
 	}
 
 	private void addDatasetInfo(String arffFile, String datasetName) throws InvalidDataFormatException, IOException,
@@ -181,12 +198,12 @@ public class ReportMLC
 
 	public static void main(String args[]) throws Exception
 	{
-		//		System.out.println("reading results:");
-		//		ResultSet rs = ResultSetIO.parseFromFile(new File("tmp/results"));
-		//		System.out.println(rs.getNumResults() + " single results, creating report");
-		//		new ReportMLC(rs);
+		System.out.println("reading results:");
+		ResultSet rs = ResultSetIO.parseFromFile(new File("tmp/results"));
+		System.out.println(rs.getNumResults() + " single results, creating report");
+		new ReportMLC(rs);
 
-		new ReportMLC("tmp/input2013-03-18_16-27-00.arff", "tmp/input2013-03-18_16-32-42.arff");
+		//		new ReportMLC("tmp/input2013-03-18_16-27-00.arff", "tmp/input2013-03-18_16-32-42.arff");
 
 		//		List<String> equalProps = ArrayUtil.toList(new String[] { "cv-seed" });
 		//		List<String> ommitProps = ArrayUtil.toList(new String[] { "label#0", "label#1", "label#2" });
