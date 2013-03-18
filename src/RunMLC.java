@@ -83,17 +83,24 @@ public class RunMLC
 		else if (mlcAlgorithmStr.equals("ECC"))
 		{
 			int numChains = 10;
+			boolean confidences = false;
+			boolean replacement = false;
+
 			if (mlcParamHash.size() > 0)
 			{
 				for (String keys : mlcParamHash.keySet())
 				{
 					if (keys.equals("num-chains"))
 						numChains = Integer.parseInt(mlcParamHash.get(keys));
+					if (keys.equals("confidences"))
+						confidences = Boolean.parseBoolean(mlcParamHash.get(keys));
+					if (keys.equals("replacement"))
+						replacement = Boolean.parseBoolean(mlcParamHash.get(keys));
 					else
 						throw new IllegalArgumentException();
 				}
 			}
-			return new EnsembleOfClassifierChains(classifier, numChains, false, false);
+			return new EnsembleOfClassifierChains(classifier, numChains, confidences, replacement);
 		}
 		else if (mlcAlgorithmStr.equals("MLkNN"))
 		{
@@ -116,8 +123,8 @@ public class RunMLC
 		}
 		else if (mlcAlgorithmStr.equals("HOMER"))
 		{
-			int numClusters = 10;
-			MultiLabelLearner method = new BinaryRelevance(classifier);
+			int numClusters = 3;
+			MultiLabelLearner method = new EnsembleOfClassifierChains(classifier, 10, false, false);
 			if (mlcParamHash.size() > 0)
 			{
 				for (String keys : mlcParamHash.keySet())
@@ -294,7 +301,7 @@ public class RunMLC
 		//			for (String method : new String[] { "BR", "ECC", "MLkNN" })
 		//			{
 		//				a += "HOMER,";
-		//				p += "num-clusters=" + numClusters + ";method=" + method;
+		//				p += "num-clusters=" + numClusters + ";method=" + method + ",";
 		//			}
 		//		}
 		//		a = a.substring(0, a.length() - 1);
@@ -303,8 +310,8 @@ public class RunMLC
 		//		if (true == true)
 		//			System.exit(0);
 		//		args = ("-x 1 -f 10 -i 0 -u 1 -a HOMER,HOMER,HOMER,HOMER,HOMER,HOMER,HOMER,HOMER,HOMER"
-		//				+ "-p num-clusters=3;method=BRnum-clusters=3;method=ECCnum-clusters=3;method=MLkNNnum-clusters=6;method=BRnum-clusters=6;method=ECCnum-clusters=6;method=MLkNNnum-clusters=9;method=BRnum-clusters=9;method=ECCnum-clusters=9;method=MLkN "
-		//				+ "IBk -r tmp/input2013-03-18_16-37-02").split(" ");
+		//				+ "-p num-clusters=3;method=BR,num-clusters=3;method=ECC,num-clusters=3;method=MLkNN,num-clusters=6;method=BR,num-clusters=6;method=ECC,num-clusters=6;method=MLkNN,num-clusters=9;method=BR,num-clusters=9;method=ECC,num-clusters=9;method=MLkNN "
+		//				+ "-c IBk -r tmp/input2013-03-18_16-37-02").split(" ");
 
 		if (args == null || args.length < 6)
 			throw new Exception("params missing");

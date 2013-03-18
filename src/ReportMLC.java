@@ -89,6 +89,7 @@ public class ReportMLC
 			for (int i = 0; i < results.getNumResults(); i++)
 				results.setResultValue(i, "Dataset",
 						DATASET_NAMES[arffFiles.values().indexOf(results.getResultValue(i, "arff-file"))]);
+			results.sortProperties(new String[] { "arff-file", "mlc-algorithm", "mlc-algorithm-params" });
 			for (String p : RESULT_PROPERTIES)
 				results.movePropertyBack(p);
 
