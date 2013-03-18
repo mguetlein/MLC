@@ -92,12 +92,12 @@ public class RunMLC
 				{
 					if (keys.equals("num-chains"))
 						numChains = Integer.parseInt(mlcParamHash.get(keys));
-					if (keys.equals("confidences"))
+					else if (keys.equals("confidences"))
 						confidences = Boolean.parseBoolean(mlcParamHash.get(keys));
-					if (keys.equals("replacement"))
+					else if (keys.equals("replacement"))
 						replacement = Boolean.parseBoolean(mlcParamHash.get(keys));
 					else
-						throw new IllegalArgumentException();
+						throw new IllegalArgumentException("no param for ecc: '" + keys + "'");
 				}
 			}
 			return new EnsembleOfClassifierChains(classifier, numChains, confidences, replacement);
@@ -294,24 +294,42 @@ public class RunMLC
 
 	public static void main(String args[]) throws Exception
 	{
+		//				String a = "";
+		//				String p = "";
+		//				for (int numClusters : new int[] { 3, 6, 9 })
+		//				{
+		//					for (String method : new String[] { "BR", "ECC", "MLkNN" })
+		//					{
+		//						a += "HOMER,";
+		//						p += "num-clusters=" + numClusters + ";method=" + method + ",";
+		//					}
+		//				}
+		//				a = a.substring(0, a.length() - 1);
+		//				p = p.substring(0, p.length() - 1);
+		//				System.out.println("-x 1 -f 10 -i 0 -u 1 -a " + a + " -p " + p + " IBk -r tmp/input2013-03-18_16-37-02");
+		//				if (true == true)
+		//					System.exit(0);
 		//		String a = "";
 		//		String p = "";
-		//		for (int numClusters : new int[] { 3, 6, 9 })
+		//		for (int numChains : new int[] { 5, 10, 15 })
 		//		{
-		//			for (String method : new String[] { "BR", "ECC", "MLkNN" })
+		//			for (boolean confidences : new boolean[] { true, false })
 		//			{
-		//				a += "HOMER,";
-		//				p += "num-clusters=" + numClusters + ";method=" + method + ",";
+		//				for (boolean replacement : new boolean[] { true, false })
+		//				{
+		//					a += "ECC,";
+		//					p += "num-chains=" + numChains + ";confidences=" + confidences + ";replacement=" + replacement
+		//							+ ",";
+		//				}
 		//			}
 		//		}
 		//		a = a.substring(0, a.length() - 1);
 		//		p = p.substring(0, p.length() - 1);
-		//		System.out.println("-x 1 -f 10 -i 0 -u 1 -a " + a + " -p " + p + " IBk -r tmp/input2013-03-18_16-37-02");
+		//		System.out.println("-a " + a + " -p " + p);
 		//		if (true == true)
 		//			System.exit(0);
-		//		args = ("-x 1 -f 10 -i 0 -u 1 -a HOMER,HOMER,HOMER,HOMER,HOMER,HOMER,HOMER,HOMER,HOMER"
-		//				+ "-p num-clusters=3;method=BR,num-clusters=3;method=ECC,num-clusters=3;method=MLkNN,num-clusters=6;method=BR,num-clusters=6;method=ECC,num-clusters=6;method=MLkNN,num-clusters=9;method=BR,num-clusters=9;method=ECC,num-clusters=9;method=MLkNN "
-		//				+ "-c IBk -r tmp/input2013-03-18_16-37-02").split(" ");
+		//		args = ("-x 1 -f 10 -i 0 -u 1 -a ECC,ECC,ECC,ECC,ECC,ECC,ECC,ECC,ECC,ECC,ECC,ECC -p num-chains=5;confidences=true;replacement=true,num-chains=5;confidences=true;replacement=false,num-chains=5;confidences=false;replacement=true,num-chains=5;confidences=false;replacement=false,num-chains=10;confidences=true;replacement=true,num-chains=10;confidences=true;replacement=false,num-chains=10;confidences=false;replacement=true,num-chains=10;confidences=false;replacement=false,num-chains=15;confidences=true;replacement=true,num-chains=15;confidences=true;replacement=false,num-chains=15;confidences=false;replacement=true,num-chains=15;confidences=false;replacement=false -c IBk -r tmp/input2013-03-18_16-37-02")
+		//				.split(" ");
 
 		if (args == null || args.length < 6)
 			throw new Exception("params missing");
