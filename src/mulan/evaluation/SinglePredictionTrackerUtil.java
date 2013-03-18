@@ -2,6 +2,7 @@ package mulan.evaluation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import mulan.evaluation.SinglePredictionTracker.AllLabelPredictions;
 import mulan.evaluation.SinglePredictionTracker.Predictions;
@@ -26,13 +27,13 @@ public class SinglePredictionTrackerUtil
 		for (int l = 0; l < tracker.data.getNumLabels(); l++)
 		{
 			String name = tracker.data.getDataSet().attribute(tracker.data.getLabelIndices()[l]).name();
-			h.add(name + "_missclassfied");
+			h.add(name + "_missclassified");
 			//			h.add(name + "_missclassfied_as_1");
 			//			h.add(name + "_missclassfied_as_0");
 		}
-		h.add("all_endpoints_missclasified");
+		h.add("all_endpoints_missclassified");
 		h.add("all_endpoints_count");
-		h.add("all_endpoints_missclasified_total");
+		h.add("all_endpoints_missclassified_total");
 		csv.content.add(ArrayUtil.toArray(String.class, h));
 
 		for (int i = 0; i < tracker.data.getNumInstances(); i++)
@@ -44,7 +45,7 @@ public class SinglePredictionTrackerUtil
 				Predictions p = tracker.labelPredictions.get(i + "_" + l);
 				if (p != null)
 				{
-					v.add(p.getMissclassified());
+					v.add(StringUtil.formatDouble(p.getMissclassified(), Locale.US));
 					//					v.add(p.getMissclassifiedAsTrue());
 					//					v.add(p.getMissclassifiedAsFalse());
 				}
@@ -56,7 +57,7 @@ public class SinglePredictionTrackerUtil
 				}
 			}
 			AllLabelPredictions p = tracker.allLabelPredictions.get(i);
-			v.add(p.getMissclassified());
+			v.add(StringUtil.formatDouble(p.getMissclassified(), Locale.US));
 			v.add(p.getNumLabels());
 			v.add(p.getMissclassifiedTotal());
 			csv.content.add(ArrayUtil.toArray(String.class, v));

@@ -20,7 +20,6 @@ import util.StringLineAdder;
 import com.itextpdf.text.DocumentException;
 
 import datamining.ResultSet;
-import datamining.ResultSetIO;
 import freechart.FreeChartUtil;
 
 public class ReportMLC
@@ -62,7 +61,8 @@ public class ReportMLC
 	{
 		try
 		{
-			report = new Report("report.pdf", "Multi-Label-Classification (MLC) Results");
+			String outfile = "report.pdf";
+			report = new Report(outfile, "Multi-Label-Classification (MLC) Results");
 
 			StringLineAdder s = new StringLineAdder();
 			s.add("micro-accuracy: overall accuracy (each single prediction)");
@@ -110,6 +110,8 @@ public class ReportMLC
 			for (Object arffFile : arffFiles.values())
 				addDatasetInfo(arffFile.toString(), DATASET_NAMES[i++]);
 			report.close();
+
+			System.out.println("report stored in " + outfile);
 		}
 		catch (Exception e)
 		{
@@ -129,7 +131,7 @@ public class ReportMLC
 		ChartPanel boxPlot1 = results.boxPlot("Performance for different " + compareProp + titleSuffix, "Performance",
 				new String[] { "compounds: " + numCompounds + ", labels: " + numLabels + ", " + numCVSeeds + " x "
 						+ numCVFolds + "-fold CV" }, compareProp, catProps);
-		File images[] = new File[] { FreeChartUtil.toTmpFile(boxPlot1, new Dimension(800, 400)) };
+		File images[] = new File[] { FreeChartUtil.toTmpFile(boxPlot1, new Dimension(1200, 600)) };
 
 		ResultSet rs = results.join(ArrayUtil.toList(new String[] { compareProp }), null, catProps);
 		rs.excludeProperties(ArrayUtil.toList(ArrayUtil.concat(new String[] { compareProp }, RESULT_PROPERTIES)));
@@ -150,8 +152,8 @@ public class ReportMLC
 			CategoryPlot plot = (CategoryPlot) boxPlot2.getChart().getPlot();
 			CategoryAxis xAxis = (CategoryAxis) plot.getDomainAxis();
 			xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
-			images = ArrayUtil
-					.concat(images, new File[] { FreeChartUtil.toTmpFile(boxPlot2, new Dimension(800, 600)) });
+			images = ArrayUtil.concat(images,
+					new File[] { FreeChartUtil.toTmpFile(boxPlot2, new Dimension(1200, 800)) });
 
 			//			ResultSet rs2 = results.join(ArrayUtil.toList(new String[] { compareProp }), null, catProps);
 			//			rs2.excludeProperties(ArrayUtil.toList(ArrayUtil.concat(new String[] { compareProp },
@@ -169,23 +171,22 @@ public class ReportMLC
 		String xmlFile = arffFile.replace(".arff", ".xml");
 		MultiLabelInstances dataset = new MultiLabelInstances(arffFile, xmlFile);
 		MLCData.DatasetInfo di = new MLCData.DatasetInfo(dataset);
-		File images[] = new File[] { FreeChartUtil.toTmpFile(di.plotMissingPerLabel(), new Dimension(800, 600)),
-				FreeChartUtil.toTmpFile(di.plotMissingPerCompound(), new Dimension(800, 400)),
-				FreeChartUtil.toTmpFile(di.plotCorrelation(), new Dimension(800, 400)) };
+		File images[] = new File[] { FreeChartUtil.toTmpFile(di.plotMissingPerLabel(), new Dimension(1200, 800)),
+				FreeChartUtil.toTmpFile(di.plotMissingPerCompound(), new Dimension(1200, 600)),
+				FreeChartUtil.toTmpFile(di.plotCorrelation(), new Dimension(1200, 600)) };
 		report.addSection("Dataset " + datasetName, "arff-file: " + arffFile + "\n" + di.toString(false),
 				new ResultSet[] { di.getMissingPerLabel() }, images);
-		//		report.newPage();
+		report.newPage();
 	}
 
 	public static void main(String args[]) throws Exception
 	{
-		System.out.println("reading results:");
-		ResultSet rs = ResultSetIO.parseFromFile(new File("tmp/results"));
-		System.out.println(rs.getNumResults() + " single results, creating report");
-		new ReportMLC(rs);
+		//		System.out.println("reading results:");
+		//		ResultSet rs = ResultSetIO.parseFromFile(new File("tmp/results"));
+		//		System.out.println(rs.getNumResults() + " single results, creating report");
+		//		new ReportMLC(rs);
 
-		//		new ReportMLC("tmp/input2013-03-13_10-11-46.arff", "tmp/input2013-03-13_15-55-41.arff",
-		//				"tmp/input2013-03-13_16-14-29.arff");
+		new ReportMLC("tmp/input2013-03-18_16-27-00.arff", "tmp/input2013-03-18_16-32-42.arff");
 
 		//		List<String> equalProps = ArrayUtil.toList(new String[] { "cv-seed" });
 		//		List<String> ommitProps = ArrayUtil.toList(new String[] { "label#0", "label#1", "label#2" });

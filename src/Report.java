@@ -10,6 +10,7 @@ import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Image;
+import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfPCell;
@@ -34,7 +35,7 @@ public class Report
 	{
 		try
 		{
-			document = new Document();
+			document = new Document(PageSize.A4.rotate());
 			PdfWriter.getInstance(document, new FileOutputStream(outfile));
 			document.open();
 
@@ -108,6 +109,7 @@ public class Report
 				float scaler = ((document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin() - 10) / image
 						.getWidth()) * 100;
 				image.scalePercent(scaler);
+				//image.setRotationDegrees(45f);
 				subPara.add(image);
 			}
 		addEmptyLine(subPara, 1);
