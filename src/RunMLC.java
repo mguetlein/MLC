@@ -148,7 +148,7 @@ public class RunMLC
 		if (numCores > 1)
 			parallel = new ParallelHandler(numCores);
 		final ResultSet res = new ResultSet();
-		final File resFile = new File("/tmp/" + experimentName + "_" + datasetName.replace(",", "-") + ".results");
+		final File resFile = new File("tmp/" + experimentName + "_" + datasetName.replace(",", "-") + ".results");
 		List<SinglePredictionTracker> trackers = new ArrayList<SinglePredictionTracker>();
 
 		for (final String datasetNameStr : datasetName.split(","))
