@@ -48,10 +48,13 @@ public class MLCData
 		List<Double> histData2;
 		HashMap<String, Integer> histData2b;
 
+		String datasetName;
 		String endpointFile;
 		String featureFile;
 		int numEndpoints;
 		int numMissingAllowed;
+		int discretizationLevel;
+		boolean includeV;
 
 		int[] ones_per_label;
 		int[] zeros_per_label;
@@ -62,6 +65,9 @@ public class MLCData
 			String s[] = dataset.getDataSet().relationName().split("#");
 			for (String string : s)
 			{
+
+				if (string.startsWith("dataset-name:"))
+					datasetName = string.substring("dataset-name:".length());
 				if (string.startsWith("endpoint-file:"))
 					endpointFile = string.substring("endpoint-file:".length());
 				if (string.startsWith("feature-file:"))
@@ -70,6 +76,10 @@ public class MLCData
 					numEndpoints = IntegerUtil.parseInteger(string.substring("num-endpoints:".length()));
 				if (string.startsWith("num-missing-allowed:"))
 					numMissingAllowed = IntegerUtil.parseInteger(string.substring("num-missing-allowed:".length()));
+				if (string.startsWith("discretization-level:"))
+					discretizationLevel = IntegerUtil.parseInteger(string.substring("discretization-level:".length()));
+				if (string.startsWith("include-V:"))
+					includeV = Boolean.parseBoolean(string.substring("discretization-level:".length()));
 			}
 			if (numEndpoints != dataset.getNumLabels())
 				throw new IllegalStateException();
@@ -166,6 +176,8 @@ public class MLCData
 			s.add("num-endpoints: " + numEndpoints);
 			s.add("num-missing-allowed: " + numMissingAllowed);
 			s.add("num-instances: " + dataset.getNumInstances());
+			s.add("discretization-level: " + discretizationLevel);
+			s.add("include-V: " + includeV);
 			if (details)
 			{
 				s.add();

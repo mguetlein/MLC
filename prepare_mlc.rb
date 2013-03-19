@@ -18,6 +18,7 @@ require "./ruby/to_arff.rb"
 
 
 opts = GetoptLong.new(
+  [ '--dataset-name', '-d', GetoptLong::REQUIRED_ARGUMENT ],
   [ '--endpoint-file', '-e', GetoptLong::REQUIRED_ARGUMENT ],
   [ '--feature-file', '-f', GetoptLong::REQUIRED_ARGUMENT ],
   [ '--num-endpoints', '-n', GetoptLong::REQUIRED_ARGUMENT ],
@@ -34,6 +35,7 @@ endpoint_file = nil
 feature_file = nil
 num_endpoints = nil
 num_missing_allowed = nil
+dataset_name = nil
 
 #num_cores = nil
 #min_cv_seed = 0
@@ -52,6 +54,8 @@ opts.each do |opt, arg|
     num_endpoints = arg
   when '--num-missing-allowed'
     num_missing_allowed = arg
+  when '--dataset-name'
+    dataset_name = arg
   end
 #  when '--num-cores'
 #    num_cores = arg
@@ -68,9 +72,23 @@ opts.each do |opt, arg|
 #  end  
 end
 
+raise "dataset-name missing\n"+usage unless dataset_name
+
 raise "enpoint-file missing\n"+usage unless endpoint_file
 raise unless File.exist? endpoint_file
 puts "Endpoint file: "+endpoint_file
+
+if endpoint_file=~/_disc2/
+  discretization = 2
+else
+  raise "cannot determine discretization"  
+end
+
+if endpoint_file=~/_V/
+  include_v = true
+else
+  include_v = false
+end
 
 raise "feature-file missing\n"+usage unless feature_file
 raise unless File.exist? feature_file
@@ -85,8 +103,16 @@ puts "Num missing allowed: #{num_missing_allowed==-1 ? "all" : num_missing_allow
 toArff = ToArff.new(endpoint_file, feature_file)
 num_endpoints = num_endpoints=="all" ? toArff.num_max_endpoints : num_endpoints.to_i
 num_missing_allowed = num_missing_allowed=="all" ? num_endpoints : num_missing_allowed.to_i
-relation_name = "endpoint-file:#{File.basename(endpoint_file)}#feature-file:#{File.basename(feature_file)}#num-endpoints:#{num_endpoints}#num-missing-allowed:#{num_missing_allowed}"
-outfile = "tmp/input#{Time.now.strftime("%Y-%m-%d_%H-%M-%S")}"
+relation_name = "dataset-name:#{dataset_name}"
+relation_name << "#endpoint-file:#{File.basename(endpoint_file)}"
+relation_name << "#feature-file:#{File.basename(feature_file)}"
+relation_name << "#num-endpoints:#{num_endpoints}"
+relation_name << "#num-missing-allowed:#{num_missing_allowed}"
+relation_name << "#discretization-level:#{discretization}"
+relation_name << "#include-v:#{include_v}"
+outfile = "tmp/#{dataset_name}" #"input#{Time.now.strftime("%Y-%m-%d_%H-%M-%S")}"
+raise "outfile already exists: '#{outfile}'" if File.exist?(outfile+".arff")
+
 map = nil
 if(endpoint_file =~ /disc2/)
   map = {"1" => "0", "2" => "1"}

@@ -20,7 +20,6 @@ import util.StringLineAdder;
 import com.itextpdf.text.DocumentException;
 
 import datamining.ResultSet;
-import datamining.ResultSetIO;
 import freechart.FreeChartUtil;
 
 public class ReportMLC
@@ -28,28 +27,42 @@ public class ReportMLC
 	ResultSet results;
 	Report report;
 
-	private List<String> getLabelProperties()
-	{
-		Double numLabels = Double.parseDouble(results.getUniqueValue("num-labels") + "");
-		List<String> l = new ArrayList<String>();
-		for (int i = 0; i < numLabels; i++)
-			l.add("label#" + i);
-		return l;
-	}
+	//	private List<String> getLabelProperties()
+	//	{
+	//		Double numLabels = Double.parseDouble(results.getUniqueValue("num-labels") + "");
+	//		List<String> l = new ArrayList<String>();
+	//		for (int i = 0; i < numLabels; i++)
+	//			l.add("label#" + i);
+	//		return l;
+	//	}
 
 	public static final String[] RESULT_PROPERTIES = { "micro-accuracy", "macro-accuracy", "1-hamming-loss",
 			"subset-accuracy" };
 
-	private static final String[] DATASET_NAMES = { "(A)", "(B)", "(C)" };
-
-	public ReportMLC(String... arffFiles)
+	public ReportMLC(String outfile, String... arffFiles)
 	{
 		try
 		{
-			report = new Report("report.pdf", "MLC Results");
-			int i = 0;
-			for (String arffFile : arffFiles)
-				addDatasetInfo(arffFile, DATASET_NAMES[i++]);
+			report = new Report(outfile, "Dataset Report");
+			MLCData.DatasetInfo di[] = new MLCData.DatasetInfo[arffFiles.length];
+			ResultSet res = new ResultSet();
+			for (int i = 0; i < di.length; i++)
+			{
+				di[i] = getDatasetInfo(arffFiles[i]);
+				int r = res.addResult();
+				res.setResultValue(r, "dataset-name", di[i].datasetName);
+				res.setResultValue(r, "endpoint-file", di[i].endpointFile);
+				res.setResultValue(r, "feature-file", di[i].featureFile);
+				res.setResultValue(r, "num-endpoints", di[i].numEndpoints);
+				res.setResultValue(r, "num-missing-allowed", di[i].numMissingAllowed);
+				res.setResultValue(r, "num-instances", di[i].dataset.getNumInstances());
+				res.setResultValue(r, "discretization-level", di[i].discretizationLevel);
+				res.setResultValue(r, "include-V", di[i].includeV);
+			}
+			report.addSection("Datasets", "", new ResultSet[] { res }, null);
+			report.newPage();
+			for (int i = 0; i < di.length; i++)
+				addDatasetInfo(di[i]);
 			report.close();
 		}
 		catch (Exception e)
@@ -86,9 +99,7 @@ public class ReportMLC
 					results.setResultValue(i, "mlc-algorithm", "Ensemble of classfier chains");
 
 			CountedSet<Object> arffFiles = results.getResultValues("arff-file");
-			for (int i = 0; i < results.getNumResults(); i++)
-				results.setResultValue(i, "Dataset",
-						DATASET_NAMES[arffFiles.values().indexOf(results.getResultValue(i, "arff-file"))]);
+
 			results.sortProperties(new String[] { "arff-file", "mlc-algorithm", "mlc-algorithm-params" });
 			for (String p : RESULT_PROPERTIES)
 				results.movePropertyBack(p);
@@ -114,7 +125,7 @@ public class ReportMLC
 			{
 				ResultSet res = results.copy();
 				res.exclude("arff-file", arffFile);
-				addBoxPlots(res, algCmp, " for Dataset " + res.getUniqueValue("Dataset"));
+				addBoxPlots(res, algCmp, " for Dataset " + res.getUniqueValue("dataset-name"));
 			}
 
 			for (Object mlcAlg : algSet.values())
@@ -124,9 +135,8 @@ public class ReportMLC
 				addBoxPlots(res, "Dataset", " for " + algCmp + " = " + mlcAlg);
 			}
 
-			int i = 0;
 			for (Object arffFile : arffFiles.values())
-				addDatasetInfo(arffFile.toString(), DATASET_NAMES[i++]);
+				addDatasetInfo(arffFile.toString());
 			report.close();
 
 			System.out.println("report stored in " + outfile);
@@ -183,28 +193,38 @@ public class ReportMLC
 		report.newPage();
 	}
 
-	private void addDatasetInfo(String arffFile, String datasetName) throws InvalidDataFormatException, IOException,
+	private MLCData.DatasetInfo getDatasetInfo(String arffFile) throws InvalidDataFormatException, IOException,
 			DocumentException
 	{
 		String xmlFile = arffFile.replace(".arff", ".xml");
 		MultiLabelInstances dataset = new MultiLabelInstances(arffFile, xmlFile);
-		MLCData.DatasetInfo di = new MLCData.DatasetInfo(dataset);
+		return new MLCData.DatasetInfo(dataset);
+	}
+
+	private void addDatasetInfo(String arffFile) throws InvalidDataFormatException, IOException, DocumentException
+	{
+		addDatasetInfo(getDatasetInfo(arffFile));
+	}
+
+	private void addDatasetInfo(MLCData.DatasetInfo di) throws InvalidDataFormatException, IOException,
+			DocumentException
+	{
 		File images[] = new File[] { FreeChartUtil.toTmpFile(di.plotMissingPerLabel(), new Dimension(1200, 800)),
 				FreeChartUtil.toTmpFile(di.plotMissingPerCompound(), new Dimension(1200, 600)),
 				FreeChartUtil.toTmpFile(di.plotCorrelation(), new Dimension(1200, 600)) };
-		report.addSection("Dataset " + datasetName, "arff-file: " + arffFile + "\n" + di.toString(false),
-				new ResultSet[] { di.getMissingPerLabel() }, images);
+		report.addSection("Dataset " + di.datasetName, di.toString(false), new ResultSet[] { di.getMissingPerLabel() },
+				images);
 		report.newPage();
 	}
 
 	public static void main(String args[]) throws Exception
 	{
-		System.out.println("reading results:");
-		ResultSet rs = ResultSetIO.parseFromFile(new File("tmp/results"));
-		System.out.println(rs.getNumResults() + " single results, creating report");
-		new ReportMLC(rs);
+		//		System.out.println("reading results:");
+		//		ResultSet rs = ResultSetIO.parseFromFile(new File("tmp/results"));
+		//		System.out.println(rs.getNumResults() + " single results, creating report");
+		//		new ReportMLC(rs);
 
-		//		new ReportMLC("tmp/input2013-03-18_16-27-00.arff", "tmp/input2013-03-18_16-32-42.arff");
+		new ReportMLC("dataset_report.pdf", "tmp/dataA.arff", "tmp/dataB.arff", "tmp/dataC.arff");
 
 		//		List<String> equalProps = ArrayUtil.toList(new String[] { "cv-seed" });
 		//		List<String> ommitProps = ArrayUtil.toList(new String[] { "label#0", "label#1", "label#2" });

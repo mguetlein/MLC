@@ -42,14 +42,14 @@ public class RunMLC
 	//	private String endpointFile;
 	//	private String featureFile;
 	private int numCores;
-	private String dataFile;
-	private String resultFile = "tmp/results";
 	private String classifier = "SMO";
 	private String mlcAlgorithm = "ECC";
 	private int numFolds = 10;
 	private int minSeed = 0;
 	private int maxSeedExclusive = 3;
 	private String mlcAlgorithmParams;
+	private String datasetName;
+	private String experimentName;
 
 	//	private int numEndpoints;
 	//	private int numMissingAllowed;
@@ -148,15 +148,17 @@ public class RunMLC
 		if (numCores > 1)
 			parallel = new ParallelHandler(numCores);
 		final ResultSet res = new ResultSet();
-		final File resFile = new File(resultFile);
+		final File resFile = new File("/tmp/" + experimentName + "_" + datasetName.replace(",", "-") + ".results");
 		List<SinglePredictionTracker> trackers = new ArrayList<SinglePredictionTracker>();
 
-		for (final String dataFileStr : dataFile.split(","))
+		for (final String datasetNameStr : datasetName.split(","))
 		{
-			final MultiLabelInstances dataset = new MultiLabelInstances(dataFileStr + ".arff", dataFileStr + ".xml");
+			final MultiLabelInstances dataset = new MultiLabelInstances("tmp/" + datasetNameStr + ".arff", "tmp/"
+					+ datasetNameStr + ".xml");
 			int numRepetitions = (maxSeedExclusive - minSeed) * (StringUtil.numOccurences(classifier, ",") + 1)
 					* (StringUtil.numOccurences(mlcAlgorithm, ",") + 1);
-			final SinglePredictionTracker tracker = new SinglePredictionTracker(dataFileStr, dataset, numRepetitions);
+			final SinglePredictionTracker tracker = new SinglePredictionTracker(datasetNameStr, experimentName,
+					dataset, numRepetitions);
 			trackers.add(tracker);
 
 			final MLCData.DatasetInfo di = new MLCData.DatasetInfo(dataset);
@@ -201,7 +203,7 @@ public class RunMLC
 							@Override
 							public void run()
 							{
-								System.out.println(seed + " " + dataFileStr + " "
+								System.out.println(seed + " " + datasetNameStr + " "
 										+ classifier.getClass().getSimpleName() + " "
 										+ mlcAlgorithm.getClass().getSimpleName());
 
@@ -219,11 +221,13 @@ public class RunMLC
 									for (int fold = 0; fold < numFolds; fold++)
 									{
 										int resCount = res.addResult();
+										res.setResultValue(resCount, "dataset-name", datasetNameStr);
 										res.setResultValue(resCount, "endpoint-file", di.endpointFile);
 										res.setResultValue(resCount, "feature-file", di.featureFile);
 										res.setResultValue(resCount, "num-endpoints", di.numEndpoints);
 										res.setResultValue(resCount, "num-missing-allowed", di.numMissingAllowed);
-										res.setResultValue(resCount, "arff-file", dataFileStr + ".arff");
+										res.setResultValue(resCount, "discretization-level", di.discretizationLevel);
+										res.setResultValue(resCount, "include-v", di.includeV);
 										res.setResultValue(resCount, "runtime", System.currentTimeMillis() - start);
 
 										res.setResultValue(resCount, "classifier", classifierString);
@@ -287,7 +291,7 @@ public class RunMLC
 		for (SinglePredictionTracker tracker : trackers)
 		{
 			//			tracker.print();
-			System.out.println(SinglePredictionTrackerUtil.toCsv(tracker));
+			//			System.out.println(SinglePredictionTrackerUtil.toCsv(tracker));
 			SinglePredictionTrackerUtil.attachToCsv(tracker);
 		}
 	}
@@ -328,29 +332,29 @@ public class RunMLC
 		//		System.out.println("-a " + a + " -p " + p);
 		//		if (true == true)
 		//			System.exit(0);
-		//		args = ("-x 1 -f 10 -i 0 -u 1 -a ECC,ECC,ECC,ECC,ECC,ECC,ECC,ECC,ECC,ECC,ECC,ECC -p num-chains=5;confidences=true;replacement=true,num-chains=5;confidences=true;replacement=false,num-chains=5;confidences=false;replacement=true,num-chains=5;confidences=false;replacement=false,num-chains=10;confidences=true;replacement=true,num-chains=10;confidences=true;replacement=false,num-chains=10;confidences=false;replacement=true,num-chains=10;confidences=false;replacement=false,num-chains=15;confidences=true;replacement=true,num-chains=15;confidences=true;replacement=false,num-chains=15;confidences=false;replacement=true,num-chains=15;confidences=false;replacement=false -c IBk -r tmp/input2013-03-18_16-37-02")
-		//				.split(" ");
+		args = ("-x 1 -f 3 -i 0 -u 1 -a BR -c IBk -d dataA,dataC -e BR_IBk").split(" ");
 
 		if (args == null || args.length < 6)
 			throw new Exception("params missing");
 
 		Options options = new Options();
 		options.addOption("x", "num-cores", true, "Number of cores");
-		options.addOption("r", "data-file", true, "Data file, requires .arff, .xml, and .csv file");
+		options.addOption("d", "dataset-name", true, "Data file, requires .arff, .xml, and .csv file");
 		options.addOption("i", "min-cv-seed", true, "Min seed for cv");
 		options.addOption("u", "max-cv-seed-exclusive", true, "Max seed for cv, exclusive");
 		options.addOption("a", "mlc-algorithm", true, "MLC algortihm");
 		options.addOption("p", "mlc-algorithm-params", true, "MLC algortihm params");
 		options.addOption("f", "num-folds", true, "Num folds for cv");
 		options.addOption("c", "classifier", true, "Classifier, default:SMO");
+		options.addOption("e", "experiment-name", true, "Experiment name");
 		CommandLineParser parser = new BasicParser();
 		CommandLine cmd = parser.parse(options, args);
 
 		RunMLC run = new RunMLC();
 		if (cmd.hasOption("x"))
 			run.numCores = Integer.parseInt(cmd.getOptionValue("x"));
-		if (cmd.hasOption("r"))
-			run.dataFile = cmd.getOptionValue("r");
+		if (cmd.hasOption("d"))
+			run.datasetName = cmd.getOptionValue("d");
 		if (cmd.hasOption("i"))
 			run.minSeed = Integer.parseInt(cmd.getOptionValue("i"));
 		if (cmd.hasOption("u"))
@@ -363,6 +367,11 @@ public class RunMLC
 			run.mlcAlgorithmParams = cmd.getOptionValue("p");
 		if (cmd.hasOption("c"))
 			run.classifier = cmd.getOptionValue("c");
+		if (cmd.hasOption("e"))
+			run.experimentName = cmd.getOptionValue("e");
+
+		if (run.experimentName == null)
+			throw new IllegalArgumentException("experiment-name missing");
 
 		run.eval();
 		System.exit(0);

@@ -15,9 +15,10 @@ public class SinglePredictionTrackerUtil
 {
 	public static void attachToCsv(SinglePredictionTracker tracker)
 	{
-		CSVFile csvNew = FileUtil.readCSV(tracker.dataFile + ".csv").merge(toCsv(tracker));
-		System.out.println("writing missclassifications to " + tracker.dataFile + ".missclassified.csv");
-		FileUtil.writeCSV(tracker.dataFile + ".missclassified.csv", csvNew, false);
+		CSVFile csvNew = FileUtil.readCSV("tmp/" + tracker.datasetName + ".csv").merge(toCsv(tracker));
+		String outfile = "tmp/" + tracker.datasetName + "_" + tracker.experimentName + "_missclassified.csv";
+		System.out.println("writing missclassifications to " + outfile);
+		FileUtil.writeCSV(outfile, csvNew, false);
 	}
 
 	public static CSVFile toCsv(SinglePredictionTracker tracker)
