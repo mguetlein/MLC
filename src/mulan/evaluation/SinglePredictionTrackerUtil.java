@@ -13,12 +13,13 @@ import util.StringUtil;
 
 public class SinglePredictionTrackerUtil
 {
-	public static void attachToCsv(SinglePredictionTracker tracker)
+	public static String attachToCsv(SinglePredictionTracker tracker)
 	{
 		CSVFile csvNew = FileUtil.readCSV("tmp/" + tracker.datasetName + ".csv").merge(toCsv(tracker));
 		String outfile = "tmp/" + tracker.datasetName + "_" + tracker.experimentName + "_missclassified.csv";
 		System.out.println("writing missclassifications to " + outfile);
 		FileUtil.writeCSV(outfile, csvNew, false);
+		return outfile;
 	}
 
 	public static CSVFile toCsv(SinglePredictionTracker tracker)

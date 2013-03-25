@@ -20,6 +20,7 @@ import util.StringLineAdder;
 import com.itextpdf.text.DocumentException;
 
 import datamining.ResultSet;
+import datamining.ResultSetIO;
 import freechart.FreeChartUtil;
 
 public class ReportMLC
@@ -39,16 +40,16 @@ public class ReportMLC
 	public static final String[] RESULT_PROPERTIES = { "micro-accuracy", "macro-accuracy", "1-hamming-loss",
 			"subset-accuracy" };
 
-	public ReportMLC(String outfile, String... arffFiles)
+	public ReportMLC(String outfile, String... datasetNames)
 	{
 		try
 		{
 			report = new Report(outfile, "Dataset Report");
-			MLCData.DatasetInfo di[] = new MLCData.DatasetInfo[arffFiles.length];
+			MLCData.DatasetInfo di[] = new MLCData.DatasetInfo[datasetNames.length];
 			ResultSet res = new ResultSet();
 			for (int i = 0; i < di.length; i++)
 			{
-				di[i] = getDatasetInfo(arffFiles[i]);
+				di[i] = getDatasetInfo(datasetNames[i]);
 				int r = res.addResult();
 				res.setResultValue(r, "dataset-name", di[i].datasetName);
 				res.setResultValue(r, "endpoint-file", di[i].endpointFile);
@@ -71,11 +72,10 @@ public class ReportMLC
 		}
 	}
 
-	public ReportMLC(ResultSet results)
+	public ReportMLC(String outfile, ResultSet results)
 	{
 		try
 		{
-			String outfile = "report.pdf";
 			report = new Report(outfile, "Multi-Label-Classification (MLC) Results");
 
 			StringLineAdder s = new StringLineAdder();
@@ -98,45 +98,51 @@ public class ReportMLC
 				else if (results.getResultValue(i, "mlc-algorithm").toString().equals("ECC"))
 					results.setResultValue(i, "mlc-algorithm", "Ensemble of classfier chains");
 
-			CountedSet<Object> arffFiles = results.getResultValues("arff-file");
+			CountedSet<Object> datasetNames = results.getResultValues("dataset-name");
 
-			results.sortProperties(new String[] { "arff-file", "mlc-algorithm", "mlc-algorithm-params" });
+			results.sortProperties(new String[] { "dataset-name", "mlc-algorithm", "mlc-algorithm-params" });
 			for (String p : RESULT_PROPERTIES)
 				results.movePropertyBack(p);
 
 			CountedSet<Object> mlcAlgorithms = results.getResultValues("mlc-algorithm");
 			CountedSet<Object> mlcAlgorithmParams = results.getResultValues("mlc-algorithm-params");
+			CountedSet<Object> wekaClassifiers = results.getResultValues("classifier");
 			if (mlcAlgorithms.size() > 1 && mlcAlgorithmParams.size() > 1)
 				throw new IllegalStateException("compare either algs or alg-params, plz!");
+			if (mlcAlgorithms.size() > 1 && wekaClassifiers.size() > 1)
+				throw new IllegalStateException("compare either mlc-algs or weka-algs, plz!");
 			String algCmp = null;
 			CountedSet<Object> algSet = null;
-			if (mlcAlgorithmParams.size() <= 1)
-			{
-				algCmp = "mlc-algorithm";
-				algSet = mlcAlgorithms;
-			}
-			else
+			if (mlcAlgorithmParams.size() > 1)
 			{
 				algCmp = "mlc-algorithm-params";
 				algSet = mlcAlgorithmParams;
 			}
+			else if (wekaClassifiers.size() > 1)
+			{
+				algCmp = "classifier";
+				algSet = wekaClassifiers;
+			}
+			else
+			{
+				algCmp = "mlc-algorithm";
+				algSet = mlcAlgorithms;
+			}
 
-			for (Object arffFile : arffFiles.values())
+			for (Object datasetName : datasetNames.values())
 			{
 				ResultSet res = results.copy();
-				res.exclude("arff-file", arffFile);
-				addBoxPlots(res, algCmp, " for Dataset " + res.getUniqueValue("dataset-name"));
+				res.exclude("dataset-name", datasetName);
+				addBoxPlots(res, algCmp, " for dataset " + res.getUniqueValue("dataset-name"));
 			}
 
 			for (Object mlcAlg : algSet.values())
 			{
 				ResultSet res = results.copy();
 				res.exclude(algCmp, mlcAlg);
-				addBoxPlots(res, "Dataset", " for " + algCmp + " = " + mlcAlg);
+				addBoxPlots(res, "dataset-name", " for " + algCmp + " = " + mlcAlg);
 			}
 
-			for (Object arffFile : arffFiles.values())
-				addDatasetInfo(arffFile.toString());
 			report.close();
 
 			System.out.println("report stored in " + outfile);
@@ -165,7 +171,7 @@ public class ReportMLC
 		rs.excludeProperties(ArrayUtil.toList(ArrayUtil.concat(new String[] { compareProp }, RESULT_PROPERTIES)));
 		ResultSet tables[] = new ResultSet[] { rs };
 
-		if (results.getResultValues("arff-file").size() == 1)
+		if (results.getResultValues("dataset-name").size() == 1)
 		{
 			Double numLabelsInt = Double.parseDouble(results.getUniqueValue("num-labels") + "");
 			catProps.clear();
@@ -193,18 +199,18 @@ public class ReportMLC
 		report.newPage();
 	}
 
-	private MLCData.DatasetInfo getDatasetInfo(String arffFile) throws InvalidDataFormatException, IOException,
+	private MLCData.DatasetInfo getDatasetInfo(String datasetName) throws InvalidDataFormatException, IOException,
 			DocumentException
 	{
-		String xmlFile = arffFile.replace(".arff", ".xml");
-		MultiLabelInstances dataset = new MultiLabelInstances(arffFile, xmlFile);
+		MultiLabelInstances dataset = new MultiLabelInstances("tmp/" + datasetName + ".arff", "tmp/" + datasetName
+				+ ".xml");
 		return new MLCData.DatasetInfo(dataset);
 	}
 
-	private void addDatasetInfo(String arffFile) throws InvalidDataFormatException, IOException, DocumentException
-	{
-		addDatasetInfo(getDatasetInfo(arffFile));
-	}
+	//	private void addDatasetInfo(String datasetName) throws InvalidDataFormatException, IOException, DocumentException
+	//	{
+	//		addDatasetInfo(getDatasetInfo(datasetName));
+	//	}
 
 	private void addDatasetInfo(MLCData.DatasetInfo di) throws InvalidDataFormatException, IOException,
 			DocumentException
@@ -219,12 +225,14 @@ public class ReportMLC
 
 	public static void main(String args[]) throws Exception
 	{
-		//		System.out.println("reading results:");
-		//		ResultSet rs = ResultSetIO.parseFromFile(new File("tmp/results"));
-		//		System.out.println(rs.getNumResults() + " single results, creating report");
-		//		new ReportMLC(rs);
+		System.out.println("reading results:");
+		//String infile = "ECC_BR_dataA-dataB-dataC";
+		String infile = "BR_alg_dataC";
+		ResultSet rs = ResultSetIO.parseFromFile(new File("tmp/" + infile + ".results"));
+		System.out.println(rs.getNumResults() + " single results, creating report");
+		new ReportMLC(infile + "_report.pdf", rs);
 
-		new ReportMLC("dataset_report.pdf", "tmp/dataA.arff", "tmp/dataB.arff", "tmp/dataC.arff");
+		//		new ReportMLC("dataset_report.pdf", "dataA", "dataB", "dataC");
 
 		//		List<String> equalProps = ArrayUtil.toList(new String[] { "cv-seed" });
 		//		List<String> ommitProps = ArrayUtil.toList(new String[] { "label#0", "label#1", "label#2" });

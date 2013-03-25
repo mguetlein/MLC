@@ -20,20 +20,23 @@ require "./ruby/to_arff.rb"
 opts = GetoptLong.new(
   [ '--dataset-name', '-d', GetoptLong::REQUIRED_ARGUMENT ],
   [ '--endpoint-file', '-e', GetoptLong::REQUIRED_ARGUMENT ],
+  [ '--real-endpoint-file', '-r', GetoptLong::REQUIRED_ARGUMENT ],
   [ '--feature-file', '-f', GetoptLong::REQUIRED_ARGUMENT ],
   [ '--num-endpoints', '-n', GetoptLong::REQUIRED_ARGUMENT ],
   [ '--num-missing-allowed', '-m', GetoptLong::REQUIRED_ARGUMENT ],
-  [ '--num-cores', '-x', GetoptLong::REQUIRED_ARGUMENT ],
-  [ '--min-cv-seed', '-i', GetoptLong::REQUIRED_ARGUMENT ],
-  [ '--max-cv-seed-exclusive', '-u', GetoptLong::REQUIRED_ARGUMENT ],
-  [ '--mlc-algorithm', '-a', GetoptLong::REQUIRED_ARGUMENT ],
+#  [ '--num-cores', '-x', GetoptLong::REQUIRED_ARGUMENT ],
+#  [ '--max-cv-seed-exclusive', '-u', GetoptLong::REQUIRED_ARGUMENT ],
+#  [ '--mlc-algorithm', '-a', GetoptLong::REQUIRED_ARGUMENT ],
+  [ '--start-endpoint', '-i', GetoptLong::REQUIRED_ARGUMENT ],
 )
 
 usage = "Usage: ..."
 
 endpoint_file = nil
+real_endpoint_file = nil
 feature_file = nil
 num_endpoints = nil
+start_endpoint = 0
 num_missing_allowed = nil
 dataset_name = nil
 
@@ -48,6 +51,8 @@ opts.each do |opt, arg|
   case opt
   when '--endpoint-file'
     endpoint_file = arg
+  when '--real-endpoint-file'
+    real_endpoint_file = arg
   when '--feature-file'
     feature_file = arg
   when '--num-endpoints'
@@ -56,6 +61,8 @@ opts.each do |opt, arg|
     num_missing_allowed = arg
   when '--dataset-name'
     dataset_name = arg
+  when '--start-endpoint'
+    start_endpoint = arg.to_i
   end
 #  when '--num-cores'
 #    num_cores = arg
@@ -100,7 +107,7 @@ puts "Num endpoints: #{num_endpoints==-1 ? "all" : num_endpoints}"
 raise "num-missing-allowed\n"+usage unless num_missing_allowed
 puts "Num missing allowed: #{num_missing_allowed==-1 ? "all" : num_missing_allowed}"
 
-toArff = ToArff.new(endpoint_file, feature_file)
+toArff = ToArff.new(endpoint_file, feature_file, real_endpoint_file)
 num_endpoints = num_endpoints=="all" ? toArff.num_max_endpoints : num_endpoints.to_i
 num_missing_allowed = num_missing_allowed=="all" ? num_endpoints : num_missing_allowed.to_i
 relation_name = "dataset-name:#{dataset_name}"
@@ -117,7 +124,8 @@ map = nil
 if(endpoint_file =~ /disc2/)
   map = {"1" => "0", "2" => "1"}
 end
-arff_file = toArff.to_arff(num_endpoints, num_missing_allowed, relation_name, outfile, map)
+
+arff_file = toArff.to_arff(num_endpoints, num_missing_allowed, relation_name, outfile, map, start_endpoint)
 
 puts arff_file
 

@@ -332,7 +332,7 @@ public class RunMLC
 		//		System.out.println("-a " + a + " -p " + p);
 		//		if (true == true)
 		//			System.exit(0);
-		//		args = ("-x 1 -f 3 -i 0 -u 1 -a BR -c IBk -d dataA,dataC -e BR_IBk").split(" ");
+		//		args = ("-x 1 -f 3 -i 0 -u 3 -a BR -c IBk -d dataC -e BR_IBk").split(" ");
 
 		if (args == null || args.length < 6)
 			throw new Exception("params missing");
