@@ -59,9 +59,18 @@ public class SinglePredictionTrackerUtil
 				}
 			}
 			AllLabelPredictions p = tracker.allLabelPredictions.get(i);
-			v.add(StringUtil.formatDouble(p.getMissclassified(), Locale.US));
-			v.add(p.getNumLabels());
-			v.add(p.getMissclassifiedTotal());
+			if (p != null)
+			{
+				v.add(StringUtil.formatDouble(p.getMissclassified(), Locale.US));
+				v.add(p.getNumLabels());
+				v.add(p.getMissclassifiedTotal());
+			}
+			else
+			{
+				v.add(null);
+				v.add(null);
+				v.add(null);
+			}
 			csv.content.add(ArrayUtil.toArray(String.class, v));
 		}
 		return csv;
