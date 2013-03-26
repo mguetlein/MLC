@@ -29,6 +29,7 @@ public class SinglePredictionTrackerUtil
 		for (int l = 0; l < tracker.data.getNumLabels(); l++)
 		{
 			String name = tracker.data.getDataSet().attribute(tracker.data.getLabelIndices()[l]).name();
+			h.add(name + "_classified");
 			h.add(name + "_missclassified");
 			//			h.add(name + "_missclassfied_as_1");
 			//			h.add(name + "_missclassfied_as_0");
@@ -47,12 +48,14 @@ public class SinglePredictionTrackerUtil
 				Predictions p = tracker.labelPredictions.get(i + "_" + l);
 				if (p != null)
 				{
+					v.add(StringUtil.formatDouble(p.getClassified(), Locale.US));
 					v.add(StringUtil.formatDouble(p.getMissclassified(), Locale.US));
 					//					v.add(p.getMissclassifiedAsTrue());
 					//					v.add(p.getMissclassifiedAsFalse());
 				}
 				else
 				{
+					v.add(null);
 					v.add(null);
 					//					v.add(null);
 					//					v.add(null);
