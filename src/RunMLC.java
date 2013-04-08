@@ -17,7 +17,9 @@ import mulan.evaluation.SinglePredictionTracker;
 import mulan.evaluation.SinglePredictionTrackerUtil;
 import mulan.evaluation.loss.HammingLoss;
 import mulan.evaluation.measure.MacroAccuracy;
+import mulan.evaluation.measure.MacroFMeasure;
 import mulan.evaluation.measure.MicroAccuracy;
+import mulan.evaluation.measure.MicroFMeasure;
 import mulan.evaluation.measure.SubsetAccuracy;
 
 import org.apache.commons.cli.BasicParser;
@@ -209,11 +211,19 @@ public class RunMLC
 
 								long start = System.currentTimeMillis();
 
+								MultiLabelInstances data = dataset;
+
+								//								System.err.println("filling");
+								//								EnsembleOfClassifierChainsFiller filler = new EnsembleOfClassifierChainsFiller(
+								//										new SMO(), 10);
+								//								data = filler.fillMissing(data);
+								//								System.err.println("filling - done");
+
 								//mulan.evaluation.Evaluator eval = new mulan.evaluation.Evaluator();
 								MissingCapableEvaluator eval = new MissingCapableEvaluator();
 								eval.setSinglePredictionTracker(tracker);
 								eval.setSeed(seed);
-								MultipleEvaluation ev = eval.crossValidate(mlcAlgorithm, dataset, numFolds);
+								MultipleEvaluation ev = eval.crossValidate(mlcAlgorithm, data, numFolds);
 								//				ev.calculateStatistics();
 
 								synchronized (res)
@@ -269,6 +279,17 @@ public class RunMLC
 
 										res.setResultValue(resCount, "micro-accuracy",
 												ev.getResult(new MicroAccuracy(dataset.getNumLabels()).getName(), fold));
+
+										res.setResultValue(resCount, "micro-f-measure",
+												ev.getResult(new MicroFMeasure(dataset.getNumLabels()).getName(), fold));
+
+										res.setResultValue(resCount, "macro-f-measure",
+												ev.getResult(new MacroFMeasure(dataset.getNumLabels()).getName(), fold));
+
+										for (int i = 0; i < dataset.getNumLabels(); i++)
+											res.setResultValue(resCount, "macro-f-measure#" + i, ev.getResult(
+													new MacroFMeasure(dataset.getNumLabels()).getName(), fold, i));
+
 									}
 									System.out.println("\nprinting " + res.getNumResults() + " results to " + resFile);
 									//System.out.println(res.toNiceString());
@@ -332,7 +353,11 @@ public class RunMLC
 		//		System.out.println("-a " + a + " -p " + p);
 		//		if (true == true)
 		//			System.exit(0);
-		//		args = ("-x 1 -f 3 -i 0 -u 3 -a BR -c IBk -d dataC -e BR_IBk").split(" ");
+
+		if (args != null && args.length == 1 && args[0].equals("debug"))
+		{
+			args = ("-x 1 -f 3 -i 0 -u 1 -a BR -c IBk -d dataAsmall -e BR_IBk").split(" ");
+		}
 
 		if (args == null || args.length < 6)
 			throw new Exception("params missing");

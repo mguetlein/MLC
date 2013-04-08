@@ -9,7 +9,7 @@ class ToArff
     
     @files = [endpoint_file, feature_file]
     @files += [real_value_file] if real_value_file
-    key_pattern = /^(CAS|ID)$/
+    key_pattern = /^(DSSTox_FileID|CAS|ID)$/
     
     @head = []
     @data = []
@@ -18,7 +18,8 @@ class ToArff
     @endpoints = nil
     @real_values = real_value_file!=nil 
     
-    stuff = ["CAS","ID","SMILES","Name","study-pk","route","route2","study-duration","Jahr","reliability", "dummy"]
+    stuff = ["CAS","ID","SMILES","Name","study-pk","route","route2","study-duration","Jahr","reliability", "dummy","DSSTox_FileID","TestSubstance_ChemicalName","TestSubstance_CASRN"]
+    no_features = []
     
     @files.each do |file|
 
@@ -34,7 +35,8 @@ class ToArff
           row.each{|r| raise "duplicate key: #{r} in #{file}" if row.count(r)>1}
           id_index=nil
           row.each_with_index{|k,i| id_index=i if k=~key_pattern}
-          row = row.collect{|x| stuff.include?(x) ? x : x.gsub(/(\.|\s|\(|\)|_|\/)/,"-").chomp("-").gsub(/--/,"-").downcase} if file!=feature_file      
+          raise "no id column found" if id_index==nil
+          row = row.collect{|x| stuff.include?(x) ? x : x.gsub(/(\.|\s|\(|\)|_|\/|,)/,"-").chomp("-").gsub(/--/,"-").downcase} if file!=feature_file      
           if file==endpoint_file
             @head = row
             @endpoints = row
@@ -54,17 +56,44 @@ class ToArff
               @data[i] += row if @id[i]==feature_row_id
             end
           else
-            real_row_id = row[id_index]
-            @data.size.times do |i|
-              if @id[i]==real_row_id and @data[i].size==num_columns_before
-                @data[i] += row 
-                break
-              end
-            end
+            # so far, real endpoint file and discretized file have same number of rows and same sorting
+            raise "#{row_index} : #{@id[row_index]} != #{row[id_index]}" unless @id[row_index-1] == row[id_index]
+            @data[row_index-1] += row
+            #if row_index==335 || row_index==336
+            #  puts @data[row_index-1].inspect
+            #  puts @head.index("liver")
+            #  puts @data[row_index-1][@head.index("liver")]
+            #  puts @head.size
+            #  puts @head.index("liver_real")
+            #  puts @data[row_index-1][@head.index("liver_real")]
+            #  puts ""
+            #end
+            
+            #@data.size.times do |i|
+            #  if @id[i]==real_row_id and @data[i].size==num_columns_before
+            #    @data[i] += row 
+            #    break
+            #  end
+            #end
           end
         end
       end
-    end    
+      
+      @data.size.times do |i|
+        if (@data[i].size < @head.size) and (@features.size+@data[i].size==@head.size) and (file==feature_file)
+          puts "warning no features for #{i} #{@id[i]}"
+          @data[i] += [nil]*@features.size
+          no_features << i
+        elsif @data[i].size != @head.size
+          raise "#{i} #{@head.size} #{@data[i].size}"
+        end
+      end
+    end 
+    
+    no_features.size.times do |i| 
+      @id.delete_at no_features[no_features.size-(i+1)]
+      @data.delete_at no_features[no_features.size-(i+1)]
+    end
     
     @endpoints -= stuff
     @features -= stuff
@@ -75,13 +104,13 @@ class ToArff
     sort_endpoints
     
     @endpoints.each do |e|
-      raise "real not found: "+e unless @head.include?(e+"_real")
+      raise "real not found: "+e+", available: "+@head.collect{|x| x=~/_real/ ? x : nil}.compact.sort.inspect unless @head.include?(e+"_real")
       @data.size.times do |i|
-        v = @data[@head.index(e)]
+        v = @data[i][@head.index(e)]
         v = v==nil || v==""
-        v_r = @data[@head.index(e+"_real")]
+        v_r = @data[i][@head.index(e+"_real")]
         v_r = v_r==nil || v_r==""
-        raise if (v!=v_r)
+        raise e+" "+i.to_s+" "+@id[i]+" class: '"+@data[i][@head.index(e)].to_s+"' <-> real: '"+@data[i][@head.index(e+"_real")].to_s+"'" if (v!=v_r)
       end
     end if @real_values
   end
@@ -103,7 +132,7 @@ class ToArff
     @endpoints.size
   end
   
-  def to_arff(num_endpoints, num_missing_allowed, relation_name, outfile, endpoint_value_map=nil, start_endpoint=0)
+  def to_arff(num_endpoints, num_missing_allowed, relation_name, outfile, endpoint_value_map=nil, start_endpoint=0, additional_columns=["SMILES","Name","CAS"])
   
     raise if num_endpoints>@endpoints.size
     raise if num_missing_allowed>num_endpoints
@@ -138,7 +167,7 @@ class ToArff
       end
     end
     f.puts ""
-    f2.puts '"'+(["SMILES","Name","CAS"]+@features+endpoints+real_endpoints).join('","')+'"'
+    f2.puts '"'+(additional_columns+@features+endpoints+real_endpoints).join('","')+'"'
     
     num_data = 0
     
@@ -152,7 +181,7 @@ class ToArff
       if num_missing_allowed>=nil_count
         num_data += 1
         values = []
-        (["SMILES","Name","CAS"]+@features+endpoints).each do |k|
+        (additional_columns+@features+endpoints).each do |k|
           index = @head.index(k)
           raise "not found #{k} in #{@head.inspect}" unless index
           v = vals[index]
@@ -167,8 +196,9 @@ class ToArff
           end
           values << v
         end
-        raise "WTF #{values[3..-1].size} != #{(@features+endpoints).size}" unless values[3..-1].size==(@features+endpoints).size
-        f.puts values[3..-1].join(",")
+        num_cols = additional_columns.size()
+        raise "WTF #{values[num_cols..-1].size} != #{(@features+endpoints).size}" unless values[num_cols..-1].size==(@features+endpoints).size
+        f.puts values[num_cols..-1].join(",")
         
         values += real_endpoints.collect{|k| vals[@head.index(k)]} if @real_values
         

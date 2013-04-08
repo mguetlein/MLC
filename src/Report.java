@@ -89,8 +89,8 @@ public class Report
 	//		addSection(title, content, null);
 	//	}
 
-	public void addSection(String title, String content, ResultSet[] tables, File[] images) throws DocumentException,
-			IOException
+	public void addSection(String title, String content, ResultSet[] tables, File[] images, File[] smallImages)
+			throws DocumentException, IOException
 	{
 		Paragraph subPara = new Paragraph(title, FONT_SUB_TITLE);
 		subPara.add(new Paragraph(content, FONT_TEXT));
@@ -112,6 +112,20 @@ public class Report
 				//image.setRotationDegrees(45f);
 				subPara.add(image);
 			}
+		if (smallImages != null && smallImages.length > 0)
+		{
+			addEmptyLine(subPara, 15);
+			PdfPTable table = new PdfPTable(2);
+			for (int i = 0; i < smallImages.length; i++)
+			{
+				Image image = PngImage.getImage(smallImages[i].getAbsolutePath());
+				//				float scaler = ((document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin() - 10) / image
+				//						.getWidth()) * 50;
+				//				image.scalePercent(scaler);
+				table.addCell(image);
+			}
+			subPara.add(table);
+		}
 		addEmptyLine(subPara, 1);
 		document.add(subPara);
 	}

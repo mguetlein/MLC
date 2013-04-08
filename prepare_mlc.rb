@@ -87,6 +87,14 @@ puts "Endpoint file: "+endpoint_file
 
 if endpoint_file=~/_disc2/
   discretization = 2
+elsif endpoint_file=~/_cluster2/
+  discretization = 2
+elsif endpoint_file=~/_clusterHighActive/
+  discretization = 2
+elsif endpoint_file=~/_clusterLowActive/
+  discretization = 2  
+elsif endpoint_file=~/CPDB/
+  discretization = 2
 else
   raise "cannot determine discretization"  
 end
@@ -123,9 +131,19 @@ raise "outfile already exists: '#{outfile}'" if File.exist?(outfile+".arff")
 map = nil
 if(endpoint_file =~ /disc2/)
   map = {"1" => "0", "2" => "1"}
+elsif(endpoint_file =~ /cluster2|clusterHighActive|clusterLowActive/)
+  map = {"0" => "0", "1" => "1"}
+elsif endpoint_file=~/CPDB/
+  map = {"active" => "1", "inactive" => "0", "blank" => "?", "unspecified" => "?"}
 end
 
-arff_file = toArff.to_arff(num_endpoints, num_missing_allowed, relation_name, outfile, map, start_endpoint)
+
+additional = ["SMILES","Name","CAS"]
+if endpoint_file=~/CPDB/
+  additional = ["SMILES","DSSTox_FileID","TestSubstance_ChemicalName","TestSubstance_CASRN"]  
+end
+
+arff_file = toArff.to_arff(num_endpoints, num_missing_allowed, relation_name, outfile, map, start_endpoint, additional)
 
 puts arff_file
 
