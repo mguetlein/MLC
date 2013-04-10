@@ -130,48 +130,45 @@ public class ReportMLC
 
 			CountedSet<Object> datasetNames = results.getResultValues("dataset-name");
 
-			results.sortProperties(new String[] { "dataset-name", "mlc-algorithm", "mlc-algorithm-params" });
+			String compareProps[] = new String[] { "dataste", "mlc-algorithm", "mlc-algorithm-params", "classifier",
+					"imputation" };
+			String nonDatasetCompareProps[] = new String[] { "mlc-algorithm", "mlc-algorithm-params", "classifier",
+					"imputation" };
+
+			results.sortProperties(compareProps);
+			for (String p : compareProps)
+				results.sortResults(p);
 			for (String p : (measures == PerformanceMeasures.accuracy ? RESULT_PROPERTIES_ACCURACY
 					: RESULT_PROPERTIES_F_MEASURE))
 				results.movePropertyBack(p);
 
-			CountedSet<Object> mlcAlgorithms = results.getResultValues("mlc-algorithm");
-			CountedSet<Object> mlcAlgorithmParams = results.getResultValues("mlc-algorithm-params");
-			CountedSet<Object> wekaClassifiers = results.getResultValues("classifier");
-			if (mlcAlgorithms.size() > 1 && mlcAlgorithmParams.size() > 1)
-				throw new IllegalStateException("compare either algs or alg-params, plz!");
-			if (mlcAlgorithms.size() > 1 && wekaClassifiers.size() > 1)
-				throw new IllegalStateException("compare either mlc-algs or weka-algs, plz!");
-			String algCmp = null;
-			CountedSet<Object> algSet = null;
-			if (mlcAlgorithmParams.size() > 1)
+			String nonDatasetCmp = null;
+			CountedSet<Object> nonDatasetSet = null;
+			for (String p : nonDatasetCompareProps)
 			{
-				algCmp = "mlc-algorithm-params";
-				algSet = mlcAlgorithmParams;
-			}
-			else if (wekaClassifiers.size() > 1)
-			{
-				algCmp = "classifier";
-				algSet = wekaClassifiers;
-			}
-			else
-			{
-				algCmp = "mlc-algorithm";
-				algSet = mlcAlgorithms;
+				CountedSet<Object> set = results.getResultValues(p);
+				if (set.size() > 1)
+				{
+					if (nonDatasetCmp != null)
+						throw new IllegalStateException("compare only one of those plz: "
+								+ ArrayUtil.toString(nonDatasetCompareProps));
+					nonDatasetCmp = p;
+					nonDatasetSet = set;
+				}
 			}
 
 			for (Object datasetName : datasetNames.values())
 			{
 				ResultSet res = results.copy();
 				res.exclude("dataset-name", datasetName);
-				addBoxPlots(res, algCmp, " for dataset " + res.getUniqueValue("dataset-name"), measures);
+				addBoxPlots(res, nonDatasetCmp, " for dataset " + res.getUniqueValue("dataset-name"), measures);
 			}
 
-			for (Object mlcAlg : algSet.values())
+			for (Object mlcAlg : nonDatasetSet.values())
 			{
 				ResultSet res = results.copy();
-				res.exclude(algCmp, mlcAlg);
-				addBoxPlots(res, "dataset-name", " for " + algCmp + " = " + mlcAlg, measures);
+				res.exclude(nonDatasetCmp, mlcAlg);
+				addBoxPlots(res, "dataset-name", " for " + nonDatasetCmp + " = " + mlcAlg, measures);
 			}
 
 			report.close();
@@ -315,15 +312,19 @@ public class ReportMLC
 		//String infile = "ECC_BR_dataA-dataB-dataC";
 		//String infile = "BR_alg_dataC";
 		//String infile = "ECC_BR_cpdb";
-		String infile = "BR_IBk_dataAsmall";
+		//String infile = "BR_IBk_dataAsmall";
+		//		String infile = "BR_ECC_dataAdisc-dataAclusterH-dataAclusterL";
+		//String infile = "BR_ECC_dataAdisc-dataAclusterB";
 		//		String infile = "BR_ECC_dataApc-dataAfp1-dataAfp2-dataAfp3-dataAfp4";
+		String infile = "ECC_imputation_dataAsmall";
 		ResultSet rs = ResultSetIO.parseFromFile(new File("tmp/" + infile + ".results"));
 		System.out.println(rs.getNumResults() + " single results, creating report");
-		new ReportMLC(infile + "_report.pdf", rs, PerformanceMeasures.fmeasure);
+		new ReportMLC(infile + "_report.pdf", rs, PerformanceMeasures.accuracy);
 
 		//		new ReportMLC("dataset_report.pdf", "dataA", "dataB", "dataC", "dataD");
 		//new ReportMLC("dataset_report_dataDall.pdf", "dataAsmallC", "dataAsmall");
 		//new ReportMLC("dataset_report_dataA_pc_fp.pdf", "dataApc", "dataAfp1", "dataAfp2", "dataAfp3", "dataAfp4");
+		//		new ReportMLC("dataset_report_dataA_disc.pdf", "dataAdisc", "dataAclusterB");
 
 		//				new ReportMLC("dataset_report.pdf", "cpdb");
 

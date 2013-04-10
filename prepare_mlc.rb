@@ -87,12 +87,8 @@ puts "Endpoint file: "+endpoint_file
 
 if endpoint_file=~/_disc2/
   discretization = 2
-elsif endpoint_file=~/_cluster2/
+elsif endpoint_file=~/_cluster/
   discretization = 2
-elsif endpoint_file=~/_clusterHighActive/
-  discretization = 2
-elsif endpoint_file=~/_clusterLowActive/
-  discretization = 2  
 elsif endpoint_file=~/CPDB/
   discretization = 2
 else
@@ -131,7 +127,7 @@ raise "outfile already exists: '#{outfile}'" if File.exist?(outfile+".arff")
 map = nil
 if(endpoint_file =~ /disc2/)
   map = {"1" => "0", "2" => "1"}
-elsif(endpoint_file =~ /cluster2|clusterHighActive|clusterLowActive/)
+elsif(endpoint_file =~ /cluster/)
   map = {"0" => "0", "1" => "1"}
 elsif endpoint_file=~/CPDB/
   map = {"active" => "1", "inactive" => "0", "blank" => "?", "unspecified" => "?"}
