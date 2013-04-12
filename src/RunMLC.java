@@ -17,8 +17,10 @@ import mulan.evaluation.MultipleEvaluation;
 import mulan.evaluation.SinglePredictionTracker;
 import mulan.evaluation.SinglePredictionTrackerUtil;
 import mulan.evaluation.loss.HammingLoss;
+import mulan.evaluation.measure.MacroAUC;
 import mulan.evaluation.measure.MacroAccuracy;
 import mulan.evaluation.measure.MacroFMeasure;
+import mulan.evaluation.measure.MicroAUC;
 import mulan.evaluation.measure.MicroAccuracy;
 import mulan.evaluation.measure.MicroFMeasure;
 import mulan.evaluation.measure.SubsetAccuracy;
@@ -153,7 +155,7 @@ public class RunMLC
 		if (numCores > 1)
 			parallel = new ParallelHandler(numCores);
 		final ResultSet res = new ResultSet();
-		final File resFile = new File("tmp/" + experimentName + "_" + datasetName.replace(",", "-") + ".results");
+		final File resFile = new File("tmp/" + experimentName + "_" + datasetName.replace(",", "_") + ".results");
 		List<SinglePredictionTracker> trackers = new ArrayList<SinglePredictionTracker>();
 
 		for (final String datasetNameStr : datasetName.split(","))
@@ -304,6 +306,15 @@ public class RunMLC
 												res.setResultValue(resCount, "macro-f-measure#" + i, ev.getResult(
 														new MacroFMeasure(dataset.getNumLabels()).getName(), fold, i));
 
+											res.setResultValue(resCount, "micro-auc",
+													ev.getResult(new MicroAUC(dataset.getNumLabels()).getName(), fold));
+
+											res.setResultValue(resCount, "macro-auc",
+													ev.getResult(new MacroAUC(dataset.getNumLabels()).getName(), fold));
+
+											for (int i = 0; i < dataset.getNumLabels(); i++)
+												res.setResultValue(resCount, "macro-auc#" + i, ev.getResult(
+														new MacroAUC(dataset.getNumLabels()).getName(), fold, i));
 										}
 										System.out.println("\nprinting " + res.getNumResults() + " results to "
 												+ resFile);
@@ -372,7 +383,7 @@ public class RunMLC
 
 		if (args != null && args.length == 1 && args[0].equals("debug"))
 		{
-			args = ("-x 1 -f 3 -i 0 -u 1 -t true,false,random -a BR -c IBk -d dataAsmall -e ECC_imputation").split(" ");
+			args = ("-x 1 -f 3 -i 0 -u 1 -t false -a BR -c IBk,SMO -d dataAsmall,dataAsmallFP1 -e BR_IBk").split(" ");
 		}
 
 		if (args == null || args.length < 6)

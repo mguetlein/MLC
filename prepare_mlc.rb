@@ -82,10 +82,10 @@ end
 raise "dataset-name missing\n"+usage unless dataset_name
 
 raise "enpoint-file missing\n"+usage unless endpoint_file
-raise unless File.exist? endpoint_file
+raise "enpoint-file missing #{endpoint_file}" unless File.exist? endpoint_file
 puts "Endpoint file: "+endpoint_file
 
-if endpoint_file=~/_disc2/
+if endpoint_file=~/_disc2/ or endpoint_file=~/_discV2/
   discretization = 2
 elsif endpoint_file=~/_cluster/
   discretization = 2
@@ -95,14 +95,14 @@ else
   raise "cannot determine discretization"  
 end
 
-if endpoint_file=~/_V/
+if endpoint_file=~/_discV/
   include_v = true
 else
   include_v = false
 end
 
 raise "feature-file missing\n"+usage unless feature_file
-raise unless File.exist? feature_file
+raise "could not find #{feature_file}" unless File.exist? feature_file
 puts "Feature file: "+feature_file
 
 raise "num-endpoints\n"+usage unless num_endpoints
@@ -110,6 +110,16 @@ puts "Num endpoints: #{num_endpoints==-1 ? "all" : num_endpoints}"
 
 raise "num-missing-allowed\n"+usage unless num_missing_allowed
 puts "Num missing allowed: #{num_missing_allowed==-1 ? "all" : num_missing_allowed}"
+
+
+class_map = nil
+if(endpoint_file =~ /disc2/)
+  class_map = {"0" => "low-real-value", "1" => "high-real-value", "missing" => "unknown_or_fully-tested(V)"}
+elsif(endpoint_file =~ /discV2/)
+  class_map = {"0" => "real-value", "1" => "fully-tested(V)", "missing" => "unknown"}
+end
+raise "please specifiy class-value-map" unless class_map
+
 
 toArff = ToArff.new(endpoint_file, feature_file, real_endpoint_file)
 num_endpoints = num_endpoints=="all" ? toArff.num_max_endpoints : num_endpoints.to_i
@@ -121,11 +131,14 @@ relation_name << "#num-endpoints:#{num_endpoints}"
 relation_name << "#num-missing-allowed:#{num_missing_allowed}"
 relation_name << "#discretization-level:#{discretization}"
 relation_name << "#include-v:#{include_v}"
+class_map.each do |k,v|
+  relation_name << "#class-value-#{k}:#{v}"
+end
 outfile = "tmp/#{dataset_name}" #"input#{Time.now.strftime("%Y-%m-%d_%H-%M-%S")}"
 raise "outfile already exists: '#{outfile}'" if File.exist?(outfile+".arff")
 
 map = nil
-if(endpoint_file =~ /disc2/)
+if(endpoint_file =~ /disc2/ or endpoint_file =~ /discV2/)
   map = {"1" => "0", "2" => "1"}
 elsif(endpoint_file =~ /cluster/)
   map = {"0" => "0", "1" => "1"}

@@ -55,6 +55,7 @@ public class MLCData
 		int numMissingAllowed;
 		int discretizationLevel;
 		boolean includeV;
+		private HashMap<String, String> classValues = new HashMap<String, String>();
 
 		int[] ones_per_label;
 		int[] zeros_per_label;
@@ -68,21 +69,29 @@ public class MLCData
 
 				if (string.startsWith("dataset-name:"))
 					datasetName = string.substring("dataset-name:".length());
-				if (string.startsWith("endpoint-file:"))
+				else if (string.startsWith("endpoint-file:"))
 					endpointFile = string.substring("endpoint-file:".length());
-				if (string.startsWith("feature-file:"))
+				else if (string.startsWith("feature-file:"))
 					featureFile = string.substring("feature-file:".length());
-				if (string.startsWith("num-endpoints:"))
+				else if (string.startsWith("num-endpoints:"))
 					numEndpoints = IntegerUtil.parseInteger(string.substring("num-endpoints:".length()));
-				if (string.startsWith("num-missing-allowed:"))
+				else if (string.startsWith("num-missing-allowed:"))
 					numMissingAllowed = IntegerUtil.parseInteger(string.substring("num-missing-allowed:".length()));
-				if (string.startsWith("discretization-level:"))
+				else if (string.startsWith("discretization-level:"))
 					discretizationLevel = IntegerUtil.parseInteger(string.substring("discretization-level:".length()));
-				if (string.startsWith("include-V:"))
-					includeV = Boolean.parseBoolean(string.substring("discretization-level:".length()));
+				else if (string.startsWith("include-v:"))
+					includeV = Boolean.parseBoolean(string.substring("include-v:".length()));
+				else if (string.startsWith("class-value-0:"))
+					classValues.put("0", string.substring("class-value-0:".length()).replace("_", " "));
+				else if (string.startsWith("class-value-1:"))
+					classValues.put("1", string.substring("class-value-1:".length()).replace("_", " "));
+				else if (string.startsWith("class-value-missing:"))
+					classValues.put("missing", string.substring("class-value-missing:".length()).replace("_", " "));
 			}
 			if (numEndpoints != dataset.getNumLabels())
 				throw new IllegalStateException();
+			if (classValues.size() != 3)
+				throw new IllegalStateException("class values missing");
 
 			this.dataset = dataset;
 
@@ -168,6 +177,31 @@ public class MLCData
 			}
 		}
 
+		public String getClassValuesZero()
+		{
+			return classValues.get("0");
+		}
+
+		public String getClassValuesOne()
+		{
+			return classValues.get("1");
+		}
+
+		public String[] getNonMissingClassValues()
+		{
+			return new String[] { classValues.get("0"), classValues.get("1") };
+		}
+
+		public String getNonMissingClassValuesString()
+		{
+			return ArrayUtil.toString(getNonMissingClassValues(), " / ", "", "");
+		}
+
+		public String getMissingClassValue()
+		{
+			return classValues.get("missing");
+		}
+
 		public String toString(boolean details)
 		{
 			StringLineAdder s = new StringLineAdder();
@@ -178,6 +212,9 @@ public class MLCData
 			s.add("num-instances: " + dataset.getNumInstances());
 			s.add("discretization-level: " + discretizationLevel);
 			s.add("include-V: " + includeV);
+			s.add("class-values: " + getNonMissingClassValuesString());
+			s.add("missing-values: " + getMissingClassValue());
+
 			if (details)
 			{
 				s.add();
@@ -244,9 +281,9 @@ public class MLCData
 
 		public ChartPanel plotMissingPerCompound() throws IOException
 		{
-			BarPlotPanel p = new BarPlotPanel("Num missing values for each compound", "num compounds",
-					ArrayUtil.toPrimitiveDoubleArray(ArrayUtil.toDoubleArray(ArrayUtil.toIntegerArray(numMissing))),
-					labels);
+			BarPlotPanel p = new BarPlotPanel("Num missing values for each compound (missing = '"
+					+ getMissingClassValue() + "')", "num compounds", ArrayUtil.toPrimitiveDoubleArray(ArrayUtil
+					.toDoubleArray(ArrayUtil.toIntegerArray(numMissing))), labels);
 
 			JFreeChart c = p.getChartPanel().getChart();
 			c.setSubtitles(ArrayUtil.toList(new Title[] { new TextTitle(dataset.getNumLabels() + " endpoint values"),
@@ -258,12 +295,14 @@ public class MLCData
 		public ChartPanel plotMissingPerLabel() throws IOException
 		{
 			LinkedHashMap<String, List<Double>> plotData = new LinkedHashMap<String, List<Double>>();
-			plotData.put("0", ArrayUtil.toList(ArrayUtil.toDoubleArray(ArrayUtil.toIntegerArray(zeros_per_label))));
-			plotData.put("1", ArrayUtil.toList(ArrayUtil.toDoubleArray(ArrayUtil.toIntegerArray(ones_per_label))));
-			plotData.put("missing",
+			plotData.put(classValues.get("0"),
+					ArrayUtil.toList(ArrayUtil.toDoubleArray(ArrayUtil.toIntegerArray(zeros_per_label))));
+			plotData.put(classValues.get("1"),
+					ArrayUtil.toList(ArrayUtil.toDoubleArray(ArrayUtil.toIntegerArray(ones_per_label))));
+			plotData.put(getMissingClassValue(),
 					ArrayUtil.toList(ArrayUtil.toDoubleArray(ArrayUtil.toIntegerArray(missings_per_label))));
 
-			StackedBarPlot sbp = new StackedBarPlot("Missing values", "endpoints", "num compounds", plotData,
+			StackedBarPlot sbp = new StackedBarPlot("Class and missing values", "endpoints", "num compounds", plotData,
 					labelNames);
 
 			CategoryPlot plot = (CategoryPlot) sbp.getChartPanel().getChart().getPlot();
@@ -279,9 +318,9 @@ public class MLCData
 			for (int i = 0; i < labelNames.length; i++)
 			{
 				int r = rs.addResult();
-				rs.setResultValue(r, "Endpoint", labelNames[i]);
-				rs.setResultValue(r, "0/1", zeros_per_label[i] + "/" + ones_per_label[i]);
-				rs.setResultValue(r, "Missing", missings_per_label[i]);
+				rs.setResultValue(r, "endpoint", labelNames[i]);
+				rs.setResultValue(r, getNonMissingClassValuesString(), zeros_per_label[i] + "/" + ones_per_label[i]);
+				rs.setResultValue(r, getMissingClassValue(), missings_per_label[i]);
 			}
 			return rs;
 		}

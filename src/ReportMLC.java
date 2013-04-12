@@ -1,8 +1,28 @@
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
+
+import javax.swing.JDialog;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableColumnModel;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableRowSorter;
 
 import mulan.data.InvalidDataFormatException;
 import mulan.data.MultiLabelInstances;
@@ -19,6 +39,7 @@ import util.FileUtil;
 import util.FileUtil.CSVFile;
 import util.ListUtil;
 import util.StringLineAdder;
+import util.SwingUtil;
 import weka.core.Attribute;
 
 import com.itextpdf.text.DocumentException;
@@ -42,12 +63,6 @@ public class ReportMLC
 	//		return l;
 	//	}
 
-	public static final String[] RESULT_PROPERTIES_ACCURACY = { "micro-accuracy", "macro-accuracy", "1-hamming-loss",
-			"subset-accuracy" };
-
-	public static final String[] RESULT_PROPERTIES_F_MEASURE = { "micro-f-measure", "macro-f-measure",
-			"subset-accuracy" };
-
 	public ReportMLC(String outfile, String... datasetNames)
 	{
 		try
@@ -67,6 +82,8 @@ public class ReportMLC
 				res.setResultValue(r, "num-instances", di[i].dataset.getNumInstances());
 				res.setResultValue(r, "discretization-level", di[i].discretizationLevel);
 				res.setResultValue(r, "include-V", di[i].includeV);
+				res.setResultValue(r, "class-values", di[i].getNonMissingClassValuesString());
+				res.setResultValue(r, "missing-values", di[i].getMissingClassValue());
 			}
 			report.addSection("Datasets", "", new ResultSet[] { res }, null, null);
 			report.newPage();
@@ -84,27 +101,53 @@ public class ReportMLC
 
 	public static enum PerformanceMeasures
 	{
-		accuracy, fmeasure
+		accuracy, fmeasure, auc
 	}
 
-	public ReportMLC(String outfile, ResultSet results, PerformanceMeasures measures)
+	public static String getPropName(PerformanceMeasures measures)
 	{
-		try
+		switch (measures)
 		{
-			report = new Report(outfile, "Multi-Label-Classification (MLC) Results");
+			case accuracy:
+				return "accuracy";
+			case auc:
+				return "auc";
+			case fmeasure:
+				return "f-measure";
+		}
+		return null;
+	}
 
-			StringLineAdder s = new StringLineAdder();
-			if (measures == PerformanceMeasures.accuracy)
-			{
+	public static String[] getProps(PerformanceMeasures measures)
+	{
+		switch (measures)
+		{
+			case accuracy:
+				return new String[] { "micro-accuracy", "macro-accuracy", "1-hamming-loss", "subset-accuracy" };
+			case auc:
+				return new String[] { "micro-auc", "macro-auc", "subset-accuracy" };
+			case fmeasure:
+				return new String[] { "micro-f-measure", "macro-f-measure", "subset-accuracy" };
+		}
+		return null;
+	}
+
+	public static String getInfo(PerformanceMeasures measures)
+	{
+		StringLineAdder s = new StringLineAdder();
+		switch (measures)
+		{
+			case accuracy:
 				s.add("micro-accuracy: overall accuracy (each single prediction)");
 				s.add("macro-accuracy: accuracy averaged by endpoint");
 				s.add("1-hamming-loss: accuracy averaged by compound");
 				s.add();
 				s.add("micro-accuracy > macro-accuracy: endpoints with few missing values are predicted better than endpoints with many missing values");
 				s.add("micro-accuracy > 1-hamming-loss: compounds with few missing values are predicted better than compounds with many missing values");
-			}
-			else if (measures == PerformanceMeasures.fmeasure)
-			{
+				break;
+			case auc:
+				break;
+			case fmeasure:
 				s.add("f-measure: harmonic mean of 'precision' and 'recall', performance measure for in-balanced data with less active than in-active compounds, ignores correct in-active predictions (true negatives tn)");
 				s.add("precision: same as 'positive predictive value', ratio of active compounds within comopunds that are classified as actives ( tp/(tp+fp) )");
 				s.add("recall: same as 'sensitiviy', ratio of active-classified compounds within all active comopunds ( tp/(tp+fn) )");
@@ -113,10 +156,19 @@ public class ReportMLC
 				s.add("macro-f-measure: f-measure averaged by endpoint");
 				s.add();
 				s.add("micro-f-measure > macro-f-measure: compounds with few missing values are predicted better than compounds with many missing values");
-			}
-			s.add();
-			s.add("subset-accuracy: average number of compounds where all enpoints are predicted correctly");
-			report.addSection("Performance measures", s.toString(), null, null, null);
+				break;
+		}
+		s.add();
+		s.add("subset-accuracy: average number of compounds where all enpoints are predicted correctly");
+		return s.toString();
+	}
+
+	public ReportMLC(String outfile, ResultSet results, PerformanceMeasures measures)
+	{
+		try
+		{
+			report = new Report(outfile, "Multi-Label-Classification (MLC) Results");
+			report.addSection("Performance measures", getInfo(measures), null, null, null);
 			report.newPage();
 
 			this.results = results;
@@ -138,8 +190,7 @@ public class ReportMLC
 			results.sortProperties(compareProps);
 			for (String p : compareProps)
 				results.sortResults(p);
-			for (String p : (measures == PerformanceMeasures.accuracy ? RESULT_PROPERTIES_ACCURACY
-					: RESULT_PROPERTIES_F_MEASURE))
+			for (String p : getProps(measures))
 				results.movePropertyBack(p);
 
 			String nonDatasetCmp = null;
@@ -155,6 +206,11 @@ public class ReportMLC
 					nonDatasetCmp = p;
 					nonDatasetSet = set;
 				}
+			}
+			if (nonDatasetCmp == null)
+			{
+				nonDatasetCmp = "mlc-algorithm";
+				nonDatasetSet = results.getResultValues("mlc-algorithm");
 			}
 
 			for (Object datasetName : datasetNames.values())
@@ -189,16 +245,14 @@ public class ReportMLC
 		int numCVSeeds = results.getResultValues("cv-seed").size();
 		Double numCVFolds = Double.parseDouble(results.getUniqueValue("num-folds") + "");
 
-		List<String> catProps = ArrayUtil.toList((measures == PerformanceMeasures.accuracy ? RESULT_PROPERTIES_ACCURACY
-				: RESULT_PROPERTIES_F_MEASURE));
+		List<String> catProps = ArrayUtil.toList(getProps(measures));
 		ChartPanel boxPlot1 = results.boxPlot("Performance for different " + compareProp + titleSuffix, "Performance",
 				new String[] { "compounds: " + numCompounds + ", labels: " + numLabels + ", " + numCVSeeds + " x "
 						+ numCVFolds + "-fold CV" }, compareProp, catProps, null, 0.05);
 		File images[] = new File[] { FreeChartUtil.toTmpFile(boxPlot1, new Dimension(1200, 600)) };
 
 		ResultSet rs = results.join(ArrayUtil.toList(new String[] { compareProp }), null, catProps);
-		rs.excludeProperties(ArrayUtil.toList(ArrayUtil.concat(new String[] { compareProp },
-				(measures == PerformanceMeasures.accuracy ? RESULT_PROPERTIES_ACCURACY : RESULT_PROPERTIES_F_MEASURE))));
+		rs.excludeProperties(ArrayUtil.toList(ArrayUtil.concat(new String[] { compareProp }, getProps(measures))));
 		ResultSet tables[] = new ResultSet[] { rs };
 
 		//		if (results.getResultValues("dataset-name").size() == 1)
@@ -206,15 +260,13 @@ public class ReportMLC
 		Double numLabelsInt = Double.parseDouble(results.getUniqueValue("num-labels") + "");
 		catProps.clear();
 		for (int i = 0; i < numLabelsInt; i++)
-			catProps.add((measures == PerformanceMeasures.accuracy ? "macro-accuracy#" : "macro-f-measure#") + i);
+			catProps.add("macro-" + getPropName(measures) + "#" + i);
 		List<String> catPropsDisp = new ArrayList<String>();
 		for (int i = 0; i < numLabelsInt; i++)
 			catPropsDisp.add(results.getUniqueValue("label#" + i).toString());
-		ChartPanel boxPlot2 = results.boxPlot("Endpoint "
-				+ (measures == PerformanceMeasures.accuracy ? "accuracy" : "f-measure") + " for different "
-				+ compareProp + titleSuffix, "Performance", new String[] { "compounds: " + numCompounds + ", labels: "
-				+ numLabels + ", " + numCVSeeds + " x " + numCVFolds + "-fold CV" }, compareProp, catProps,
-				catPropsDisp, 0.05);
+		ChartPanel boxPlot2 = results.boxPlot("Endpoint " + getPropName(measures) + " for different " + compareProp
+				+ titleSuffix, "Performance", new String[] { "compounds: " + numCompounds + ", labels: " + numLabels
+				+ ", " + numCVSeeds + " x " + numCVFolds + "-fold CV" }, compareProp, catProps, catPropsDisp, 0.05);
 		CategoryPlot plot = (CategoryPlot) boxPlot2.getChart().getPlot();
 		CategoryAxis xAxis = (CategoryAxis) plot.getDomainAxis();
 		xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
@@ -253,80 +305,215 @@ public class ReportMLC
 		CSVFile csv = FileUtil.readCSV("tmp/" + datasetName + ".csv");
 
 		List<File> smallImages = new ArrayList<File>();
-		for (int j = 0; j < di.dataset.getNumLabels(); j++)
+		if (!di.includeV)
 		{
-			Attribute labelAttr = di.dataset.getDataSet().attribute(di.dataset.getLabelIndices()[j]);
-
-			System.out.println("create clazz histogram for " + labelAttr.name());
-			Double d[] = csv.getDoubleColumn(labelAttr.name() + "_real");
-			String s[] = csv.getColumn(labelAttr.name());
-			List<String> clazz = ArrayUtil.toList(new String[] { "all", "0" });
-			//			Collections.sort(clazz, new DefaultComparator<String>(true));
-			List<double[]> values = new ArrayList<double[]>();
-			for (int i = 0; i < clazz.size(); i++)
-				values.add(new double[0]);
-			for (int i = 0; i < s.length; i++)
+			for (int j = 0; j < di.dataset.getNumLabels(); j++)
 			{
-				if (s[i] == null)
-				{
-					if (d[i] != null)
-						throw new IllegalArgumentException();
-				}
-				else
-				{
-					if (d[i] == null)
-						throw new IllegalArgumentException();
-					values.set(0, ArrayUtil.concat(values.get(0), new double[] { d[i] }));
-					if (s[i].equals("0"))
-						values.set(1, ArrayUtil.concat(values.get(1), new double[] { d[i] }));
-				}
-			}
-			for (int i = 0; i < clazz.size(); i++)
-			{
-				if (clazz.get(i).equals("all")
-						&& (di.zeros_per_label[j] + di.ones_per_label[j]) != values.get(i).length)
-					throw new IllegalStateException((di.zeros_per_label[j] + di.ones_per_label[j]) + " != "
-							+ values.get(i).length);
-				if (clazz.get(i).equals("1") && di.ones_per_label[j] != values.get(i).length)
-					throw new IllegalStateException(di.ones_per_label[j] + " != " + values.get(i).length);
-				if (clazz.get(i).equals("0") && di.zeros_per_label[j] != values.get(i).length)
-					throw new IllegalStateException(di.zeros_per_label[j] + " != " + values.get(i).length);
-			}
-			List<String> subtitles = ArrayUtil.toList(new String[] { di.zeros_per_label[j] + " / "
-					+ di.ones_per_label[j] + " missing: " + di.missings_per_label[j] });
-			HistogramPanel h = new HistogramPanel("Real values for " + labelAttr.name(), subtitles, "value",
-					"num compounds", clazz, values, 50);
-			h.setIntegerTickUnits();
+				Attribute labelAttr = di.dataset.getDataSet().attribute(di.dataset.getLabelIndices()[j]);
 
-			smallImages.add(FreeChartUtil.toTmpFile(h.getChartPanel(), new Dimension(600, 300)));
+				System.out.println("create clazz histogram for " + labelAttr.name());
+				Double d[] = csv.getDoubleColumn(labelAttr.name() + "_real");
+				String s[] = csv.getColumn(labelAttr.name());
+				List<String> clazz = ArrayUtil.toList(new String[] { di.getClassValuesOne(), di.getClassValuesZero() });
+				//			Collections.sort(clazz, new DefaultComparator<String>(true));
+				List<double[]> values = new ArrayList<double[]>();
+				for (int i = 0; i < clazz.size(); i++)
+					values.add(new double[0]);
+				for (int i = 0; i < s.length; i++)
+				{
+					if (s[i] == null)
+					{
+						if (d[i] != null)
+							throw new IllegalArgumentException();
+					}
+					else
+					{
+						if (d[i] == null)
+							throw new IllegalArgumentException();
+						values.set(0, ArrayUtil.concat(values.get(0), new double[] { d[i] }));
+						if (s[i].equals("0"))
+							values.set(1, ArrayUtil.concat(values.get(1), new double[] { d[i] }));
+					}
+				}
+				for (int i = 0; i < clazz.size(); i++)
+				{
+					if (clazz.get(i).equals(di.getClassValuesOne())
+							&& (di.zeros_per_label[j] + di.ones_per_label[j]) != values.get(i).length)
+						throw new IllegalStateException((di.zeros_per_label[j] + di.ones_per_label[j]) + " != "
+								+ values.get(i).length);
+					if (clazz.get(i).equals(di.getClassValuesZero()) && di.zeros_per_label[j] != values.get(i).length)
+						throw new IllegalStateException(di.zeros_per_label[j] + " != " + values.get(i).length);
+				}
+				List<String> subtitles = ArrayUtil.toList(new String[] { di.zeros_per_label[j] + " / "
+						+ di.ones_per_label[j] + " missing: " + di.missings_per_label[j] });
+				HistogramPanel h = new HistogramPanel("Real values for " + labelAttr.name(), subtitles, "value",
+						"num compounds", clazz, values, 50);
+				h.setIntegerTickUnits();
+
+				smallImages.add(FreeChartUtil.toTmpFile(h.getChartPanel(), new Dimension(600, 300)));
+			}
 		}
 
 		report.addSection("Dataset " + di.datasetName, di.toString(false), new ResultSet[] { di.getMissingPerLabel() },
-				images, ListUtil.toArray(smallImages));
+				images, ListUtil.toArray(File.class, smallImages));
 		report.newPage();
 	}
 
 	public static void main(String args[]) throws Exception
 	{
-		System.out.println("reading results:");
-		//String infile = "ECC_BR_dataA-dataB-dataC";
-		//String infile = "BR_alg_dataC";
-		//String infile = "ECC_BR_cpdb";
-		//String infile = "BR_IBk_dataAsmall";
-		//		String infile = "BR_ECC_dataAdisc-dataAclusterH-dataAclusterL";
-		//String infile = "BR_ECC_dataAdisc-dataAclusterB";
-		//		String infile = "BR_ECC_dataApc-dataAfp1-dataAfp2-dataAfp3-dataAfp4";
-		String infile = "ECC_imputation_dataAsmall";
-		ResultSet rs = ResultSetIO.parseFromFile(new File("tmp/" + infile + ".results"));
-		System.out.println(rs.getNumResults() + " single results, creating report");
-		new ReportMLC(infile + "_report.pdf", rs, PerformanceMeasures.accuracy);
+		File results[] = new File("tmp").listFiles(new FilenameFilter()
+		{
 
-		//		new ReportMLC("dataset_report.pdf", "dataA", "dataB", "dataC", "dataD");
-		//new ReportMLC("dataset_report_dataDall.pdf", "dataAsmallC", "dataAsmall");
-		//new ReportMLC("dataset_report_dataA_pc_fp.pdf", "dataApc", "dataAfp1", "dataAfp2", "dataAfp3", "dataAfp4");
-		//		new ReportMLC("dataset_report_dataA_disc.pdf", "dataAdisc", "dataAclusterB");
+			@Override
+			public boolean accept(File dir, String name)
+			{
+				return name.endsWith(".results");
+			}
+		});
+		File datasets[] = new File("tmp").listFiles(new FilenameFilter()
+		{
 
-		//				new ReportMLC("dataset_report.pdf", "cpdb");
+			@Override
+			public boolean accept(File dir, String name)
+			{
+				return name.endsWith(".arff");
+			}
+		});
+		DefaultTableModel m = new DefaultTableModel()
+		{
+			public java.lang.Class<?> getColumnClass(int columnIndex)
+			{
+				if (columnIndex == 0)
+					return String.class;
+				if (columnIndex == 1)
+					return String.class;
+				if (columnIndex == 2)
+					return Long.class;
+				return null;
+			}
+
+			@Override
+			public boolean isCellEditable(int row, int column)
+			{
+				return false;
+			}
+		};
+		final JTable t = new JTable(m);
+		t.setDefaultRenderer(Long.class, new DefaultTableCellRenderer()
+		{
+			SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+			@Override
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+					boolean hasFocus, int row, int column)
+			{
+				if (value instanceof Long)
+					value = f.format(new Date((Long) value));
+				return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			}
+		});
+		m.addColumn("File");
+		m.addColumn("Type");
+		m.addColumn("Date");
+		List<File> files = ArrayUtil.toList(ArrayUtil.concat(results, datasets));
+		Collections.sort(files, new Comparator<File>()
+		{
+			@Override
+			public int compare(File o1, File o2)
+			{
+				return (int) (o2.lastModified() - o1.lastModified());
+			}
+		});
+		for (File file : files)
+			m.addRow(new Object[] { file.getName(), ArrayUtil.indexOf(results, file) == -1 ? "dataset" : "result",
+					file.lastModified() });
+		packColumn(t, 0, 5);
+		packColumn(t, 1, 5);
+		packColumn(t, 2, 5);
+		final TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<DefaultTableModel>();
+		t.setRowSorter(sorter);
+		sorter.setModel(m);
+		JScrollPane s = new JScrollPane(t);
+		t.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseClicked(MouseEvent e)
+			{
+				if (e.getClickCount() > 1)
+					((JDialog) t.getTopLevelAncestor()).setVisible(false);
+			}
+		});
+		t.addKeyListener(new KeyAdapter()
+		{
+			@Override
+			public void keyPressed(KeyEvent e)
+			{
+				if (e.getKeyCode() == KeyEvent.VK_ENTER)
+					((JDialog) t.getTopLevelAncestor()).setVisible(false);
+			}
+		});
+		t.setRowSelectionInterval(0, 0);
+		SwingUtil.showInDialog(s, "Create Report", new Dimension(650, 800));
+
+		List<File> selectedDatasets = new ArrayList<File>();
+		List<File> selectedResults = new ArrayList<File>();
+		for (int r : t.getSelectedRows())
+		{
+			int row = sorter.convertRowIndexToModel(r);
+			File f = files.get(row);
+			if (ArrayUtil.indexOf(datasets, f) == -1)
+				selectedResults.add(f);
+			else
+				selectedDatasets.add(f);
+		}
+
+		if (selectedDatasets.size() > 0)
+		{
+			String names[] = new String[selectedDatasets.size()];
+			for (int i = 0; i < names.length; i++)
+			{
+				String name = selectedDatasets.get(i).getName();
+				names[i] = name.replace(".arff", "");
+			}
+			System.out.println("create dataset report for " + ArrayUtil.toString(names));
+			new ReportMLC("dataset_report_" + ArrayUtil.toString(names, "-", "", "") + ".pdf", names);
+		}
+		if (selectedResults.size() > 0)
+		{
+			for (File resultFile : selectedResults)
+			{
+				String name = resultFile.getName().replace(".results", "");
+				System.out.println("create result report for " + name);
+				System.out.println("reading results:");
+				ResultSet rs = ResultSetIO.parseFromFile(new File("tmp/" + name + ".results"));
+				PerformanceMeasures measures = PerformanceMeasures.auc;
+				new ReportMLC(name + "_" + measures + "_report.pdf", rs, measures);
+			}
+		}
+		System.exit(0);
+
+		//
+		//		System.out.println("reading results:");
+		//		//String infile = "ECC_BR_dataA-dataB-dataC";
+		//		//String infile = "BR_alg_dataC";
+		//		//String infile = "ECC_BR_cpdb";
+		//		String infile = "BR_IBk_dataAsmall";
+		//		//		String infile = "BR_ECC_dataAdisc-dataAclusterH-dataAclusterL";
+		//		//String infile = "BR_ECC_dataAdisc-dataAclusterB";
+		//		//		String infile = "BR_ECC_dataApc-dataAfp1-dataAfp2-dataAfp3-dataAfp4";
+		//		//		String infile = "ECC_imputation_dataAsmall";
+		//		//		String infile = "imputation_dataA";
+		//		ResultSet rs = ResultSetIO.parseFromFile(new File("tmp/" + infile + ".results"));
+		//		System.out.println(rs.getNumResults() + " single results, creating report");
+		//		PerformanceMeasures measures = PerformanceMeasures.auc;
+		//		new ReportMLC(infile + "_" + measures + "_report.pdf", rs, measures);
+
+		//		//		new ReportMLC("dataset_report.pdf", "dataA", "dataB", "dataC", "dataD");
+		//		//new ReportMLC("dataset_report_dataDall.pdf", "dataAsmallC", "dataAsmall");
+		//		//new ReportMLC("dataset_report_dataA_pc_fp.pdf", "dataApc", "dataAfp1", "dataAfp2", "dataAfp3", "dataAfp4");
+		//		//				new ReportMLC("dataset_report_dataA_disc.pdf", "dataAdisc", "dataAclusterB");
+		//		new ReportMLC("dataset_report_dataAV.pdf", "dataAV", "dataA");
+		//		//				new ReportMLC("dataset_report.pdf", "cpdb");
 
 		//		List<String> equalProps = ArrayUtil.toList(new String[] { "cv-seed" });
 		//		List<String> ommitProps = ArrayUtil.toList(new String[] { "label#0", "label#1", "label#2" });
@@ -356,5 +543,46 @@ public class ReportMLC
 		//		//		List<String> catProps = ArrayUtil.toList(new String[] { "hamming-loss", "macro-accuracy" });
 		//		//		rs2.showBarPlot("test", "yAxis", "cv-seed", catProps, null, null);
 
+	}
+
+	public static int packColumn(JTable table, int vColIndex, int margin)
+	{
+		return packColumn(table, vColIndex, margin, Integer.MAX_VALUE);
+	}
+
+	public static int packColumn(JTable table, int vColIndex, int margin, int max)
+	{
+		DefaultTableColumnModel colModel = (DefaultTableColumnModel) table.getColumnModel();
+		TableColumn col = colModel.getColumn(vColIndex);
+		int width = 0;
+
+		// Get width of column header
+		TableCellRenderer renderer = col.getHeaderRenderer();
+		if (renderer == null)
+		{
+			renderer = table.getTableHeader().getDefaultRenderer();
+		}
+		Component comp = renderer.getTableCellRendererComponent(table, col.getHeaderValue(), false, false, 0, 0);
+		width = comp.getPreferredSize().width;
+
+		// Get maximum width of column data
+		for (int r = 0; r < table.getRowCount(); r++)
+		{
+			renderer = table.getCellRenderer(r, vColIndex);
+			comp = renderer.getTableCellRendererComponent(table, table.getValueAt(r, vColIndex), false, false, r,
+					vColIndex);
+			width = Math.max(width, comp.getPreferredSize().width);
+		}
+
+		// Add margin
+		width += 2 * margin;
+		if (width > max)
+			width = max;
+
+		// Set the width
+		col.setPreferredWidth(width);
+		//		col.setMinWidth(width);
+		//		col.setMaxWidth(width);
+		return width;
 	}
 }
