@@ -197,7 +197,7 @@ public class Report
 			{
 				Object val = rs.getResultValue(i, p);
 				if (val instanceof Double)
-					table.addCell(new Phrase(StringUtil.formatDouble((Double) val), FONT_TEXT));
+					table.addCell(new Phrase(StringUtil.formatDouble((Double) val, 3), FONT_TEXT));
 				else
 					table.addCell(new Phrase(val + "", FONT_TEXT));
 

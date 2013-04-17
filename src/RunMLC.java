@@ -42,7 +42,7 @@ import datamining.ResultSetIO;
 
 public class RunMLC
 {
-	MLCData.DatasetInfo data;
+	MLCDataInfo data;
 	ParallelHandler parallel;
 
 	//	private String endpointFile;
@@ -147,7 +147,7 @@ public class RunMLC
 			return new HOMER(method, numClusters, HierarchyBuilder.Method.BalancedClustering);
 		}
 		else
-			throw new Error("WTF");
+			throw new Error("unknown mlc algorithm: " + mlcAlgorithmStr);
 	}
 
 	public void eval() throws Exception
@@ -169,7 +169,7 @@ public class RunMLC
 					dataset, numRepetitions);
 			trackers.add(tracker);
 
-			final MLCData.DatasetInfo di = new MLCData.DatasetInfo(dataset);
+			final MLCDataInfo di = MLCDataInfo.get(dataset);
 			di.print();
 
 			for (final String classifierString : classifier.split(","))
@@ -204,7 +204,11 @@ public class RunMLC
 					for (int mlcAlgorithmIndex = 0; mlcAlgorithmIndex < mlcAlgs.length; mlcAlgorithmIndex++)
 					{
 						final String mlcAlgorithmStr = mlcAlgs[mlcAlgorithmIndex];
-						final String mlcAlgorithmParamsStr = mlcParams[mlcAlgorithmIndex];
+						final String mlcAlgorithmParamsStr;
+						if (mlcParams[mlcAlgorithmIndex].equals("default"))
+							mlcAlgorithmParamsStr = null;
+						else
+							mlcAlgorithmParamsStr = mlcParams[mlcAlgorithmIndex];
 						final MultiLabelLearner mlcAlgorithm = getMLCAlgorithms(mlcAlgorithmStr, mlcAlgorithmParamsStr,
 								classifier);
 
@@ -346,21 +350,21 @@ public class RunMLC
 
 	public static void main(String args[]) throws Exception
 	{
-		//				String a = "";
-		//				String p = "";
-		//				for (int numClusters : new int[] { 3, 6, 9 })
-		//				{
-		//					for (String method : new String[] { "BR", "ECC", "MLkNN" })
-		//					{
-		//						a += "HOMER,";
-		//						p += "num-clusters=" + numClusters + ";method=" + method + ",";
-		//					}
-		//				}
-		//				a = a.substring(0, a.length() - 1);
-		//				p = p.substring(0, p.length() - 1);
-		//				System.out.println("-x 1 -f 10 -i 0 -u 1 -a " + a + " -p " + p + " IBk -r tmp/input2013-03-18_16-37-02");
-		//				if (true == true)
-		//					System.exit(0);
+		//		String a = "";
+		//		String p = "";
+		//		for (int numClusters : new int[] { 3, 6, 9 })
+		//		{
+		//			for (String method : new String[] { "BR", "ECC", "MLkNN" })
+		//			{
+		//				a += "HOMER,";
+		//				p += "num-clusters=" + numClusters + ";method=" + method + ",";
+		//			}
+		//		}
+		//		a = a.substring(0, a.length() - 1);
+		//		p = p.substring(0, p.length() - 1);
+		//		System.out.println("-x 1 -f 10 -i 0 -u 1 -a " + a + " -p " + p + " IBk -r tmp/input2013-03-18_16-37-02");
+		//		if (true == true)
+		//			System.exit(0);
 		//		String a = "";
 		//		String p = "";
 		//		for (int numChains : new int[] { 5, 10, 15 })
@@ -380,10 +384,30 @@ public class RunMLC
 		//		System.out.println("-a " + a + " -p " + p);
 		//		if (true == true)
 		//			System.exit(0);
+		//		String a = "";
+		//		String p = "";
+		//		for (int numNeighbors : new int[] { 5, 10, 15 })
+		//		{
+		//			a += "MLkNN,";
+		//			p += "num-neighbors=" + numNeighbors + ",";
+		//		}
+		//		a = a.substring(0, a.length() - 1);
+		//		p = p.substring(0, p.length() - 1);
+		//		System.out.println("-a " + a + " -p " + p);
+		//		if (true == true)
+		//			System.exit(0);
+
+		if (args != null && args.length > 0 && args[0].equals("report"))
+		{
+			ReportMLC.main(ArrayUtil.removeAt(String.class, args, 0));
+			return;
+		}
 
 		if (args != null && args.length == 1 && args[0].equals("debug"))
 		{
-			args = ("-x 1 -f 3 -i 0 -u 1 -t false -a BR -c IBk,SMO -d dataAsmall,dataAsmallFP1 -e BR_IBk").split(" ");
+			//args = ("-x 1 -f 3 -i 0 -u 1 -t false -a BR -c IBk,SMO -d dataAsmall,dataAsmallFP1 -e test").split(" ");
+			args = ("-x 1 -f 10 -i 0 -u 1 -t false -a BR,MLkNN -p \"default,num-neighbors=2\" -c IBk -d dataA-F1 -e test")
+					.split(" ");
 		}
 
 		if (args == null || args.length < 6)

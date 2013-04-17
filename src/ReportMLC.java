@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.JDialog;
@@ -68,27 +69,11 @@ public class ReportMLC
 		try
 		{
 			report = new Report(outfile, "Dataset Report");
-			MLCData.DatasetInfo di[] = new MLCData.DatasetInfo[datasetNames.length];
-			ResultSet res = new ResultSet();
-			for (int i = 0; i < di.length; i++)
-			{
-				di[i] = getDatasetInfo(datasetNames[i]);
-				int r = res.addResult();
-				res.setResultValue(r, "dataset-name", di[i].datasetName);
-				res.setResultValue(r, "endpoint-file", di[i].endpointFile);
-				res.setResultValue(r, "feature-file", di[i].featureFile);
-				res.setResultValue(r, "num-endpoints", di[i].numEndpoints);
-				res.setResultValue(r, "num-missing-allowed", di[i].numMissingAllowed);
-				res.setResultValue(r, "num-instances", di[i].dataset.getNumInstances());
-				res.setResultValue(r, "discretization-level", di[i].discretizationLevel);
-				res.setResultValue(r, "include-V", di[i].includeV);
-				res.setResultValue(r, "class-values", di[i].getNonMissingClassValuesString());
-				res.setResultValue(r, "missing-values", di[i].getMissingClassValue());
-			}
-			report.addSection("Datasets", "", new ResultSet[] { res }, null, null);
+
+			addDatasetTable(datasetNames);
 			report.newPage();
-			for (int i = 0; i < di.length; i++)
-				addDatasetInfo(di[i], datasetNames[i]);
+			for (String datasetName : datasetNames)
+				addDatasetInfo(datasetName);
 
 			report.close();
 			System.out.println("\nreport created:\n" + outfile);
@@ -97,6 +82,29 @@ public class ReportMLC
 		{
 			e.printStackTrace();
 		}
+	}
+
+	private void addDatasetTable(String... datasetNames) throws InvalidDataFormatException, IOException,
+			DocumentException
+	{
+		ResultSet res = new ResultSet();
+		for (String datasetName : datasetNames)
+		{
+			MLCDataInfo di = MLCDataInfo.get(getData(datasetName));
+			int r = res.addResult();
+			res.setResultValue(r, "dataset-name", di.datasetName);
+			res.setResultValue(r, "endpoint-file", di.endpointFile);
+			res.setResultValue(r, "feature-file", di.featureFile);
+			res.setResultValue(r, "num-endpoints", di.numEndpoints);
+			res.setResultValue(r, "num-features", di.dataset.getDataSet().numAttributes() - di.dataset.getNumLabels());
+			res.setResultValue(r, "num-missing-allowed", di.numMissingAllowed);
+			res.setResultValue(r, "num-instances", di.dataset.getNumInstances());
+			res.setResultValue(r, "discretization-level", di.discretizationLevel);
+			res.setResultValue(r, "include-V", di.includeV);
+			res.setResultValue(r, "class-values", di.getNonMissingClassValuesString());
+			res.setResultValue(r, "missing-values", di.getMissingClassValue());
+		}
+		report.addSection("Datasets", "", new ResultSet[] { res }, null, null);
 	}
 
 	public static enum PerformanceMeasures
@@ -132,7 +140,7 @@ public class ReportMLC
 		return null;
 	}
 
-	public static String getInfo(PerformanceMeasures measures)
+	public static String getInfo(PerformanceMeasures measures, String classZeroValue, String classOneValue)
 	{
 		StringLineAdder s = new StringLineAdder();
 		switch (measures)
@@ -141,25 +149,35 @@ public class ReportMLC
 				s.add("micro-accuracy: overall accuracy (each single prediction)");
 				s.add("macro-accuracy: accuracy averaged by endpoint");
 				s.add("1-hamming-loss: accuracy averaged by compound");
+				s.add("subset-accuracy: average number of compounds where all enpoints are predicted correctly");
 				s.add();
 				s.add("micro-accuracy > macro-accuracy: endpoints with few missing values are predicted better than endpoints with many missing values");
 				s.add("micro-accuracy > 1-hamming-loss: compounds with few missing values are predicted better than compounds with many missing values");
 				break;
 			case auc:
+				s.add("auc: area-under-(the-roc)-curve, ranks predictions according to probabilities(=confidences) "
+						+ "given by a classifier for each prediction (probablity 0-0.5 : '" + classZeroValue
+						+ "', probability 0.5-1 : '" + classOneValue + "' ), auc := probability that a '"
+						+ classOneValue + "' is ranked higher than a '" + classZeroValue + "'");
+				s.add();
+				s.add("micro-auc: auc computed with each single prediction");
+				s.add("macro-auc: auc averaged by endpoint");
+				s.add("subset-accuracy: average number of compounds where all enpoints are predicted correctly");
+				s.add();
+				s.add("micro-auc > macro-auc: compounds with few missing values are predicted better than compounds with many missing values");
 				break;
 			case fmeasure:
 				s.add("f-measure: harmonic mean of 'precision' and 'recall', performance measure for in-balanced data with less active than in-active compounds, ignores correct in-active predictions (true negatives tn)");
 				s.add("precision: same as 'positive predictive value', ratio of active compounds within comopunds that are classified as actives ( tp/(tp+fp) )");
 				s.add("recall: same as 'sensitiviy', ratio of active-classified compounds within all active comopunds ( tp/(tp+fn) )");
 				s.add();
-				s.add("micro-f-measure: f-measure computed with each single predictions");
+				s.add("micro-f-measure: f-measure computed with each single prediction");
 				s.add("macro-f-measure: f-measure averaged by endpoint");
+				s.add("subset-accuracy: average number of compounds where all enpoints are predicted correctly");
 				s.add();
 				s.add("micro-f-measure > macro-f-measure: compounds with few missing values are predicted better than compounds with many missing values");
 				break;
 		}
-		s.add();
-		s.add("subset-accuracy: average number of compounds where all enpoints are predicted correctly");
 		return s.toString();
 	}
 
@@ -168,7 +186,23 @@ public class ReportMLC
 		try
 		{
 			report = new Report(outfile, "Multi-Label-Classification (MLC) Results");
-			report.addSection("Performance measures", getInfo(measures), null, null, null);
+			String[] datasetNames = ArrayUtil.toArray(ListUtil.cast(String.class,
+					results.getResultValues("dataset-name").values()));
+			addDatasetTable(datasetNames);
+
+			CountedSet<String> classZero = new CountedSet<String>();
+			CountedSet<String> classOne = new CountedSet<String>();
+			for (Object datasetName : datasetNames)
+			{
+				MLCDataInfo di = MLCDataInfo.get(getData(datasetName.toString()));
+				classZero.add(di.getClassValuesZero());
+				classOne.add(di.getClassValuesOne());
+			}
+			if (classZero.size() != 1 || classOne.size() != 1)
+				throw new IllegalStateException("take care of different class values");
+
+			report.addSection("Performance measures",
+					getInfo(measures, classZero.values().get(0), classOne.values().get(0)), null, null, null);
 			report.newPage();
 
 			this.results = results;
@@ -180,12 +214,8 @@ public class ReportMLC
 				else if (results.getResultValue(i, "mlc-algorithm").toString().equals("ECC"))
 					results.setResultValue(i, "mlc-algorithm", "Ensemble of classfier chains");
 
-			CountedSet<Object> datasetNames = results.getResultValues("dataset-name");
-
-			String compareProps[] = new String[] { "dataste", "mlc-algorithm", "mlc-algorithm-params", "classifier",
-					"imputation" };
-			String nonDatasetCompareProps[] = new String[] { "mlc-algorithm", "mlc-algorithm-params", "classifier",
-					"imputation" };
+			String compareProps[] = new String[] { "dataset-name", "mlc-algorithm", "mlc-algorithm-params",
+					"classifier", "imputation" };
 
 			results.sortProperties(compareProps);
 			for (String p : compareProps)
@@ -193,38 +223,52 @@ public class ReportMLC
 			for (String p : getProps(measures))
 				results.movePropertyBack(p);
 
-			String nonDatasetCmp = null;
-			CountedSet<Object> nonDatasetSet = null;
-			for (String p : nonDatasetCompareProps)
+			String cmp1 = null;
+			CountedSet<Object> cmpSet1 = null;
+			String cmp2 = null;
+			CountedSet<Object> cmpSet2 = null;
+			for (String p : compareProps)
 			{
 				CountedSet<Object> set = results.getResultValues(p);
 				if (set.size() > 1)
 				{
-					if (nonDatasetCmp != null)
-						throw new IllegalStateException("compare only one of those plz: "
-								+ ArrayUtil.toString(nonDatasetCompareProps));
-					nonDatasetCmp = p;
-					nonDatasetSet = set;
+					if (cmp1 == null)
+					{
+						cmp1 = p;
+						cmpSet1 = set;
+					}
+					else if (cmp2 == null)
+					{
+						cmp2 = p;
+						cmpSet2 = set;
+					}
+					else
+						throw new IllegalStateException("compare only two of those plz: "
+								+ ArrayUtil.toString(compareProps));
 				}
 			}
-			if (nonDatasetCmp == null)
+			if (cmp1 == null)
 			{
-				nonDatasetCmp = "mlc-algorithm";
-				nonDatasetSet = results.getResultValues("mlc-algorithm");
+				throw new IllegalStateException("nothing to compare");
 			}
-
-			for (Object datasetName : datasetNames.values())
+			else if (cmp2 == null)
 			{
-				ResultSet res = results.copy();
-				res.exclude("dataset-name", datasetName);
-				addBoxPlots(res, nonDatasetCmp, " for dataset " + res.getUniqueValue("dataset-name"), measures);
+				addBoxPlots(results, cmp1, "", measures);
 			}
-
-			for (Object mlcAlg : nonDatasetSet.values())
+			else
 			{
-				ResultSet res = results.copy();
-				res.exclude(nonDatasetCmp, mlcAlg);
-				addBoxPlots(res, "dataset-name", " for " + nonDatasetCmp + " = " + mlcAlg, measures);
+				for (Object val : cmpSet1.values())
+				{
+					ResultSet res = results.copy();
+					res.exclude(cmp1, val);
+					addBoxPlots(res, cmp2, " (" + cmp1 + ": " + val + ")", measures);
+				}
+				for (Object val : cmpSet2.values())
+				{
+					ResultSet res = results.copy();
+					res.exclude(cmp2, val);
+					addBoxPlots(res, cmp1, " (" + cmp2 + ": " + val + ")", measures);
+				}
 			}
 
 			report.close();
@@ -282,12 +326,15 @@ public class ReportMLC
 		report.newPage();
 	}
 
-	private MLCData.DatasetInfo getDatasetInfo(String datasetName) throws InvalidDataFormatException, IOException,
+	private static HashMap<String, MultiLabelInstances> dataMap = new HashMap<String, MultiLabelInstances>();
+
+	public static MultiLabelInstances getData(String datasetName) throws InvalidDataFormatException, IOException,
 			DocumentException
 	{
-		MultiLabelInstances dataset = new MultiLabelInstances("tmp/" + datasetName + ".arff", "tmp/" + datasetName
-				+ ".xml");
-		return new MLCData.DatasetInfo(dataset);
+		if (!dataMap.containsKey(datasetName))
+			dataMap.put(datasetName, new MultiLabelInstances("tmp/" + datasetName + ".arff", "tmp/" + datasetName
+					+ ".xml"));
+		return dataMap.get(datasetName);
 	}
 
 	//	private void addDatasetInfo(String datasetName) throws InvalidDataFormatException, IOException, DocumentException
@@ -295,9 +342,10 @@ public class ReportMLC
 	//		addDatasetInfo(getDatasetInfo(datasetName));
 	//	}
 
-	private void addDatasetInfo(MLCData.DatasetInfo di, String datasetName) throws InvalidDataFormatException,
-			IOException, DocumentException
+	private void addDatasetInfo(String datasetName) throws InvalidDataFormatException, IOException, DocumentException
 	{
+		MLCDataInfo di = MLCDataInfo.get(getData(datasetName));
+
 		File images[] = new File[] { FreeChartUtil.toTmpFile(di.plotMissingPerLabel(), new Dimension(1200, 800)),
 				FreeChartUtil.toTmpFile(di.plotMissingPerCompound(), new Dimension(1200, 600)),
 				FreeChartUtil.toTmpFile(di.plotCorrelation(), new Dimension(1200, 600)) };
@@ -359,7 +407,7 @@ public class ReportMLC
 		report.newPage();
 	}
 
-	public static void main(String args[]) throws Exception
+	public static void chooseWithDialog()
 	{
 		File results[] = new File("tmp").listFiles(new FilenameFilter()
 		{
@@ -488,6 +536,32 @@ public class ReportMLC
 				ResultSet rs = ResultSetIO.parseFromFile(new File("tmp/" + name + ".results"));
 				PerformanceMeasures measures = PerformanceMeasures.auc;
 				new ReportMLC(name + "_" + measures + "_report.pdf", rs, measures);
+			}
+		}
+	}
+
+	public static void main(String args[]) throws Exception
+	{
+		if (args == null || args.length == 0)
+			chooseWithDialog();
+		else
+		{
+			String name = args[0];
+			if (name.endsWith(".results"))
+			{
+				name = name.replace(".results", "").replace("tmp/", "");
+				System.out.println("create result report for " + name);
+				System.out.println("reading results:");
+				ResultSet rs = ResultSetIO.parseFromFile(new File("tmp/" + name + ".results"));
+				PerformanceMeasures measures = PerformanceMeasures.accuracy;
+				if (args.length > 1)
+					measures = PerformanceMeasures.valueOf(args[1]);
+				new ReportMLC("reports/report_" + name + "_" + measures + ".pdf", rs, measures);
+			}
+			else
+			{
+				new ReportMLC("reports/report_datasets_" + ArrayUtil.toString(args, "_", "", "").replace(" ", "")
+						+ ".pdf", args);
 			}
 		}
 		System.exit(0);

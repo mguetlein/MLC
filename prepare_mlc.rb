@@ -87,7 +87,7 @@ puts "Endpoint file: "+endpoint_file
 
 if endpoint_file=~/_disc2/ or endpoint_file=~/_discV2/
   discretization = 2
-elsif endpoint_file=~/_cluster/
+elsif endpoint_file=~/_clust2/
   discretization = 2
 elsif endpoint_file=~/CPDB/
   discretization = 2
@@ -117,6 +117,8 @@ if(endpoint_file =~ /disc2/)
   class_map = {"0" => "low-real-value", "1" => "high-real-value", "missing" => "unknown_or_fully-tested(V)"}
 elsif(endpoint_file =~ /discV2/)
   class_map = {"0" => "real-value", "1" => "fully-tested(V)", "missing" => "unknown"}
+elsif(endpoint_file =~ /clust2/)
+  class_map = {"0" => "low-real-value", "1" => "high-real-value", "missing" => "unknown_or_fully-tested(V)"}
 end
 raise "please specifiy class-value-map" unless class_map
 
@@ -140,7 +142,7 @@ raise "outfile already exists: '#{outfile}'" if File.exist?(outfile+".arff")
 map = nil
 if(endpoint_file =~ /disc2/ or endpoint_file =~ /discV2/)
   map = {"1" => "0", "2" => "1"}
-elsif(endpoint_file =~ /cluster/)
+elsif(endpoint_file =~ /clust2/)
   map = {"0" => "0", "1" => "1"}
 elsif endpoint_file=~/CPDB/
   map = {"active" => "1", "inactive" => "0", "blank" => "?", "unspecified" => "?"}
