@@ -131,11 +131,13 @@ public class ReportMLC
 		switch (measures)
 		{
 			case accuracy:
-				return new String[] { "micro-accuracy", "macro-accuracy", "1-hamming-loss", "subset-accuracy" };
+				return new String[] { "micro-accuracy", "macro-accuracy", "weighted-macro-accuracy", "1-hamming-loss",
+						"subset-accuracy" };
 			case auc:
-				return new String[] { "micro-auc", "macro-auc", "subset-accuracy" };
+				return new String[] { "micro-auc", "macro-auc", "weighted-macro-auc", "subset-accuracy" };
 			case fmeasure:
-				return new String[] { "micro-f-measure", "macro-f-measure", "subset-accuracy" };
+				return new String[] { "micro-f-measure", "macro-f-measure", "weighted-macro-f-measure",
+						"subset-accuracy" };
 		}
 		return null;
 	}
@@ -155,10 +157,15 @@ public class ReportMLC
 				s.add("micro-accuracy > 1-hamming-loss: compounds with few missing values are predicted better than compounds with many missing values");
 				break;
 			case auc:
-				s.add("auc: area-under-(the-roc)-curve, ranks predictions according to probabilities(=confidences) "
-						+ "given by a classifier for each prediction (probablity 0-0.5 : '" + classZeroValue
-						+ "', probability 0.5-1 : '" + classOneValue + "' ), auc := probability that a '"
-						+ classOneValue + "' is ranked higher than a '" + classZeroValue + "'");
+				s.add("auc:");
+				s.add("* area-under-(the-roc)-curve, performance measure suitable for unbalanced classes, range: 0 - 1, random guessing: 0.5, perfect prediction: 1.0");
+				s.add("* auc is the probability that the classifier ranks a compound with class '" + classOneValue
+						+ "' higher than with class '" + classZeroValue + "'");
+				s.add("* in more detail: predictions are ranked according to probabilities(=confidences) "
+						+ "given by the classifier for each prediction, i.e. first the compounds with high probability for class '"
+						+ classOneValue
+						+ "', than the compounds the classifier is unsure about, than the compounds with high probability for class '"
+						+ classZeroValue + "'");
 				s.add();
 				s.add("micro-auc: auc computed with each single prediction");
 				s.add("macro-auc: auc averaged by endpoint");
@@ -239,6 +246,8 @@ public class ReportMLC
 					}
 					else if (cmp2 == null)
 					{
+						if (cmp1.equals("mlc-algorithm")) // >1 mlc-alg, ignore different mlc-params
+							continue;
 						cmp2 = p;
 						cmpSet2 = set;
 					}
@@ -249,7 +258,7 @@ public class ReportMLC
 			}
 			if (cmp1 == null)
 			{
-				throw new IllegalStateException("nothing to compare");
+				addBoxPlots(results, "mlc-algorithm", "", measures);
 			}
 			else if (cmp2 == null)
 			{
@@ -534,7 +543,7 @@ public class ReportMLC
 				System.out.println("create result report for " + name);
 				System.out.println("reading results:");
 				ResultSet rs = ResultSetIO.parseFromFile(new File("tmp/" + name + ".results"));
-				PerformanceMeasures measures = PerformanceMeasures.auc;
+				PerformanceMeasures measures = PerformanceMeasures.accuracy;
 				new ReportMLC(name + "_" + measures + "_report.pdf", rs, measures);
 			}
 		}
@@ -556,6 +565,14 @@ public class ReportMLC
 				PerformanceMeasures measures = PerformanceMeasures.accuracy;
 				if (args.length > 1)
 					measures = PerformanceMeasures.valueOf(args[1]);
+				if (args.length > 2)
+				{
+					for (int i = 2; i < args.length; i++)
+					{
+						String excl[] = args[i].split(",");
+						rs.remove(excl[0], excl[1]);
+					}
+				}
 				new ReportMLC("reports/report_" + name + "_" + measures + ".pdf", rs, measures);
 			}
 			else

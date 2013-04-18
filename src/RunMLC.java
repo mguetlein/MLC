@@ -205,7 +205,7 @@ public class RunMLC
 					{
 						final String mlcAlgorithmStr = mlcAlgs[mlcAlgorithmIndex];
 						final String mlcAlgorithmParamsStr;
-						if (mlcParams[mlcAlgorithmIndex].equals("default"))
+						if (mlcParams[mlcAlgorithmIndex] != null && mlcParams[mlcAlgorithmIndex].equals("default"))
 							mlcAlgorithmParamsStr = null;
 						else
 							mlcAlgorithmParamsStr = mlcParams[mlcAlgorithmIndex];
@@ -293,6 +293,9 @@ public class RunMLC
 											res.setResultValue(resCount, "macro-accuracy", ev.getResult(
 													new MacroAccuracy(dataset.getNumLabels()).getName(), fold));
 
+											res.setResultValue(resCount, "weighted-macro-accuracy", ev.getResult(
+													new MacroAccuracy(dataset.getNumLabels(), true).getName(), fold));
+
 											for (int i = 0; i < dataset.getNumLabels(); i++)
 												res.setResultValue(resCount, "macro-accuracy#" + i, ev.getResult(
 														new MacroAccuracy(dataset.getNumLabels()).getName(), fold, i));
@@ -306,6 +309,9 @@ public class RunMLC
 											res.setResultValue(resCount, "macro-f-measure", ev.getResult(
 													new MacroFMeasure(dataset.getNumLabels()).getName(), fold));
 
+											res.setResultValue(resCount, "weighted-macro-f-measure", ev.getResult(
+													new MacroFMeasure(dataset.getNumLabels(), true).getName(), fold));
+
 											for (int i = 0; i < dataset.getNumLabels(); i++)
 												res.setResultValue(resCount, "macro-f-measure#" + i, ev.getResult(
 														new MacroFMeasure(dataset.getNumLabels()).getName(), fold, i));
@@ -315,6 +321,9 @@ public class RunMLC
 
 											res.setResultValue(resCount, "macro-auc",
 													ev.getResult(new MacroAUC(dataset.getNumLabels()).getName(), fold));
+
+											res.setResultValue(resCount, "weighted-macro-auc", ev.getResult(
+													new MacroAUC(dataset.getNumLabels(), true).getName(), fold));
 
 											for (int i = 0; i < dataset.getNumLabels(); i++)
 												res.setResultValue(resCount, "macro-auc#" + i, ev.getResult(
@@ -405,9 +414,9 @@ public class RunMLC
 
 		if (args != null && args.length == 1 && args[0].equals("debug"))
 		{
-			//args = ("-x 1 -f 3 -i 0 -u 1 -t false -a BR -c IBk,SMO -d dataAsmall,dataAsmallFP1 -e test").split(" ");
-			args = ("-x 1 -f 10 -i 0 -u 1 -t false -a BR,MLkNN -p \"default,num-neighbors=2\" -c IBk -d dataA-F1 -e test")
-					.split(" ");
+			args = ("-x 1 -f 3 -i 0 -u 1 -t false -a BR -c IBk -d dataAsmall-F1-V -e test").split(" ");
+			//args = ("-x 1 -f 10 -i 0 -u 1 -t false -a BR,MLkNN -p \"default,num-neighbors=2\" -c IBk -d dataA-F1 -e test")
+			//		.split(" ");
 		}
 
 		if (args == null || args.length < 6)
