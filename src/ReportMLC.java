@@ -109,19 +109,21 @@ public class ReportMLC
 
 	public static enum PerformanceMeasures
 	{
-		accuracy, fmeasure, auc
+		accuracy, fmeasure, auc, all
 	}
 
-	public static String getPropName(PerformanceMeasures measures)
+	public static String[] getPropNames(PerformanceMeasures measures)
 	{
 		switch (measures)
 		{
 			case accuracy:
-				return "accuracy";
+				return new String[] { "accuracy" };
 			case auc:
-				return "auc";
+				return new String[] { "auc" };
+			case all:
+				return new String[] { "accuracy", "auc", "mcc" };
 			case fmeasure:
-				return "f-measure";
+				return new String[] { "f-measure" };
 		}
 		return null;
 	}
@@ -138,6 +140,10 @@ public class ReportMLC
 			case fmeasure:
 				return new String[] { "micro-f-measure", "macro-f-measure", "weighted-macro-f-measure",
 						"subset-accuracy" };
+			case all:
+				return new String[] { "micro-accuracy", "macro-accuracy", "weighted-macro-accuracy", "micro-mcc",
+						"macro-mcc", "weighted-macro-mcc", "1-hamming-loss", "micro-auc", "macro-auc",
+						"weighted-macro-auc", "micro-mcc", "macro-mcc", "weighted-macro-mcc", "subset-accuracy" };
 		}
 		return null;
 	}
@@ -183,6 +189,8 @@ public class ReportMLC
 				s.add("subset-accuracy: average number of compounds where all enpoints are predicted correctly");
 				s.add();
 				s.add("micro-f-measure > macro-f-measure: compounds with few missing values are predicted better than compounds with many missing values");
+				break;
+			case all:
 				break;
 		}
 		return s.toString();
@@ -302,6 +310,12 @@ public class ReportMLC
 		ChartPanel boxPlot1 = results.boxPlot("Performance for different " + compareProp + titleSuffix, "Performance",
 				new String[] { "compounds: " + numCompounds + ", labels: " + numLabels + ", " + numCVSeeds + " x "
 						+ numCVFolds + "-fold CV" }, compareProp, catProps, null, 0.05);
+		if (getProps(measures).length > 6)
+		{
+			CategoryPlot plot = (CategoryPlot) boxPlot1.getChart().getPlot();
+			CategoryAxis xAxis = (CategoryAxis) plot.getDomainAxis();
+			xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
+		}
 		File images[] = new File[] { FreeChartUtil.toTmpFile(boxPlot1, new Dimension(1200, 600)) };
 
 		ResultSet rs = results.join(ArrayUtil.toList(new String[] { compareProp }), null, catProps);
@@ -310,20 +324,26 @@ public class ReportMLC
 
 		//		if (results.getResultValues("dataset-name").size() == 1)
 		//		{
-		Double numLabelsInt = Double.parseDouble(results.getUniqueValue("num-labels") + "");
-		catProps.clear();
-		for (int i = 0; i < numLabelsInt; i++)
-			catProps.add("macro-" + getPropName(measures) + "#" + i);
-		List<String> catPropsDisp = new ArrayList<String>();
-		for (int i = 0; i < numLabelsInt; i++)
-			catPropsDisp.add(results.getUniqueValue("label#" + i).toString());
-		ChartPanel boxPlot2 = results.boxPlot("Endpoint " + getPropName(measures) + " for different " + compareProp
-				+ titleSuffix, "Performance", new String[] { "compounds: " + numCompounds + ", labels: " + numLabels
-				+ ", " + numCVSeeds + " x " + numCVFolds + "-fold CV" }, compareProp, catProps, catPropsDisp, 0.05);
-		CategoryPlot plot = (CategoryPlot) boxPlot2.getChart().getPlot();
-		CategoryAxis xAxis = (CategoryAxis) plot.getDomainAxis();
-		xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
-		images = ArrayUtil.concat(images, new File[] { FreeChartUtil.toTmpFile(boxPlot2, new Dimension(1200, 800)) });
+
+		for (String prop : getPropNames(measures))
+		{
+			Double numLabelsInt = Double.parseDouble(results.getUniqueValue("num-labels") + "");
+			catProps.clear();
+			for (int i = 0; i < numLabelsInt; i++)
+				catProps.add("macro-" + prop + "#" + i);
+			List<String> catPropsDisp = new ArrayList<String>();
+			for (int i = 0; i < numLabelsInt; i++)
+				catPropsDisp.add(results.getUniqueValue("label#" + i).toString());
+			ChartPanel boxPlot2 = results
+					.boxPlot("Endpoint " + prop + " for different " + compareProp + titleSuffix, "Performance",
+							new String[] { "compounds: " + numCompounds + ", labels: " + numLabels + ", " + numCVSeeds
+									+ " x " + numCVFolds + "-fold CV" }, compareProp, catProps, catPropsDisp, 0.05);
+			CategoryPlot plot = (CategoryPlot) boxPlot2.getChart().getPlot();
+			CategoryAxis xAxis = (CategoryAxis) plot.getDomainAxis();
+			xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
+			images = ArrayUtil.concat(images,
+					new File[] { FreeChartUtil.toTmpFile(boxPlot2, new Dimension(1200, 800)) });
+		}
 
 		//			ResultSet rs2 = results.join(ArrayUtil.toList(new String[] { compareProp }), null, catProps);
 		//			rs2.excludeProperties(ArrayUtil.toList(ArrayUtil.concat(new String[] { compareProp },
@@ -543,7 +563,7 @@ public class ReportMLC
 				System.out.println("create result report for " + name);
 				System.out.println("reading results:");
 				ResultSet rs = ResultSetIO.parseFromFile(new File("tmp/" + name + ".results"));
-				PerformanceMeasures measures = PerformanceMeasures.accuracy;
+				PerformanceMeasures measures = PerformanceMeasures.all;
 				new ReportMLC(name + "_" + measures + "_report.pdf", rs, measures);
 			}
 		}

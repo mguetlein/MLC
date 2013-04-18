@@ -20,9 +20,11 @@ import mulan.evaluation.loss.HammingLoss;
 import mulan.evaluation.measure.MacroAUC;
 import mulan.evaluation.measure.MacroAccuracy;
 import mulan.evaluation.measure.MacroFMeasure;
+import mulan.evaluation.measure.MacroMCC;
 import mulan.evaluation.measure.MicroAUC;
 import mulan.evaluation.measure.MicroAccuracy;
 import mulan.evaluation.measure.MicroFMeasure;
+import mulan.evaluation.measure.MicroMCC;
 import mulan.evaluation.measure.SubsetAccuracy;
 
 import org.apache.commons.cli.BasicParser;
@@ -328,6 +330,19 @@ public class RunMLC
 											for (int i = 0; i < dataset.getNumLabels(); i++)
 												res.setResultValue(resCount, "macro-auc#" + i, ev.getResult(
 														new MacroAUC(dataset.getNumLabels()).getName(), fold, i));
+
+											res.setResultValue(resCount, "micro-mcc",
+													ev.getResult(new MicroMCC(dataset.getNumLabels()).getName(), fold));
+
+											res.setResultValue(resCount, "macro-mcc",
+													ev.getResult(new MacroMCC(dataset.getNumLabels()).getName(), fold));
+
+											res.setResultValue(resCount, "weighted-macro-mcc", ev.getResult(
+													new MacroMCC(dataset.getNumLabels(), true).getName(), fold));
+
+											for (int i = 0; i < dataset.getNumLabels(); i++)
+												res.setResultValue(resCount, "macro-mcc#" + i, ev.getResult(
+														new MacroMCC(dataset.getNumLabels()).getName(), fold, i));
 										}
 										System.out.println("\nprinting " + res.getNumResults() + " results to "
 												+ resFile);
