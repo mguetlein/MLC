@@ -1,21 +1,7 @@
 require "rubygems"
 require "getoptlong"
 
-require "./ruby/to_arff.rb"
-
-#require 'open4'
-#module ProcessUtil
-#  def self.run(cmd)
-#    puts cmd
-#    status = Open4::popen4(cmd) do |pid, stdin, stdout, stderr|
-#      puts "pid        : #{ pid }"
-#      puts "stdout     : #{ stdout.read.strip }"
-#      puts "stderr     : #{ stderr.read.strip }"
-#    end    
-#    status    
-#  end
-#end
-
+require "./to_arff.rb"
 
 opts = GetoptLong.new(
   [ '--dataset-name', '-d', GetoptLong::REQUIRED_ARGUMENT ],
@@ -24,9 +10,6 @@ opts = GetoptLong.new(
   [ '--feature-file', '-f', GetoptLong::REQUIRED_ARGUMENT ],
   [ '--num-endpoints', '-n', GetoptLong::REQUIRED_ARGUMENT ],
   [ '--num-missing-allowed', '-m', GetoptLong::REQUIRED_ARGUMENT ],
-#  [ '--num-cores', '-x', GetoptLong::REQUIRED_ARGUMENT ],
-#  [ '--max-cv-seed-exclusive', '-u', GetoptLong::REQUIRED_ARGUMENT ],
-#  [ '--mlc-algorithm', '-a', GetoptLong::REQUIRED_ARGUMENT ],
   [ '--start-endpoint', '-i', GetoptLong::REQUIRED_ARGUMENT ],
 )
 
@@ -85,17 +68,18 @@ raise "enpoint-file missing\n"+usage unless endpoint_file
 raise "enpoint-file missing #{endpoint_file}" unless File.exist? endpoint_file
 puts "Endpoint file: "+endpoint_file
 
-if endpoint_file=~/_disc2/ or endpoint_file=~/_discV2/
-  discretization = 2
-elsif endpoint_file=~/_clust2/
-  discretization = 2
-elsif endpoint_file=~/CPDB/
-  discretization = 2
-else
-  raise "cannot determine discretization"  
-end
+discretization = 2
+#if endpoint_file=~/_disc2/ or endpoint_file=~/_discV2/
+#  discretization = 2
+#elsif endpoint_file=~/_clust[0-9][0-9]to[0-9][0-9]/
+#  discretization = 2
+#elsif endpoint_file=~/CPDB/
+#  discretization = 2
+#else
+#  raise "cannot determine discretization"  
+#end
 
-if endpoint_file=~/_discV/
+if endpoint_file=~/_withV/
   include_v = true
 else
   include_v = false
@@ -113,12 +97,20 @@ puts "Num missing allowed: #{num_missing_allowed==-1 ? "all" : num_missing_allow
 
 
 class_map = nil
-if(endpoint_file =~ /disc2/)
-  class_map = {"0" => "low-real-value", "1" => "high-real-value", "missing" => "unknown_or_fully-tested(V)"}
-elsif(endpoint_file =~ /discV2/)
-  class_map = {"0" => "real-value", "1" => "fully-tested(V)", "missing" => "unknown"}
-elsif(endpoint_file =~ /clust2/)
-  class_map = {"0" => "low-real-value", "1" => "high-real-value", "missing" => "unknown_or_fully-tested(V)"}
+if(endpoint_file =~ /_noV_EqF/)
+  class_map = {"0" => "high-real-value(>50)", "1" => "low-real-value(<50)", "missing" => "unknown_or_fully-tested(V)"}
+elsif(endpoint_file =~ /_withV_RvsV/)
+  class_map = {"0" => "fully-tested(V)", "1" => "real-value", "missing" => "unknown"}
+elsif(endpoint_file =~ /_withV_Cl([0-9])([0-9])V/)
+  low_pct = $1.to_i*10
+  high_pct = $2.to_i*10
+  mid_pct = low_pct + (high_pct-low_pct)/2
+  class_map = {"0" => "high-real-value(>~#{mid_pct})_or_fully-tested(V)", "1" => "low-real-value(<~#{mid_pct})", "missing" => "unknown"}  
+elsif(endpoint_file =~ /_noV_Cl([0-9])([0-9])/)
+  low_pct = $1.to_i*10
+  high_pct = $2.to_i*10
+  mid_pct = low_pct + (high_pct-low_pct)/2 
+  class_map = {"0" => "high-real-value(>~#{mid_pct})", "1" => "low-real-value(<~#{mid_pct})", "missing" => "unknown_or_fully-tested(V)"}
 end
 raise "please specifiy class-value-map" unless class_map
 
@@ -136,25 +128,26 @@ relation_name << "#include-v:#{include_v}"
 class_map.each do |k,v|
   relation_name << "#class-value-#{k}:#{v}"
 end
-outfile = "tmp/#{dataset_name}" #"input#{Time.now.strftime("%Y-%m-%d_%H-%M-%S")}"
-raise "outfile already exists: '#{outfile}'" if File.exist?(outfile+".arff")
+outfile = "arff/#{dataset_name}" #"input#{Time.now.strftime("%Y-%m-%d_%H-%M-%S")}"
+$stderr.puts "outfile already exists: '#{outfile}'" if File.exist?(outfile+".arff")
 
-map = nil
-if(endpoint_file =~ /disc2/ or endpoint_file =~ /discV2/)
-  map = {"1" => "0", "2" => "1"}
-elsif(endpoint_file =~ /clust2/)
-  map = {"0" => "0", "1" => "1"}
-elsif endpoint_file=~/CPDB/
-  map = {"active" => "1", "inactive" => "0", "blank" => "?", "unspecified" => "?"}
-end
+endpoint_map = nil
+#if(endpoint_file =~ /disc2/ or endpoint_file =~ /discV2/)
+#  endpoint_map = {"1" => "0", "2" => "1"}
+#elsif(endpoint_file =~ /clust[0-9][0-9]to[0-9][0-9]V/)
+#  endpoint_map = {"0" => "0", "1" => "1"}
+#elsif(endpoint_file =~ /clust[0-9][0-9]to[0-9][0-9]/)
+#  endpoint_map = {"0" => "0", "1" => "1"}
+#elsif endpoint_file=~/CPDB/
+#  endpoint_map = {"active" => "1", "inactive" => "0", "blank" => "?", "unspecified" => "?"}
+#end
 
-
-additional = ["SMILES","Name","CAS"]
+additional = ["smiles","name","cas"]
 if endpoint_file=~/CPDB/
   additional = ["SMILES","DSSTox_FileID","TestSubstance_ChemicalName","TestSubstance_CASRN"]  
 end
 
-arff_file = toArff.to_arff(num_endpoints, num_missing_allowed, relation_name, outfile, map, start_endpoint, additional)
+arff_file = toArff.to_arff(num_endpoints, num_missing_allowed, relation_name, outfile, endpoint_map, start_endpoint, additional)
 
 puts arff_file
 

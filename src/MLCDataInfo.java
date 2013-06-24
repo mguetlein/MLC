@@ -1,4 +1,6 @@
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,6 +23,11 @@ import org.jfree.chart.title.TextTitle;
 import org.jfree.chart.title.Title;
 
 import util.ArrayUtil;
+import util.CorrelationMatrix;
+import util.CorrelationMatrix.PearsonBooleanCorrelationMatrix;
+import util.CorrelationMatrix.PearsonDoubleCorrelationMatrix;
+import util.FileUtil;
+import util.FileUtil.CSVFile;
 import util.IntegerUtil;
 import util.ListUtil;
 import util.StringLineAdder;
@@ -31,6 +38,7 @@ import datamining.ResultSet;
 import freechart.BarPlotPanel;
 import freechart.HistogramPanel;
 import freechart.StackedBarPlot;
+import gui.MatrixPanel;
 
 public class MLCDataInfo
 {
@@ -60,12 +68,20 @@ public class MLCDataInfo
 	int[] missings_per_label;
 
 	private static HashMap<MultiLabelInstances, MLCDataInfo> map = new HashMap<MultiLabelInstances, MLCDataInfo>();
+	private static HashMap<MultiLabelInstances, CSVFile> map2 = new HashMap<MultiLabelInstances, CSVFile>();
 
 	public static MLCDataInfo get(MultiLabelInstances dataset)
 	{
 		if (!map.containsKey(dataset))
 			map.put(dataset, new MLCDataInfo(dataset));
 		return map.get(dataset);
+	}
+
+	public static CSVFile getCSV(MultiLabelInstances dataset)
+	{
+		if (!map2.containsKey(dataset))
+			map2.put(dataset, FileUtil.readCSV("arff/" + get(dataset).datasetName + ".csv"));
+		return map2.get(dataset);
 	}
 
 	private MLCDataInfo(MultiLabelInstances dataset)
@@ -257,7 +273,7 @@ public class MLCDataInfo
 		System.out.println(toString(true));
 	}
 
-	public ChartPanel plotCorrelation() throws IOException
+	public ChartPanel plotCorrelationHistogramm() throws IOException
 	{
 		if (histData2.size() > 0)
 		{
@@ -265,9 +281,9 @@ public class MLCDataInfo
 			System.out.println(ListUtil.toString(histData2));
 
 			//			Dimension dim = new Dimension(400, 300);
-			HistogramPanel p = new HistogramPanel("Endpoint value correlation of " + dataset.getNumLabels()
-					+ " endpoint values", null, "Endpoint value ratio, 0.0 -> all endpoint values are '"
-					+ getClassValuesZero() + "', 1.0 -> all endpoint values are '" + getClassValuesOne() + "'",
+			HistogramPanel p = new HistogramPanel("Class distributions of " + dataset.getNumLabels() + " endpoints",
+					null, "Class distribution ratio, 0.0 -> class is '" + getClassValuesZero()
+							+ "' for all endpoints, 1.0 -> class is '" + getClassValuesOne() + "' for all endpoints",
 					"num compounds", "All compounds with at least 2 non-missing endpoint values (" + histData2.size()
 							+ ")", ArrayUtil.toPrimitiveDoubleArray(ListUtil.toArray(histData2)), 9);
 
@@ -480,4 +496,75 @@ public class MLCDataInfo
 		f.setVisible(true);
 	}
 
+	public CorrelationMatrix<Boolean> getClassCorrelationMatrix()
+	{
+		List<Boolean[]> matrixValues = new ArrayList<Boolean[]>();
+		for (int j = 0; j < dataset.getNumLabels(); j++)
+		{
+			Attribute labelAttr = dataset.getDataSet().attribute(dataset.getLabelIndices()[j]);
+			Boolean[] d = new Boolean[dataset.getNumInstances()];
+			for (int i = 0; i < dataset.getNumInstances(); i++)
+			{
+				Double v = dataset.getDataSet().get(i).value(labelAttr);
+				d[i] = (Double.isNaN(v) ? null : (v == 1.0 ? true : false));
+			}
+			matrixValues.add(d);
+		}
+		PearsonBooleanCorrelationMatrix m = new PearsonBooleanCorrelationMatrix();
+		m.setMinNumValues(10);
+		m.computeMatrix(matrixValues);
+		return m;
+	}
+
+	public CorrelationMatrix<Double> getRealValueCorrelationMatrix()
+	{
+		List<Double[]> matrixValues = new ArrayList<Double[]>();
+		for (int j = 0; j < dataset.getNumLabels(); j++)
+		{
+			Attribute labelAttr = dataset.getDataSet().attribute(dataset.getLabelIndices()[j]);
+			String s[] = getCSV(dataset).getColumn(labelAttr.name() + "_real");
+			Double d[] = new Double[s.length];
+			for (int i = 0; i < d.length; i++)
+				if (s[i] != null && !s[i].equals("V"))
+					d[i] = Double.parseDouble(s[i]);
+			matrixValues.add(d);
+		}
+		PearsonDoubleCorrelationMatrix m = new PearsonDoubleCorrelationMatrix();
+		m.setMinNumValues(10);
+		m.computeMatrix(matrixValues);
+		return m;
+	}
+
+	public MatrixPanel plotCorrelationMatrix(boolean clazz)
+	{
+		MatrixPanel p = new MatrixPanel();
+		p.setMinNumValues(10);
+		p.setTitleFont(p.getFont().deriveFont(p.getFont().getSize() + 12.0F).deriveFont(Font.BOLD));
+		p.setBackground(Color.WHITE);
+		//		if (numEndpoints > 25)
+		//			p.setFont(p.getFont().deriveFont(10.0F));
+
+		p.setTitleString("Pearson Correlation Matrix for " + (clazz ? "class" : "real") + " values from dataset "
+				+ datasetName);
+		if (clazz)
+			p.setSubtitleString("1 := high correlation, 0 := no correlation, -1 := inverse correlation, the small numbers below correspond to the number of class values of "
+					+ getClassValuesZero() + "/" + getClassValuesOne() + " per endpoint or endpoint-pair");
+		else
+			p.setSubtitleString("1 := high correlation, 0 := no correlation, -1 := inverse correlation, the small numbers below correspond to the number of real values per endpoint or endpoint-pair");
+
+		List<String> attributeNames = new ArrayList<String>();
+		for (int j = 0; j < dataset.getNumLabels(); j++)
+		{
+			Attribute labelAttr = dataset.getDataSet().attribute(dataset.getLabelIndices()[j]);
+			attributeNames.add(labelAttr.name());
+		}
+		p.fill(clazz ? getClassCorrelationMatrix() : getRealValueCorrelationMatrix(), ArrayUtil.toArray(attributeNames));
+
+		//		if (numEndpoints > 25)
+		//			p.setPreferredSize(new Dimension(1500, 1450));
+		//		else
+		//			p.setPreferredSize(new Dimension(1000, 950));
+
+		return p;
+	}
 }

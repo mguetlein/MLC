@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Date;
 
 import util.StringUtil;
+import util.TimeFormatUtil;
 
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
@@ -106,9 +107,17 @@ public class Report
 			for (File file : images)
 			{
 				Image image = PngImage.getImage(file.getAbsolutePath());
-				float scaler = ((document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin() - 10) / image
-						.getWidth()) * 100;
-				image.scalePercent(scaler);
+				float docH = (document.getPageSize().getHeight() - document.topMargin() - document.bottomMargin() - 10);
+				float docW = (document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin() - 10);
+				if (image.getHeight() > docH || image.getWidth() > docW)
+				{
+					System.out.println("to big " + image.getWidth() + "x" + image.getHeight());
+					float scaleH = (docH / image.getHeight()) * 100;
+					float scaleW = (docW / image.getWidth()) * 100;
+					float scale = Math.min(scaleH, scaleW);
+					image.scalePercent(scale);
+					System.out.println("-> " + image.getWidth() + "x" + image.getHeight());
+				}
 				//image.setRotationDegrees(45f);
 				subPara.add(image);
 			}
@@ -196,7 +205,9 @@ public class Report
 			for (String p : rs.getProperties())
 			{
 				Object val = rs.getResultValue(i, p);
-				if (val instanceof Double)
+				if (p.equals("runtime"))
+					table.addCell(new Phrase(TimeFormatUtil.format(((Double) val).longValue()), FONT_TEXT));
+				else if (val instanceof Double)
 					table.addCell(new Phrase(StringUtil.formatDouble((Double) val, 3), FONT_TEXT));
 				else
 					table.addCell(new Phrase(val + "", FONT_TEXT));

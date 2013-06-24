@@ -3,8 +3,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import mulan.classifier.MultiLabelLearner;
+import mulan.classifier.MultiLabelOutput;
 import mulan.classifier.lazy.MLkNN;
 import mulan.classifier.meta.HOMER;
 import mulan.classifier.meta.HierarchyBuilder;
@@ -12,6 +15,7 @@ import mulan.classifier.transformation.BinaryRelevance;
 import mulan.classifier.transformation.EnsembleOfClassifierChains;
 import mulan.classifier.transformation.MultiLabelStacking;
 import mulan.data.MultiLabelInstances;
+import mulan.evaluation.Evaluator;
 import mulan.evaluation.MissingCapableEvaluator;
 import mulan.evaluation.MultipleEvaluation;
 import mulan.evaluation.SinglePredictionTracker;
@@ -21,10 +25,14 @@ import mulan.evaluation.measure.MacroAUC;
 import mulan.evaluation.measure.MacroAccuracy;
 import mulan.evaluation.measure.MacroFMeasure;
 import mulan.evaluation.measure.MacroMCC;
+import mulan.evaluation.measure.MacroRecall;
+import mulan.evaluation.measure.MacroSpecificity;
 import mulan.evaluation.measure.MicroAUC;
 import mulan.evaluation.measure.MicroAccuracy;
 import mulan.evaluation.measure.MicroFMeasure;
 import mulan.evaluation.measure.MicroMCC;
+import mulan.evaluation.measure.MicroRecall;
+import mulan.evaluation.measure.MicroSpecificity;
 import mulan.evaluation.measure.SubsetAccuracy;
 
 import org.apache.commons.cli.BasicParser;
@@ -33,12 +41,16 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Options;
 
 import util.ArrayUtil;
+import util.FileUtil;
+import util.FileUtil.CSVFile;
 import util.ParallelHandler;
 import util.StringUtil;
 import weka.classifiers.Classifier;
 import weka.classifiers.functions.SMO;
 import weka.classifiers.lazy.IBk;
 import weka.classifiers.trees.RandomForest;
+import weka.core.Attribute;
+import weka.core.Instance;
 import datamining.ResultSet;
 import datamining.ResultSetIO;
 
@@ -59,6 +71,7 @@ public class RunMLC
 	private String datasetName;
 	private String experimentName;
 	private String imputation = "false";
+	private String fillMissing = "false";
 
 	//	private int numEndpoints;
 	//	private int numMissingAllowed;
@@ -157,12 +170,12 @@ public class RunMLC
 		if (numCores > 1)
 			parallel = new ParallelHandler(numCores);
 		final ResultSet res = new ResultSet();
-		final File resFile = new File("tmp/" + experimentName + "_" + datasetName.replace(",", "_") + ".results");
+		final File resFile = new File("results/" + experimentName + "_" + datasetName.replace(",", "_") + ".results");
 		List<SinglePredictionTracker> trackers = new ArrayList<SinglePredictionTracker>();
 
 		for (final String datasetNameStr : datasetName.split(","))
 		{
-			final MultiLabelInstances dataset = new MultiLabelInstances("tmp/" + datasetNameStr + ".arff", "tmp/"
+			final MultiLabelInstances dataset = new MultiLabelInstances("arff/" + datasetNameStr + ".arff", "arff/"
 					+ datasetNameStr + ".xml");
 			int numRepetitions = (maxSeedExclusive - minSeed) * (StringUtil.numOccurences(classifier, ",") + 1)
 					* (StringUtil.numOccurences(mlcAlgorithm, ",") + 1)
@@ -294,61 +307,173 @@ public class RunMLC
 
 											res.setResultValue(resCount, "macro-accuracy", ev.getResult(
 													new MacroAccuracy(dataset.getNumLabels()).getName(), fold));
-
 											res.setResultValue(resCount, "weighted-macro-accuracy", ev.getResult(
 													new MacroAccuracy(dataset.getNumLabels(), true).getName(), fold));
-
 											for (int i = 0; i < dataset.getNumLabels(); i++)
 												res.setResultValue(resCount, "macro-accuracy#" + i, ev.getResult(
 														new MacroAccuracy(dataset.getNumLabels()).getName(), fold, i));
-
 											res.setResultValue(resCount, "micro-accuracy", ev.getResult(
 													new MicroAccuracy(dataset.getNumLabels()).getName(), fold));
 
 											res.setResultValue(resCount, "micro-f-measure", ev.getResult(
 													new MicroFMeasure(dataset.getNumLabels()).getName(), fold));
-
 											res.setResultValue(resCount, "macro-f-measure", ev.getResult(
 													new MacroFMeasure(dataset.getNumLabels()).getName(), fold));
-
 											res.setResultValue(resCount, "weighted-macro-f-measure", ev.getResult(
 													new MacroFMeasure(dataset.getNumLabels(), true).getName(), fold));
-
 											for (int i = 0; i < dataset.getNumLabels(); i++)
 												res.setResultValue(resCount, "macro-f-measure#" + i, ev.getResult(
 														new MacroFMeasure(dataset.getNumLabels()).getName(), fold, i));
 
 											res.setResultValue(resCount, "micro-auc",
 													ev.getResult(new MicroAUC(dataset.getNumLabels()).getName(), fold));
-
 											res.setResultValue(resCount, "macro-auc",
 													ev.getResult(new MacroAUC(dataset.getNumLabels()).getName(), fold));
-
 											res.setResultValue(resCount, "weighted-macro-auc", ev.getResult(
 													new MacroAUC(dataset.getNumLabels(), true).getName(), fold));
-
 											for (int i = 0; i < dataset.getNumLabels(); i++)
 												res.setResultValue(resCount, "macro-auc#" + i, ev.getResult(
 														new MacroAUC(dataset.getNumLabels()).getName(), fold, i));
 
 											res.setResultValue(resCount, "micro-mcc",
 													ev.getResult(new MicroMCC(dataset.getNumLabels()).getName(), fold));
-
 											res.setResultValue(resCount, "macro-mcc",
 													ev.getResult(new MacroMCC(dataset.getNumLabels()).getName(), fold));
-
 											res.setResultValue(resCount, "weighted-macro-mcc", ev.getResult(
 													new MacroMCC(dataset.getNumLabels(), true).getName(), fold));
-
 											for (int i = 0; i < dataset.getNumLabels(); i++)
 												res.setResultValue(resCount, "macro-mcc#" + i, ev.getResult(
 														new MacroMCC(dataset.getNumLabels()).getName(), fold, i));
+
+											res.setResultValue(resCount, "micro-sensitivity", ev.getResult(
+													new MicroRecall(dataset.getNumLabels()).getName(), fold));
+											res.setResultValue(resCount, "macro-sensitivity", ev.getResult(
+													new MacroRecall(dataset.getNumLabels()).getName(), fold));
+											for (int i = 0; i < dataset.getNumLabels(); i++)
+												res.setResultValue(resCount, "macro-sensitivity#" + i, ev.getResult(
+														new MacroRecall(dataset.getNumLabels()).getName(), fold, i));
+
+											res.setResultValue(resCount, "micro-specificity", ev.getResult(
+													new MicroSpecificity(dataset.getNumLabels()).getName(), fold));
+											res.setResultValue(resCount, "macro-specificity", ev.getResult(
+													new MacroSpecificity(dataset.getNumLabels()).getName(), fold));
+											for (int i = 0; i < dataset.getNumLabels(); i++)
+												res.setResultValue(resCount, "macro-specificity#" + i,
+														ev.getResult(
+																new MacroSpecificity(dataset.getNumLabels()).getName(),
+																fold, i));
 										}
 										System.out.println("\nprinting " + res.getNumResults() + " results to "
 												+ resFile);
 										//System.out.println(res.toNiceString());
 										ResultSetIO.printToFile(resFile, res, true);
 									}
+								}
+							};
+							if (parallel != null)
+								parallel.addJob(r);
+							else
+								r.run();
+						}
+
+						for (final String fillMissingString : fillMissing.split(","))
+						{
+							if (ArrayUtil.indexOf(new String[] { "class", "false", "confidence" }, fillMissingString) == -1)
+								throw new Error("WTF");
+							if (fillMissingString.equals("false"))
+								continue;
+							if (!imputationString.equals("false"))
+								throw new IllegalStateException("not yet implemented");
+							final boolean confidence = fillMissingString.equals("confidence");
+
+							Runnable r = new Runnable()
+							{
+								@Override
+								public void run()
+								{
+									System.out.println(datasetNameStr + " fillMissing:" + fillMissingString
+											+ " imputation:" + imputationString + " wekaAlg:"
+											+ classifier.getClass().getSimpleName() + " mlcAlg:"
+											+ mlcAlgorithm.getClass().getSimpleName());
+									MultiLabelInstances data = dataset;
+
+									try
+									{
+										mlcAlgorithm.build(data);
+
+										CSVFile csv = FileUtil.readCSV("tmp/" + datasetNameStr + ".csv");
+
+										if (csv.content.size() - 1 != data.getNumInstances())
+											throw new IllegalStateException("WTF");
+
+										HashMap<Integer, MultiLabelOutput> compoundPrediction = new HashMap<Integer, MultiLabelOutput>();
+
+										int fillCount = 0;
+
+										for (int j = 1; j < csv.getHeader().length; j++)
+										{
+											String column = csv.getHeader()[j];
+											if (column.endsWith("_real"))
+												continue;
+											Attribute attr = null;
+											Integer labelIndex = null;
+
+											for (int i = 1; i < csv.content.size(); i++)
+											{
+												int compoundIndex = i - 1;
+												String vals[] = csv.content.get(i);
+												if (vals[j] == null)
+												{
+													if (attr == null)
+													{
+														attr = data.getDataSet().attribute(column);
+														if (attr == null)
+															throw new Error("attr not found: " + column);
+														labelIndex = data.getLabelsOrder().get(column);
+														if (labelIndex == null)
+															throw new Error("label index not found: " + column);
+														System.err.println("there are missings for " + column + " "
+																+ labelIndex);
+													}
+
+													Instance inst = data.getDataSet().get(compoundIndex);
+													double val = inst.value(attr);
+													if (!Double.isNaN(val))
+														throw new Error("not missing in arff");
+
+													if (!compoundPrediction.containsKey(compoundIndex))
+														compoundPrediction.put(compoundIndex,
+																mlcAlgorithm.makePrediction(inst));
+													MultiLabelOutput out = compoundPrediction.get(compoundIndex);
+													if (confidence)
+													{
+														vals[j] = String.valueOf(out.getConfidences()[labelIndex]);
+													}
+													else
+													{
+														if (out.getBipartition()[labelIndex])
+															vals[j] = "1";
+														else
+															vals[j] = "0";
+													}
+													fillCount++;
+													//													System.out.println("csv-null value at compound " + compoundIndex
+													//															+ " for feature " + column + " (" + j + "), arff: " + val);
+												}
+											}
+										}
+										System.err.println("filled " + fillCount + " missing values");
+										String outfile = "tmp/" + datasetNameStr + "_" + experimentName + "_filled"
+												+ (confidence ? "Confidence" : "Class") + ".csv";
+										System.out.println("writing filled" + (confidence ? "Confidence" : "Class")
+												+ " to " + outfile);
+										FileUtil.writeCSV(outfile, csv, false);
+									}
+									catch (Exception ex)
+									{
+										Logger.getLogger(Evaluator.class.getName()).log(Level.SEVERE, null, ex);
+									}
+									//									MultipleEvaluation ev = eval.crossValidate(mlcAlgorithm, data, numFolds);
 								}
 							};
 							if (parallel != null)
@@ -427,9 +552,16 @@ public class RunMLC
 			return;
 		}
 
+		if (args != null && args.length > 0 && args[0].equals("cluster"))
+		{
+			ClusterEndpoint.main(ArrayUtil.removeAt(String.class, args, 0));
+			return;
+		}
+
 		if (args != null && args.length == 1 && args[0].equals("debug"))
 		{
-			args = ("-x 1 -f 3 -i 0 -u 1 -t false -a BR -c IBk -d dataAsmall-F1-V -e test").split(" ");
+			args = ("-x 1 -f 3 -i 0 -u 0 -t false -a BR -c IBk -d dataAsmall-F1-V -e test -m class,confidence")
+					.split(" ");
 			//args = ("-x 1 -f 10 -i 0 -u 1 -t false -a BR,MLkNN -p \"default,num-neighbors=2\" -c IBk -d dataA-F1 -e test")
 			//		.split(" ");
 		}
@@ -448,6 +580,7 @@ public class RunMLC
 		options.addOption("c", "classifier", true, "Classifier, default:SMO");
 		options.addOption("e", "experiment-name", true, "Experiment name");
 		options.addOption("t", "imputation", true, "Enable imputation");
+		options.addOption("m", "fill-missing", true, "Fill missing values in .csv file");
 		CommandLineParser parser = new BasicParser();
 		CommandLine cmd = parser.parse(options, args);
 
@@ -472,6 +605,8 @@ public class RunMLC
 			run.experimentName = cmd.getOptionValue("e");
 		if (cmd.hasOption("t"))
 			run.imputation = cmd.getOptionValue("t");
+		if (cmd.hasOption("m"))
+			run.fillMissing = cmd.getOptionValue("m");
 
 		if (run.experimentName == null)
 			throw new IllegalArgumentException("experiment-name missing");

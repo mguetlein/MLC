@@ -9,7 +9,7 @@ class ToArff
     
     @files = [endpoint_file, feature_file]
     @files += [real_value_file] if real_value_file
-    key_pattern = /^(DSSTox_FileID|CAS|ID)$/
+    key_pattern = /^(DSSTox_FileID|CAS|ID|cas|id)$/
     
     @head = []
     @data = []
@@ -19,6 +19,8 @@ class ToArff
     @real_values = real_value_file!=nil 
     
     stuff = ["CAS","ID","SMILES","Name","study-pk","route","route2","study-duration","Jahr","reliability", "dummy","DSSTox_FileID","TestSubstance_ChemicalName","TestSubstance_CASRN"]
+    stuff = stuff + stuff.collect{|x| x.downcase}
+    stuff.uniq!
     no_features = []
     
     @files.each do |file|
@@ -35,7 +37,7 @@ class ToArff
           row.each{|r| raise "duplicate key: #{r} in #{file}" if row.count(r)>1}
           id_index=nil
           row.each_with_index{|k,i| id_index=i if k=~key_pattern}
-          raise "no id column found" if id_index==nil
+          raise "no id column found, was looking for #{key_pattern} in #{row.inspect}" if id_index==nil
           row = row.collect{|x| stuff.include?(x) ? x : x.gsub(/(\.|\s|\(|\)|_|\/|,)/,"-").chomp("-").gsub(/--/,"-").downcase} if file!=feature_file      
           if file==endpoint_file
             @head = row
@@ -132,7 +134,7 @@ class ToArff
     @endpoints.size
   end
   
-  def to_arff(num_endpoints, num_missing_allowed, relation_name, outfile, endpoint_value_map=nil, start_endpoint=0, additional_columns=["SMILES","Name","CAS"])
+  def to_arff(num_endpoints, num_missing_allowed, relation_name, outfile, endpoint_value_map=nil, start_endpoint=0, additional_columns=["smiles","name","cas"])
   
     raise if num_endpoints>@endpoints.size
     raise if num_missing_allowed>num_endpoints
@@ -188,7 +190,7 @@ class ToArff
           v = "?" if v==nil
           if endpoints.include?(k)
             if endpoint_value_map and v!="?" 
-              raise "WTF: '#{v}'" unless endpoint_value_map.has_key?(v)
+              raise "invalid endpoint value for endpoint '#{k}': '#{v}', should be one of '#{endpoint_value_map.keys.inspect}'" unless endpoint_value_map.has_key?(v)
               v = endpoint_value_map[v]
             else
               raise "WTF: '#{v}'" unless ["0","1","?"].include?(v)

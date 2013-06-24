@@ -15,8 +15,8 @@ public class SinglePredictionTrackerUtil
 {
 	public static String attachToCsv(SinglePredictionTracker tracker)
 	{
-		CSVFile csvNew = FileUtil.readCSV("tmp/" + tracker.datasetName + ".csv").merge(toCsv(tracker));
-		String outfile = "tmp/" + tracker.datasetName + "_" + tracker.experimentName + "_missclassified.csv";
+		CSVFile csvNew = FileUtil.readCSV("arff/" + tracker.datasetName + ".csv").merge(toCsv(tracker));
+		String outfile = "results/" + tracker.datasetName + "_" + tracker.experimentName + "_missclassified.csv";
 		System.out.println("writing missclassifications to " + outfile);
 		FileUtil.writeCSV(outfile, csvNew, false);
 		return outfile;
