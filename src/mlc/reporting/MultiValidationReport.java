@@ -1,0 +1,159 @@
+package mlc.reporting;
+
+import java.io.File;
+
+import util.ArrayUtil;
+import util.CountedSet;
+
+import mlc.MLCDataInfo;
+import mlc.reporting.ReportMLC.PerformanceMeasures;
+import mulan.evaluation.Settings;
+import datamining.ResultSet;
+import datamining.ResultSetIO;
+
+public class MultiValidationReport
+{
+
+	public static void multiValidationReport(String experimentName, String[] datasetNames, String performanceMeasure)
+			throws Exception
+	{
+		if (experimentName == null || datasetNames.length == 0)
+			throw new Error("experimentName and/or datasetNames missing");
+		System.out.println("create result report for " + Settings.resultFile(experimentName, datasetNames));
+		System.out.println("reading results:");
+		ResultSet results = ResultSetIO.parseFromFile(new File(Settings.resultFile(experimentName, datasetNames)));
+		ReportMLC.PerformanceMeasures measures = ReportMLC.PerformanceMeasures.accuracy;
+		measures = ReportMLC.PerformanceMeasures.valueOf(performanceMeasure);
+		String outfile = Settings.reportFile(experimentName, datasetNames, measures.toString());
+		MultiValidationReport.multiValidationReport(outfile, datasetNames, results, measures);
+	}
+
+	public static void multiValidationReport(String outfile, ResultSet results, ReportMLC.PerformanceMeasures measures)
+			throws Exception
+	{
+		MultiValidationReport.multiValidationReport(outfile,
+				ArrayUtil.cast(String.class, ArrayUtil.toArray(results.getResultValues("dataset-name").values())),
+				results, measures);
+	}
+
+	public static void multiValidationReport(String outfile, String[] datasetNames, ResultSet results,
+			ReportMLC.PerformanceMeasures measures) throws Exception
+	{
+		//		String mod = "";
+		//			if (args.length > 2)
+		//			{
+		//				mod = "_removed" + (args.length - 2);
+		//				for (int i = 2; i < args.length; i++)
+		//				{
+		//					String excl[] = args[i].split(",");
+		//					rs.remove(excl[0], excl[1]);
+		//				}
+		//			}
+	
+		ReportMLC rep = new ReportMLC(outfile, "Multi-Label-Classification (MLC) Results");
+	
+		rep.addDatasetOverviewTable(datasetNames);
+	
+		CountedSet<String> classZero = new CountedSet<String>();
+		CountedSet<String> classOne = new CountedSet<String>();
+		for (Object datasetName : datasetNames)
+		{
+			MLCDataInfo di = MLCDataInfo.get(ReportMLC.getData(datasetName.toString()));
+			classZero.add(di.getClassValuesZero());
+			classOne.add(di.getClassValuesOne());
+		}
+		//			if (classZero.size() != 1 || classOne.size() != 1)
+		//				throw new IllegalStateException("take care of different class values");
+		String classZeroStr = ArrayUtil.toString(ArrayUtil.toArray(classZero.values()), "/", "", "", "");
+		String classOneStr = ArrayUtil.toString(ArrayUtil.toArray(classOne.values()), "/", "", "", "");
+	
+		rep.report.newSection("Performance measures");
+		rep.report.addTable(ReportMLC.getInfo(measures, classZeroStr, classOneStr));
+	
+		//			System.out.println(results.toNiceString());
+	
+		for (int i = 0; i < results.getNumResults(); i++)
+			if (results.getResultValue(i, "mlc-algorithm").toString().equals("BR"))
+				results.setResultValue(i, "mlc-algorithm", "Single endpoint prediction");
+			else if (results.getResultValue(i, "mlc-algorithm").toString().equals("ECC"))
+				results.setResultValue(i, "mlc-algorithm", "Ensemble of classfier chains");
+	
+		String compareProps[] = new String[] { "dataset-name", "mlc-algorithm", "mlc-algorithm-params", "classifier",
+				"imputation", "app-domain", "app-domain-params" };
+	
+		results.sortProperties(compareProps);
+		for (String p : compareProps)
+			results.sortResults(p);
+		for (String p : ReportMLC.getProps(measures))
+			results.movePropertyBack(p);
+		results.movePropertyBack("runtime");
+	
+		String cmp1 = null;
+		CountedSet<Object> cmpSet1 = null;
+		String cmp2 = null;
+		CountedSet<Object> cmpSet2 = null;
+		for (String p : compareProps)
+		{
+			CountedSet<Object> set = results.getResultValues(p);
+			if (set.size() > 1)
+			{
+				if (cmp1 == null)
+				{
+					cmp1 = p;
+					cmpSet1 = set;
+				}
+				else if (cmp2 == null)
+				{
+					if (cmp1.equals("mlc-algorithm") && p.equals("mlc-algorithm-params")) // >1 mlc-alg, ignore different mlc-params
+						continue;
+					if (cmp1.equals("app-domain") && p.equals("app-domain-params"))
+						continue;
+					cmp2 = p;
+					cmpSet2 = set;
+				}
+				else
+				{
+					if (cmp2.equals("mlc-algorithm") && p.equals("mlc-algorithm-params")) // >1 mlc-alg, ignore different mlc-params
+						continue;
+					if (cmp2.equals("app-domain") && p.equals("app-domain-params"))
+						continue;
+					throw new IllegalStateException("compare only two of those plz: "
+							+ ArrayUtil.toString(compareProps) + ", different: " + cmp1 + " : " + cmpSet1 + ", " + cmp2
+							+ " : " + cmpSet2 + ", " + p + " : " + set);
+				}
+			}
+		}
+		if (cmp1 == null)
+		{
+			rep.addBoxPlots(results, "mlc-algorithm", "", measures);
+		}
+		else if (cmp2 == null)
+		{
+			rep.addBoxPlots(results, cmp1, "", measures);
+		}
+		else
+		{
+			for (Object val : cmpSet1.values())
+			{
+				ResultSet res = results.copy();
+				res.exclude(cmp1, val);
+				rep.addBoxPlots(res, cmp2, " (" + cmp1 + ": " + val + ")", measures);
+			}
+			for (Object val : cmpSet2.values())
+			{
+				ResultSet res = results.copy();
+				res.exclude(cmp2, val);
+				rep.addBoxPlots(res, cmp1, " (" + cmp2 + ": " + val + ")", measures);
+			}
+		}
+	
+		for (String dataset : datasetNames)
+		{
+			rep.report.addParagraph("Dataset " + dataset);
+	
+		}
+	
+		rep.close();
+	}
+
+}

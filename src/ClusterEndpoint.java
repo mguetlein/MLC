@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+
+import mlc.MLCDataInfo;
+import mlc.reporting.ReportMLC;
 import mulan.data.InvalidDataFormatException;
 import util.ArrayUtil;
 import util.CorrelationMatrix;
@@ -33,9 +36,6 @@ public class ClusterEndpoint
 		if (minTh >= highTh || minTh < 0 || highTh > 1)
 			throw new IllegalStateException("illegal threshold params " + minTh + " - " + highTh);
 		double centerTh = minTh + (highTh - minTh) / 2;
-
-		double minNumLow = minTh;
-		double minNumHigh = 1 - highTh;
 
 		try
 		{
@@ -156,87 +156,78 @@ public class ClusterEndpoint
 		}
 	}
 
+	public static void discretisize(String infile, String outfile, int numNoEndpointColumns, double lowThreshold,
+			double highThreshold)
+	{
+		CSVFile file = FileUtil.readCSV(infile);
+		String endpoints[] = file.getHeader();
+		for (int i = 0; i < numNoEndpointColumns; i++)
+			endpoints = ArrayUtil.removeAt(String.class, endpoints, 0);
+		new ClusterEndpoint(file, outfile, lowThreshold, highThreshold, endpoints);
+	}
+
 	public static void main(String[] args) throws DocumentException, IOException, InvalidDataFormatException
 	{
-		if (args.length > 0 && args[0].equals("debug"))
+		//			MLCDataInfo di = MLCDataInfo.get(ReportMLC.getData("dataB-PC"));
+		//			di.plotCorrelationMatrix(false, null, false);
+		String endpoints[] = { "liver-weight-increased", "body-weight-decreased", "kidney-weight-increased", "cns",
+				"rbc-haemoglobin", "spleen", "clinchem-nephrotox", "kidney", "liver", "liver-hypertrophy",
+				"haematology-anaemia", "body-weight-gain-decreased", "rbc-erythrocytes", "liver-degeneration",
+				"wbc-leucocytes", "clinchem-hepatotox", "female-reproductive-organ",
+				"kidney-inflammation-regeneration", "heart", "wbc-lymphocytes", "kidney-degeneration",
+				"adrenal-gland-weight-increased", "liver-inflammation-regeneration", "thymus-weight-decreased",
+				"brain", "haematology-cellular-hemostasis", "rbc-haematocrit", "male-reproductive-organ-degeneration",
+				"wbc", "intestine", "thyroid-gland", "adrenal-gland", "haematology-plasmatic-hemostasis",
+				"thymus-degeneration", "male-reproductive-organ-weight-increased", "male-reproductive-organ-sperm",
+				"haematopoiesis", "male-reproductive-organ-weight-decreased", "bone-marrow", "male-accessory-gland" };
+
+		boolean create = true;
+		boolean addVToHighValues = true;
+
+		MLCDataInfo di = MLCDataInfo.get(ReportMLC.getData("dataB-PC"));
+		CorrelationMatrix<Double> realMatrix = di.getRealValueCorrelationMatrix();
+
+		//			for (double minLow : new double[] { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7 })
+		for (double minLow : new double[] { 0.6 })
 		{
-			//			MLCDataInfo di = MLCDataInfo.get(ReportMLC.getData("dataB-PC"));
-			//			di.plotCorrelationMatrix(false, null, false);
-			String endpoints[] = { "liver-weight-increased", "body-weight-decreased", "kidney-weight-increased", "cns",
-					"rbc-haemoglobin", "spleen", "clinchem-nephrotox", "kidney", "liver", "liver-hypertrophy",
-					"haematology-anaemia", "body-weight-gain-decreased", "rbc-erythrocytes", "liver-degeneration",
-					"wbc-leucocytes", "clinchem-hepatotox", "female-reproductive-organ",
-					"kidney-inflammation-regeneration", "heart", "wbc-lymphocytes", "kidney-degeneration",
-					"adrenal-gland-weight-increased", "liver-inflammation-regeneration", "thymus-weight-decreased",
-					"brain", "haematology-cellular-hemostasis", "rbc-haematocrit",
-					"male-reproductive-organ-degeneration", "wbc", "intestine", "thyroid-gland", "adrenal-gland",
-					"haematology-plasmatic-hemostasis", "thymus-degeneration",
-					"male-reproductive-organ-weight-increased", "male-reproductive-organ-sperm", "haematopoiesis",
-					"male-reproductive-organ-weight-decreased", "bone-marrow", "male-accessory-gland" };
+			double minHigh = Math.rint((minLow + 0.2) * 100) / 100; // to make sure that the double is exact at .X
+			String name = "clust" + (int) (minLow * 100) + "to" + (int) (minHigh * 100);
+			if (addVToHighValues)
+				name += "V";
+			System.out.println("\nXXXXXXXXXXX " + name + " XXXXXXXXXXX\n");
 
-			boolean create = true;
-			boolean addVToHighValues = true;
-
-			MLCDataInfo di = MLCDataInfo.get(ReportMLC.getData("dataB-PC"));
-			CorrelationMatrix<Double> realMatrix = di.getRealValueCorrelationMatrix();
-
-			//			for (double minLow : new double[] { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7 })
-			for (double minLow : new double[] { 0.6 })
+			if (create)
 			{
-				double minHigh = Math.rint((minLow + 0.2) * 100) / 100; // to make sure that the double is exact at .X
-				String name = "clust" + (int) (minLow * 100) + "to" + (int) (minHigh * 100);
-				if (addVToHighValues)
-					name += "V";
-				System.out.println("\nXXXXXXXXXXX " + name + " XXXXXXXXXXX\n");
-
-				if (create)
+				if (!new File("tmp/dataB-PC-" + name + ".arff").exists())
 				{
-					if (!new File("tmp/dataB-PC-" + name + ".arff").exists())
+					new ClusterEndpoint("data/tab_BMBF_RepDoseNeustoff_Kreuztab04062013_mitSmiles"
+							+ (addVToHighValues ? "_V" : "") + ".csv",
+							"data/tab_BMBF_RepDoseNeustoff_Kreuztab04062013_mitSmiles_" + name + ".csv", minLow,
+							minHigh, endpoints);
+					if (new File("tmp/dataB-PC-" + name + ".arff").exists())
 					{
-						new ClusterEndpoint("data/tab_BMBF_RepDoseNeustoff_Kreuztab04062013_mitSmiles"
-								+ (addVToHighValues ? "_V" : "") + ".csv",
-								"data/tab_BMBF_RepDoseNeustoff_Kreuztab04062013_mitSmiles_" + name + ".csv", minLow,
-								minHigh, endpoints);
-						if (new File("tmp/dataB-PC-" + name + ".arff").exists())
-						{
-							new File("tmp/dataB-PC-" + name + ".arff").delete();
-							new File("tmp/dataB-PC-" + name + ".xml").delete();
-							new File("tmp/dataB-PC-" + name + ".csv").delete();
-						}
-						ExternalTool t = new ExternalTool();
-						t.run("create arff/csv/xml",
-								"ruby1.9.1 prepare_mlc.rb -e data/tab_BMBF_RepDoseNeustoff_Kreuztab04062013_mitSmiles_"
-										+ name
-										+ ".csv -f data/RepDoseNeustoff-2013-03-28.pc_descriptors.IDs.csv -r data/tab_BMBF_RepDoseNeustoff_Kreuztab04062013_mitSmiles"
-										+ (addVToHighValues ? "_V" : "") + ".csv -n all -m all -d dataB-PC-" + name);
+						new File("tmp/dataB-PC-" + name + ".arff").delete();
+						new File("tmp/dataB-PC-" + name + ".xml").delete();
+						new File("tmp/dataB-PC-" + name + ".csv").delete();
 					}
-				}
-				else
-				{
-					di = MLCDataInfo.get(ReportMLC.getData("dataB-PC-" + name));
-					CorrelationMatrix<Boolean> classMatrix = di.getClassCorrelationMatrix();
-					System.out.println(realMatrix.rmse(classMatrix));
-					//			SwingUtil.showInFrame(new JScrollPane(di.plotCorrelationMatrix(false, null)), "real");
-					//			SwingUtil.showInFrame(new JScrollPane(di.plotCorrelationMatrix(true, null)), "class", true);
-
+					ExternalTool t = new ExternalTool();
+					t.run("create arff/csv/xml",
+							"ruby1.9.1 prepare_mlc.rb -e data/tab_BMBF_RepDoseNeustoff_Kreuztab04062013_mitSmiles_"
+									+ name
+									+ ".csv -f data/RepDoseNeustoff-2013-03-28.pc_descriptors.IDs.csv -r data/tab_BMBF_RepDoseNeustoff_Kreuztab04062013_mitSmiles"
+									+ (addVToHighValues ? "_V" : "") + ".csv -n all -m all -d dataB-PC-" + name);
 				}
 			}
-			System.exit(0);
+			else
+			{
+				di = MLCDataInfo.get(ReportMLC.getData("dataB-PC-" + name));
+				CorrelationMatrix<Boolean> classMatrix = di.getClassCorrelationMatrix();
+				System.out.println(realMatrix.rmse(classMatrix));
+				//			SwingUtil.showInFrame(new JScrollPane(di.plotCorrelationMatrix(false, null)), "real");
+				//			SwingUtil.showInFrame(new JScrollPane(di.plotCorrelationMatrix(true, null)), "class", true);
 
+			}
 		}
-		else if (args.length < 5)
-		{
-			System.err
-					.println("cluster-endpoint-usage: <csv-in-file> <csv-out-file> <num-non-endpoint-columns> <min-low-value-ratio> <min-high-value-ratio>");
-		}
-		else
-		{
-			CSVFile file = FileUtil.readCSV(args[0]);
-			String endpoints[] = file.getHeader();
-			for (int i = 0; i < Integer.parseInt(args[2]); i++)
-				endpoints = ArrayUtil.removeAt(String.class, endpoints, 0);
-			new ClusterEndpoint(file, args[1], Double.parseDouble(args[3]), Double.parseDouble(args[4]), endpoints);
-		}
-
+		System.exit(0);
 	}
 }

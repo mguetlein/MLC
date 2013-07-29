@@ -1,9 +1,12 @@
+package mlc;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,6 +15,9 @@ import java.util.Random;
 import javax.swing.JFrame;
 
 import mulan.data.MultiLabelInstances;
+import mulan.evaluation.Settings;
+import mulan.evaluation.measure.ConfidenceLevel;
+import mulan.evaluation.measure.ConfidenceLevelProvider;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -26,6 +32,7 @@ import util.ArrayUtil;
 import util.CorrelationMatrix;
 import util.CorrelationMatrix.PearsonBooleanCorrelationMatrix;
 import util.CorrelationMatrix.PearsonDoubleCorrelationMatrix;
+import util.DoubleArraySummary;
 import util.FileUtil;
 import util.FileUtil.CSVFile;
 import util.IntegerUtil;
@@ -42,7 +49,7 @@ import gui.MatrixPanel;
 
 public class MLCDataInfo
 {
-	MultiLabelInstances dataset;
+	public MultiLabelInstances dataset;
 	HashMap<String, Integer> distinct;
 	ArrayList<String> zeroOnes;
 	private int[] numMissing;
@@ -54,21 +61,24 @@ public class MLCDataInfo
 	List<Double> histData2;
 	HashMap<String, Integer> histData2b;
 
-	String datasetName;
-	String endpointFile;
-	String featureFile;
-	int numEndpoints;
-	int numMissingAllowed;
-	int discretizationLevel;
-	boolean includeV;
+	public String datasetName;
+	public String endpointFile;
+	public String featureFile;
+	public int numEndpoints;
+	public int numMissingAllowed;
+	public int discretizationLevel;
+	public boolean includeV;
 	private HashMap<String, String> classValues = new HashMap<String, String>();
 
-	int[] ones_per_label;
-	int[] zeros_per_label;
-	int[] missings_per_label;
+	public int[] ones_per_label;
+	public int[] zeros_per_label;
+	public int[] missings_per_label;
+
+	private CSVFile csvFile;
 
 	private static HashMap<MultiLabelInstances, MLCDataInfo> map = new HashMap<MultiLabelInstances, MLCDataInfo>();
-	private static HashMap<MultiLabelInstances, CSVFile> map2 = new HashMap<MultiLabelInstances, CSVFile>();
+
+	private HashMap<String, DoubleArraySummary> endpointSummaryMap;
 
 	public static MLCDataInfo get(MultiLabelInstances dataset)
 	{
@@ -77,11 +87,80 @@ public class MLCDataInfo
 		return map.get(dataset);
 	}
 
-	public static CSVFile getCSV(MultiLabelInstances dataset)
+	private CSVFile getCSV()
 	{
-		if (!map2.containsKey(dataset))
-			map2.put(dataset, FileUtil.readCSV("arff/" + get(dataset).datasetName + ".csv"));
-		return map2.get(dataset);
+		if (csvFile == null)
+		{
+			System.out.println("reading csv: " + Settings.csvFile(get(dataset).datasetName));
+			csvFile = FileUtil.readCSV(Settings.csvFile(get(dataset).datasetName));
+		}
+		return csvFile;
+	}
+
+	private HashMap<String, String> idInchiMap;
+
+	private String getInchiViaID(String compoundID)
+	{
+		if (idInchiMap == null)
+		{
+			idInchiMap = new HashMap<String, String>();
+			System.out.println("reading inchi: " + Settings.inchiFile(get(dataset).datasetName));
+			for (String line : FileUtil.readStringFromFile(Settings.inchiFile(get(dataset).datasetName)).split("\n"))
+			{
+				String vals[] = line.split("\t");
+				if (!(vals.length == 2 && (vals[0].equals("") || vals[0].toLowerCase().startsWith("inchi"))))
+					throw new IllegalStateException("not a inchi file: " + ArrayUtil.toString(vals));
+				idInchiMap.put(vals[1], vals[0]);
+			}
+		}
+		return idInchiMap.get(compoundID);
+	}
+
+	private HashMap<String, String> idSmilesMap;
+
+	private String getSmilesViaID(String compoundID)
+	{
+		if (idSmilesMap == null)
+		{
+			idSmilesMap = new HashMap<String, String>();
+			System.out.println("reading smiles: " + Settings.smilesFile(get(dataset).datasetName));
+			for (String line : FileUtil.readStringFromFile(Settings.smilesFile(get(dataset).datasetName)).split("\n"))
+			{
+				String vals[] = line.split("\t");
+				if (vals.length != 2)
+					throw new IllegalStateException("not a smiles file: " + ArrayUtil.toString(vals));
+				idSmilesMap.put(vals[1], vals[0]);
+			}
+		}
+		return idSmilesMap.get(compoundID);
+	}
+
+	public DoubleArraySummary getEndpointInfo(String endpoint)
+	{
+		return getEndpointInfo(dataset, endpoint);
+	}
+
+	public DoubleArraySummary getEndpointInfo(MultiLabelInstances dataset, String endpoint)
+	{
+		if (endpointSummaryMap == null)
+			endpointSummaryMap = new HashMap<String, DoubleArraySummary>();
+		if (!endpointSummaryMap.containsKey(endpoint))
+			endpointSummaryMap.put(endpoint, DoubleArraySummary.create(getRealValues(endpoint)));
+		return endpointSummaryMap.get(endpoint);
+	}
+
+	public String getInchi(int instanceIndex)
+	{
+		CSVFile csv = getCSV();
+		String id = csv.content.get(instanceIndex + 1)[csv.getColumnIndex("id")];
+		return getInchiViaID(id);
+	}
+
+	public String getSmiles(int instanceIndex)
+	{
+		CSVFile csv = getCSV();
+		String id = csv.content.get(instanceIndex + 1)[csv.getColumnIndex("id")];
+		return getSmilesViaID(id);
 	}
 
 	private MLCDataInfo(MultiLabelInstances dataset)
@@ -212,6 +291,21 @@ public class MLCDataInfo
 		return classValues.get("1");
 	}
 
+	public String getMissingClassValueNice()
+	{
+		return "missing";
+	}
+
+	public String getClassValuesZeroNice()
+	{
+		return "inactive";
+	}
+
+	public String getClassValuesOneNice()
+	{
+		return "active";
+	}
+
 	public String[] getNonMissingClassValues()
 	{
 		return new String[] { classValues.get("0"), classValues.get("1") };
@@ -271,6 +365,43 @@ public class MLCDataInfo
 	public void print()
 	{
 		System.out.println(toString(true));
+	}
+
+	public ChartPanel plotRealValueHistogram(int j, boolean zoom)
+	{
+		Attribute labelAttr = dataset.getDataSet().attribute(dataset.getLabelIndices()[j]);
+
+		System.out.println("create clazz histogram for " + labelAttr.name());
+
+		double[] all = getRealValues(labelAttr.name());
+		double[] active = getRealValues(labelAttr.name(), "1");
+
+		List<String> clazz = ArrayUtil.toList(new String[] { getClassValuesZero(), getClassValuesOne() });
+
+		if (zeros_per_label[j] + ones_per_label[j] != all.length)
+			throw new IllegalStateException("should contain both " + (zeros_per_label[j] + ones_per_label[j]) + " != "
+					+ all.length);
+		if (ones_per_label[j] != active.length)
+			throw new IllegalStateException("should contain only ones " + ones_per_label[j] + " != " + active.length);
+
+		List<String> subtitles = ArrayUtil.toList(new String[] { zeros_per_label[j] + " / " + ones_per_label[j]
+				+ " missing: " + missings_per_label[j] });
+		if (zoom)
+		{
+			int cut = (int) Math.floor(all.length * 9.0 / 10.0);
+			if (active[active.length - 1] >= all[cut])
+				throw new Error("not yet implemented, remove values from both arrays!");
+			subtitles.add("Zoomed in: without " + (all.length - cut) + " top compounds");
+			all = Arrays.copyOfRange(all, 0, cut);
+		}
+		List<double[]> vals = new ArrayList<double[]>();
+		vals.add(all);
+		vals.add(active);
+		HistogramPanel h = new HistogramPanel("Real values for " + labelAttr.name() + (zoom ? " (zoom)" : ""),
+				subtitles, "value", "num compounds", clazz, vals, 50);
+		h.setIntegerTickUnits();
+
+		return h.getChartPanel();
 	}
 
 	public ChartPanel plotCorrelationHistogramm() throws IOException
@@ -392,7 +523,7 @@ public class MLCDataInfo
 			System.out.println(file + "\n");
 
 			String data = file.getAbsolutePath().substring(0, file.getAbsolutePath().lastIndexOf("."));
-			MultiLabelInstances dataset = new MultiLabelInstances(data + ".arff", data + ".xml");
+			MultiLabelInstances dataset = new MultiLabelInstances(Settings.arffFile(data), Settings.xmlFile(data));
 
 			MLCDataInfo di = new MLCDataInfo(dataset);
 			di.print();
@@ -522,7 +653,7 @@ public class MLCDataInfo
 		for (int j = 0; j < dataset.getNumLabels(); j++)
 		{
 			Attribute labelAttr = dataset.getDataSet().attribute(dataset.getLabelIndices()[j]);
-			String s[] = getCSV(dataset).getColumn(labelAttr.name() + "_real");
+			String s[] = getCSV().getColumn(labelAttr.name() + "_real");
 			Double d[] = new Double[s.length];
 			for (int i = 0; i < d.length; i++)
 				if (s[i] != null && !s[i].equals("V"))
@@ -566,5 +697,93 @@ public class MLCDataInfo
 		//			p.setPreferredSize(new Dimension(1000, 950));
 
 		return p;
+	}
+
+	public String getRealValueUnit()
+	{
+		return "mmol";
+	}
+
+	public String getConfidenceLevelNice(double confidence)
+	{
+		double p;
+		if (confidence > 0.5)
+			p = Math.max(0, (confidence - 0.5) * 2);
+		else
+			p = (0.5 - confidence) * 2;
+		return ConfidenceLevelProvider.getConfidence(confidence).getName().trim() + ": "
+				+ StringUtil.formatDouble(p * 100, 1) + "%";
+	}
+
+	public double getRealValue(Integer idx, String labelName)
+	{
+		CSVFile csv = getCSV();
+		return Double.parseDouble(csv.content.get(idx + 1)[csv.getColumnIndex(labelName + "_real")]);
+	}
+
+	public Object getCompoundValue(int idx, String s)
+	{
+		CSVFile csv = getCSV();
+		return csv.content.get(idx + 1)[csv.getColumnIndex(s)];
+	}
+
+	private HashMap<String, double[]> realVals = new HashMap<String, double[]>();
+
+	public double[] getRealValues(String endpoint)
+	{
+		return getRealValues(endpoint, null);
+	}
+
+	public double[] getRealValues(String endpoint, String clazz)
+	{
+		String key = datasetName + "#" + endpoint + "#" + clazz;
+		if (!realVals.containsKey(key))
+		{
+			CSVFile csv = getCSV();
+			Double d[] = csv.getDoubleColumn(endpoint + "_real");
+			String s[] = csv.getColumn(endpoint);
+			List<Double> vals = new ArrayList<Double>();
+			for (int i = 0; i < s.length; i++)
+			{
+				if (s[i] == null)
+				{
+					if (d[i] != null)
+						throw new IllegalArgumentException();
+				}
+				else
+				{
+					if (d[i] == null)
+						throw new IllegalArgumentException();
+					if (clazz == null || s[i].equals(clazz))
+						vals.add(d[i]);
+				}
+			}
+			double[] vs = ArrayUtil.toPrimitiveDoubleArray(vals);
+			Arrays.sort(vs);
+			realVals.put(key, vs);
+		}
+		return realVals.get(key);
+	}
+
+	public List<Object[]> getConfusionMatrix(ResultSet results, int l, ConfidenceLevel confLevel)
+	{
+		if (results.getNumResults() > 1)
+			throw new IllegalArgumentException("merge first pls");
+		String s = confLevel.getShortName();
+		return ConfusionMatrix.buildMatrix((Double) results.getUniqueValue("TP#" + l + s),
+				(Double) results.getUniqueValue("TN#" + l + s), (Double) results.getUniqueValue("FP#" + l + s),
+				(Double) results.getUniqueValue("FN#" + l + s), getClassValuesOneNice(), getClassValuesZeroNice());
+	}
+
+	Boolean realData = null;
+
+	public boolean hasRealData()
+	{
+		if (realData == null)
+		{
+			Attribute labelAttr = dataset.getDataSet().attribute(dataset.getLabelIndices()[0]);
+			realData = (getCSV().getColumnIndex(labelAttr.name() + "_real") != -1);
+		}
+		return realData;
 	}
 }

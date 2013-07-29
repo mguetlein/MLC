@@ -9,14 +9,47 @@ import mulan.evaluation.SinglePredictionTracker.Predictions;
 import util.ArrayUtil;
 import util.FileUtil;
 import util.FileUtil.CSVFile;
+import util.FileUtil.RowRemove;
 import util.StringUtil;
 
 public class SinglePredictionTrackerUtil
 {
+	public static void filterCsv(SinglePredictionTracker tracker, String endpoint)
+	{
+		String endpoints[] = new String[tracker.getData().getNumLabels() - 1];
+		int count = 0;
+		for (int i = 0; i < tracker.getData().getNumLabels(); i++)
+		{
+			String name = tracker.data.getDataSet().attribute(tracker.data.getLabelIndices()[i]).name();
+			if (!name.equals(endpoint))
+				endpoints[count++] = name;
+		}
+		filterCsv(tracker.datasetName, tracker.experimentName, endpoints, endpoint);
+	}
+
+	public static void filterCsv(String datasetName, String experimentName, String[] endpoints, String endpoint)
+	{
+		CSVFile csv = FileUtil.readCSV(Settings.missclassifiedFile(datasetName, experimentName));
+		final int endpointIndex = csv.getColumnIndex(endpoint);
+		csv = csv.removeRow(new RowRemove()
+		{
+			@Override
+			public boolean remove(int rowIndex, String[] row)
+			{
+				return row[endpointIndex] == null;
+			}
+		});
+		for (String e : endpoints)
+			csv = csv.exclude(e, e + "_real", e + "_classified", e + "_missclassified");
+		String outfile = Settings.missclassifiedFile(datasetName, experimentName, endpoint);
+		System.out.println("writing missclassifications for label " + endpoint + " to " + outfile);
+		FileUtil.writeCSV(outfile, csv, false);
+	}
+
 	public static String attachToCsv(SinglePredictionTracker tracker)
 	{
-		CSVFile csvNew = FileUtil.readCSV("arff/" + tracker.datasetName + ".csv").merge(toCsv(tracker));
-		String outfile = "results/" + tracker.datasetName + "_" + tracker.experimentName + "_missclassified.csv";
+		CSVFile csvNew = FileUtil.readCSV(Settings.csvFile(tracker.datasetName)).merge(toCsv(tracker));
+		String outfile = Settings.missclassifiedFile(tracker.datasetName, tracker.experimentName);
 		System.out.println("writing missclassifications to " + outfile);
 		FileUtil.writeCSV(outfile, csvNew, false);
 		return outfile;

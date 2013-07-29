@@ -3,7 +3,7 @@
 	
    <property name="src" location="src;JavaLib/src;Mulan/src"/>
    <property name="build" location="build"/>
-   <property name="build_lib" location="build_lib"/>
+   <property name="mlc_lib" location="mlc_lib"/>
    <property name="deploy" location="."/>
     <presetdef name="javac">
       <javac includeantruntime="false" />
@@ -11,27 +11,27 @@
   
 	<target name="compile" description="compile the source" >
 
-	   <delete dir="${build_lib}"/>		
-       <mkdir dir="${build_lib}"/>
-	   <copy todir="${build_lib}">
+	   <delete dir="${mlc_lib}"/>		
+       <mkdir dir="${mlc_lib}"/>
+	   <copy todir="${mlc_lib}">
 			<fileset dir="lib">
 				<include name="**/*.jar"/>
 			</fileset>
 	  	</copy>
-		<copy todir="${build_lib}">
+		<copy todir="${mlc_lib}">
 			<fileset dir="Mulan/lib">
 				<include name="**/*.jar"/>
 			</fileset>
 	  	</copy>
-		<copy todir="${build_lib}">
+		<copy todir="${mlc_lib}">
 			<fileset dir="JavaLib/lib">
 				<include name="**/*.jar"/>
 			</fileset>
 	  	</copy>
-		 <delete file="${build_lib}/weka-3-6-6/weka.jar" />
-		 <delete file="${build_lib}/jfreechart-1.0.13/gnujaxp.jar" />
+		 <delete file="${mlc_lib}/weka-3-6-6/weka.jar" />
+		 <delete file="${mlc_lib}/jfreechart-1.0.13/gnujaxp.jar" />
 	    <path id="classpath">
-	  	 <fileset dir="${build_lib}">
+	  	 <fileset dir="${mlc_lib}">
 	        <include name="**/*.jar"/>
 	      </fileset>	  
 	    </path>
@@ -49,7 +49,7 @@
       <format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
     </tstamp>
 	<path id="jar_classpath">
-  	 <fileset dir="${build_lib}">
+  	 <fileset dir="${mlc_lib}">
 		<include name="**/*.jar"/>
      </fileset>
     </path>
@@ -114,7 +114,7 @@
 		<zipfileset src="jar-in-jar-loader.zip"/>
         <fileset dir="${build}"/>
 		<fileset dir="JavaLib" includes="data/"/>
-		<zipfileset dir="${build_lib}" includes="**/*.jar"/>
+		<zipfileset dir="${mlc_lib}" includes="**/*.jar"/>
   	</jar>
 	</target>	
 	
