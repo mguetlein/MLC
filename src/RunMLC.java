@@ -105,9 +105,12 @@ public class RunMLC extends MLCOptions
 		else if (appDomainStr.equals("Neighbor"))
 		{
 			ad = new NeigborDistanceBasedApplicabilityDomain();
-			for (String key : params.keySet())
-				if (key.equals("neighbors"))
-					((NeigborDistanceBasedApplicabilityDomain) ad).setNumNeighbors(Integer.parseInt(params.get(key)));
+			if (params.containsKey("neighbors"))
+			{
+				((NeigborDistanceBasedApplicabilityDomain) ad)
+						.setNumNeighbors(Integer.parseInt(params.get("neighbors")));
+				params.remove("neighbors");
+			}
 		}
 		else
 			throw new IllegalArgumentException("unknown app-domain: " + appDomainStr);
