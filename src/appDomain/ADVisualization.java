@@ -269,7 +269,7 @@ public class ADVisualization extends JFrame
 		for (int i = 0; i < inst.numInstances(); i++)
 			series1.add(inst.get(i).value(0), inst.get(i).value(1));
 		CentroidBasedApplicabilityDomain ad = new CentroidBasedApplicabilityDomain();
-		NeigborDistanceBasedApplicabilityDomain ad2 = new NeigborDistanceBasedApplicabilityDomain();
+		NeighborDistanceBasedApplicabilityDomain ad2 = new NeighborDistanceBasedApplicabilityDomain();
 		ad.debug = true;
 		ad2.debug = true;
 		ad.init(inst);

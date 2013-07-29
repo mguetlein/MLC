@@ -66,7 +66,7 @@ import appDomain.ApplicabilityDomain;
 import appDomain.CentroidBasedApplicabilityDomain;
 import appDomain.DefaultMLCApplicabilityDomain;
 import appDomain.DistanceBasedApplicabilityDomain;
-import appDomain.NeigborDistanceBasedApplicabilityDomain;
+import appDomain.NeighborDistanceBasedApplicabilityDomain;
 import datamining.ResultSet;
 import datamining.ResultSetIO;
 
@@ -104,10 +104,10 @@ public class RunMLC extends MLCOptions
 		}
 		else if (appDomainStr.equals("Neighbor"))
 		{
-			ad = new NeigborDistanceBasedApplicabilityDomain();
+			ad = new NeighborDistanceBasedApplicabilityDomain();
 			if (params.containsKey("neighbors"))
 			{
-				((NeigborDistanceBasedApplicabilityDomain) ad)
+				((NeighborDistanceBasedApplicabilityDomain) ad)
 						.setNumNeighbors(Integer.parseInt(params.get("neighbors")));
 				params.remove("neighbors");
 			}
@@ -773,10 +773,9 @@ public class RunMLC extends MLCOptions
 			//args = "validate -a BR -i 0 -u 3 -c RandomForest -d dataY_OB -e BRY -q Centroid -w continous=false"
 			//		.split(" ");
 
-			//			args = ("validate -a BR -i 0 -u 1 -c RandomForest -d dataR_noV_Cl68_PC -e BRAD -q Centroid,Centroid,Centroid,None "
-			//					+ "-w continous=false;distance=1.0,continous=false;distance=2.0,continous=false;distance=3.0,default")
-			//					.split(" ");
-			args = "multi_validation_report -d dataR_noV_Cl68_PC -e BRAD -z all -o only-repdose-model".split(" ");
+			args = ("validate -a BR -i 0 -u 1 -c RandomForest -d dataR_noV_Cl68_PC -e BRAD -q Neighbor " + "-w default")
+					.split(" ");
+			//args = "multi_validation_report -d dataR_noV_Cl68_PC -e BRAD -z all -o only-repdose-model".split(" ");
 
 			//			args = "validation_report -d dataY_OB -e BRY -z all -o cpdbas".split(" ");
 			//args = "build_model -o MLC_model_v0.0.1 -y PC -e ECC -c RandomForest -d dataB_noV_Cl68_PC -q Centroid"

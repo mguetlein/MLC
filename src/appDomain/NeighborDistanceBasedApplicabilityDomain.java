@@ -14,7 +14,7 @@ import weka.core.converters.ArffLoader.ArffReader;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.ReplaceMissingValues;
 
-public class NeigborDistanceBasedApplicabilityDomain extends AbstractDistanceBasedApplicabilityDomain
+public class NeighborDistanceBasedApplicabilityDomain extends AbstractDistanceBasedApplicabilityDomain
 {
 	Instances data;
 	protected ReplaceMissingValues missingValuesConverter;
@@ -24,12 +24,12 @@ public class NeigborDistanceBasedApplicabilityDomain extends AbstractDistanceBas
 	protected double[] trainingDistances;
 	int numNeighbors = 5;
 
-	public NeigborDistanceBasedApplicabilityDomain()
+	public NeighborDistanceBasedApplicabilityDomain()
 	{
 		this(5);
 	}
 
-	private NeigborDistanceBasedApplicabilityDomain(int numNeighbors)
+	private NeighborDistanceBasedApplicabilityDomain(int numNeighbors)
 	{
 		this.numNeighbors = numNeighbors;
 	}
@@ -148,7 +148,7 @@ public class NeigborDistanceBasedApplicabilityDomain extends AbstractDistanceBas
 		ArffReader r = new ArffReader(new BufferedReader(new StringReader(s.toString())));
 		Instances data = r.getData();
 		data.setClassIndex(data.numAttributes() - 1);
-		NeigborDistanceBasedApplicabilityDomain ad = new NeigborDistanceBasedApplicabilityDomain();
+		NeighborDistanceBasedApplicabilityDomain ad = new NeighborDistanceBasedApplicabilityDomain();
 		ad.debug = true;
 		ad.init(data);
 
@@ -165,7 +165,12 @@ public class NeigborDistanceBasedApplicabilityDomain extends AbstractDistanceBas
 	@Override
 	public DistanceBasedApplicabilityDomain copy()
 	{
-		//implement setter first
-		throw new IllegalStateException("not yet implemented");
+		NeighborDistanceBasedApplicabilityDomain ad = new NeighborDistanceBasedApplicabilityDomain();
+		ad.setNumNeighbors(numNeighbors);
+		ad.setMethod(method);
+		ad.setDistanceMultiplier(distanceMultiplier);
+		ad.setContinous(continous);
+		ad.setContinousFullDistanceMultiplier(continousFullDistanceMultiplier);
+		return ad;
 	}
 }
