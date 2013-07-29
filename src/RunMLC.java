@@ -66,6 +66,7 @@ import appDomain.ApplicabilityDomain;
 import appDomain.CentroidBasedApplicabilityDomain;
 import appDomain.DefaultMLCApplicabilityDomain;
 import appDomain.DistanceBasedApplicabilityDomain;
+import appDomain.NeigborDistanceBasedApplicabilityDomain;
 import datamining.ResultSet;
 import datamining.ResultSetIO;
 
@@ -95,26 +96,35 @@ public class RunMLC extends MLCOptions
 		}
 		if (appDomainStr.equals("None"))
 			return null;
-		else if (appDomainStr.equals("Centroid"))
+
+		DistanceBasedApplicabilityDomain ad;
+		if (appDomainStr.equals("Centroid"))
 		{
-			CentroidBasedApplicabilityDomain ad = new CentroidBasedApplicabilityDomain();
+			ad = new CentroidBasedApplicabilityDomain();
+		}
+		else if (appDomainStr.equals("Neighbor"))
+		{
+			ad = new NeigborDistanceBasedApplicabilityDomain();
 			for (String key : params.keySet())
-			{
-				if (key.equals("method"))
-					ad.setMethod(CentroidBasedApplicabilityDomain.Method.valueOf(params.get(key)));
-				else if (key.equals("distance"))
-					ad.setDistanceMultiplier(Double.parseDouble(params.get(key)));
-				else if (key.equals("continous"))
-					ad.setContinous(Boolean.parseBoolean(params.get(key)));
-				else if (key.equals("full"))
-					ad.setContinousFullDistanceMultiplier(Double.parseDouble(params.get(key)));
-				else
-					throw new IllegalArgumentException("not a app-domain param: " + key);
-			}
-			return ad;
+				if (key.equals("neighbors"))
+					((NeigborDistanceBasedApplicabilityDomain) ad).setNumNeighbors(Integer.parseInt(params.get(key)));
 		}
 		else
 			throw new IllegalArgumentException("unknown app-domain: " + appDomainStr);
+		for (String key : params.keySet())
+		{
+			if (key.equals("method"))
+				ad.setMethod(CentroidBasedApplicabilityDomain.Method.valueOf(params.get(key)));
+			else if (key.equals("distance"))
+				ad.setDistanceMultiplier(Double.parseDouble(params.get(key)));
+			else if (key.equals("continous"))
+				ad.setContinous(Boolean.parseBoolean(params.get(key)));
+			else if (key.equals("full"))
+				ad.setContinousFullDistanceMultiplier(Double.parseDouble(params.get(key)));
+			else
+				throw new IllegalArgumentException("not a app-domain param: " + key);
+		}
+		return ad;
 	}
 
 	private MultiLabelLearner getMLCAlgorithms(String mlcAlgorithmStr, String mlcAlgorithmParamsStr,
@@ -307,7 +317,7 @@ public class RunMLC extends MLCOptions
 												+ imputationString + " wekaAlg:"
 												+ classifier.getClass().getSimpleName() + " mlcAlg:"
 												+ mlcAlgorithm.getClass().getSimpleName() + " appDomain:"
-												+ appDomainStr);
+												+ appDomainStr + " appDomainParams:" + appDomainParamsStr);
 										try
 										{
 											method.runMLC(datasetNameStr, dataset, di, mlcAlgorithmStr, mlcAlgorithm,
@@ -724,7 +734,7 @@ public class RunMLC extends MLCOptions
 							System.err.println("filled " + insideADCount + "/" + toFillCount
 									+ " missing values (size ad "
 									+ ad.getApplicabilityDomain(labelIndex).getData().numInstances() + ", dist ad "
-									+ ad.getApplicabilityDomain(labelIndex).getMedianDistance() + ")");
+									+ ad.getApplicabilityDomain(labelIndex).getAverageTrainingDistance() + ")");
 							ADVisualization.showDistHistogramm(attr.name(), ad, labelIndex, ArrayUtil.toArray(missings));
 
 						}

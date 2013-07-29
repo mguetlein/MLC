@@ -268,10 +268,10 @@ public class ADVisualization extends JFrame
 		XYSeries series1 = new XYSeries("data");
 		for (int i = 0; i < inst.numInstances(); i++)
 			series1.add(inst.get(i).value(0), inst.get(i).value(1));
-		CentroidBasedApplicabilityDomain.DEBUG = true;
-		NeigborDistanceBasedApplicabilityDomain.DEBUG = true;
 		CentroidBasedApplicabilityDomain ad = new CentroidBasedApplicabilityDomain();
 		NeigborDistanceBasedApplicabilityDomain ad2 = new NeigborDistanceBasedApplicabilityDomain();
+		ad.debug = true;
+		ad2.debug = true;
 		ad.init(inst);
 		ad2.init(inst);
 
@@ -371,8 +371,8 @@ public class ADVisualization extends JFrame
 		ArffReader rand = new ArffReader(new BufferedReader(new StringReader(s.toString())));
 		Instances data = rand.getData();
 
-		CentroidBasedApplicabilityDomain.DEBUG = true;
 		CentroidBasedApplicabilityDomain ad = new CentroidBasedApplicabilityDomain();
+		ad.debug = true;
 		ad.setContinous(true);
 		ad.init(data);
 		showDistHistogramm("Testdata", ad, ad.getDistance(data.get(0)));
