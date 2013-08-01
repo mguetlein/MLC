@@ -38,7 +38,6 @@ import mulan.evaluation.measure.MacroNegativePredictiveValue;
 import mulan.evaluation.measure.MacroPrecision;
 import mulan.evaluation.measure.MacroRecall;
 import mulan.evaluation.measure.MacroSpecificity;
-import mulan.evaluation.measure.MicroAUC;
 import mulan.evaluation.measure.MicroAccuracy;
 import mulan.evaluation.measure.MicroFMeasure;
 import mulan.evaluation.measure.MicroMCC;
@@ -481,8 +480,8 @@ public class RunMLC extends MLCOptions
 								res.setResultValue(resCount, "macro-f-measure#" + i + s,
 										ev.getResult(new MacroFMeasure(c, n, false).getName(), fold, i));
 
-							res.setResultValue(resCount, "micro-auc" + s,
-									ev.getResult(new MicroAUC(c, n).getName(), fold));
+							//							res.setResultValue(resCount, "micro-auc" + s,
+							//									ev.getResult(new MicroAUC(c, n).getName(), fold));
 							res.setResultValue(resCount, "macro-auc" + s,
 									ev.getResult(new MacroAUC(c, n, false).getName(), fold));
 							res.setResultValue(resCount, "weighted-macro-auc" + s,
@@ -789,9 +788,11 @@ public class RunMLC extends MLCOptions
 			//a = "compound_table -o Repdose";
 			//a = "predict_compounds -o Repdose -v 8746894c3510f705bb330497272a4602";
 
-			String cl = "Ca15-20c20";
-			a = "validate -a BR -i 0 -u 1 -c RandomForest -d dataB_noV_" + cl + "_PC -e BR-B-" + cl
-					+ " -q None -o RepdoseNeustoff-" + cl;
+			a = "validate -x 1 -d dataY_PC -i 0 -u 1 -f 10 -a BR -t false -c IBk -e FeatWekaY -q None";
+
+			//			String cl = "Ca15-20c20";
+			//			a = "validate -a BR -i 0 -u 1 -c RandomForest -d dataB_noV_" + cl + "_PC -e BR-B-" + cl
+			//					+ " -q None -o RepdoseNeustoff-" + cl;
 			//a = "validation_report -o RepdoseNeustoff-" + cl + " -z all";
 			//a = "endpoint_table -o RepdoseNeustoff-" + cl;
 			//a = "compound_table -o RepdoseNeustoff-" + cl;
