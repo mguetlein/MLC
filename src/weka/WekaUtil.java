@@ -5,7 +5,6 @@ import java.util.List;
 
 import mulan.data.MultiLabelInstances;
 import util.ArrayUtil;
-import util.StringUtil;
 import weka.core.Instance;
 import weka.core.Instances;
 
@@ -36,7 +35,7 @@ public class WekaUtil
 		for (int i = 0; i < data.numInstances(); i++)
 		{
 			Instance instance = data.get(i);
-			System.out.println(StringUtil.concatWhitespace(i + "", 3) + " " + instance);
+			//			System.out.println(StringUtil.concatWhitespace(i + "", 3) + " " + instance);
 
 			boolean equal = true;
 			for (int a = 0; a < data.numAttributes(); a++)

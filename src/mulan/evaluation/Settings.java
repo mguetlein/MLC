@@ -6,6 +6,7 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
 import util.ArrayUtil;
+import util.FileUtil;
 import util.StringUtil;
 
 public class Settings
@@ -15,7 +16,7 @@ public class Settings
 	//		Locale.setDefault(Locale.US);
 	//	}
 
-	public static String PWD = "";
+	private static String PWD = "";
 
 	private static ResourceBundle bundle;
 
@@ -54,6 +55,19 @@ public class Settings
 	public static String csvFile(String datasetName)
 	{
 		return PWD + "arff/" + datasetName + ".csv";
+	}
+
+	public static String getFeaturesFromDatabaseName(String datasetName)
+	{
+		String features = ArrayUtil.last(datasetName.split("_"));
+		if (ArrayUtil.indexOf(new String[] { "PC", "PCFP", "FP", "OB" }, features) == -1)
+			throw new IllegalStateException("unknown feature : " + features);
+		return features;
+	}
+
+	public static String csvCompoundInfo(String datasetName)
+	{
+		return PWD + "data/" + datasetName.split("_")[0] + "_compoundInfo.csv";
 	}
 
 	public static String inchiFile(String datasetName)
@@ -97,46 +111,57 @@ public class Settings
 		return PWD + "reports/report_datasets_" + ArrayUtil.toString(datasetNames, "_", "", "", "");
 	}
 
-	public static String compoundTableFile(String... datasetNames)
-	{
-		return PWD + "reports/report_compounds_" + ArrayUtil.toString(datasetNames, "_", "", "", "");
-	}
-
-	public static String endpointTableFile(String... datasetNames)
-	{
-		return PWD + "reports/report_endpoints_" + ArrayUtil.toString(datasetNames, "_", "", "", "");
-	}
-
-	public static String validationReportFile(String experimentName, String[] datasetNames, String measures)
-	{
-		return PWD + "reports/report_validation_" + experimentName + "_"
-				+ ArrayUtil.toString(datasetNames, "_", "", "", "") + "_" + measures;
-	}
-
 	public static String reportFile(String experimentName, String[] datasetNames, String measures)
 	{
 		return PWD + "reports/report_" + experimentName + "_" + ArrayUtil.toString(datasetNames, "_", "", "", "") + "_"
 				+ measures;
 	}
 
+	public static String compoundTableFile(String model)
+	{
+		return PWD + "models/" + model + "/compounds";
+	}
+
+	public static String endpointTableFile(String model)
+	{
+		return PWD + "models/" + model + "/endpoints";
+	}
+
+	public static String validationReportFile(String model)
+	{
+		return PWD + "models/" + model + "/validation";
+	}
+
+	//	public static String validationReportImageFile(String model, String image)
+	//	{
+	//		return PWD + "models/" + model + "/images/" + image + ".png";
+	//	}
+
+	public static void createModelDirectory(String modelName)
+	{
+		FileUtil.createParentFolders(PWD + "models/" + modelName);
+		FileUtil.createParentFolders(PWD + "models/" + modelName + "/images/.");
+		FileUtil.createParentFolders(PWD + "models/" + modelName + "/predictions/.");
+	}
+
 	public static String modelFile(String modelName)
 	{
-		return PWD + "models/" + modelName + ".model";
+		return PWD + "models/" + modelName + "/" + modelName + ".model";
 	}
 
 	public static String modelPropsFile(String modelName)
 	{
-		return PWD + "models/" + modelName + ".settings";
+		return PWD + "models/" + modelName + "/" + modelName + ".settings";
 	}
 
 	public static String modelADFile(String modelName)
 	{
-		return PWD + "models/" + modelName + ".ad";
+		return PWD + "models/" + modelName + "/" + modelName + ".ad";
 	}
 
 	public static String modelDescriptionReport(String modelName)
 	{
-		return PWD + "models/" + modelName;
+		return PWD + "models/" + modelName + "/description";
 	}
 
 	public static String compoundsArffFile(String compoundsName, String features)
@@ -161,23 +186,27 @@ public class Settings
 
 	public static String compoundPicture(String smiles)
 	{
-		return PWD + "images/" + StringUtil.getMD5(smiles) + ".png";
-		//return PWD + "predictions/" + smiles + ".png";
+		return PWD + "predictions/" + StringUtil.getMD5(smiles) + ".png";
 	}
 
-	public static String imageFile(String identifier)
-	{
-		return PWD + "images/" + identifier + ".png";
-	}
+	//	public static String imageFile(String identifier)
+	//	{
+	//		return PWD + "images/" + identifier + ".png";
+	//	}
 
-	public static String predictionOutfile(String modelName, String compoundsName)
+	//	public static String imageFile(String image)
+	//	{
+	//		return PWD + "images/" + image + ".png";
+	//	}
+	//
+	public static String predictionReport(String modelName, String compoundsName)
 	{
-		return PWD + "predictions/" + modelName + "_" + compoundsName + ".html";
+		return PWD + "models/" + modelName + "/predictions/" + compoundsName;
 	}
 
 	public static String appDomainImageFile(String modelName, String compoundsName, int compoundIndex, String endpoint)
 	{
-		return PWD + "predictions/" + modelName + "_" + compoundsName + "_" + compoundIndex
+		return PWD + "models/" + modelName + "/predictions/" + compoundsName + "_AD_" + compoundIndex
 				+ (endpoint != null ? ("_" + endpoint) : "") + ".png";
 	}
 

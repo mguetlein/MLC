@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.Random;
 
 import javax.swing.JFrame;
 
+import mlc.report.DiscMethod;
 import mulan.data.MultiLabelInstances;
 import mulan.evaluation.Settings;
 import mulan.evaluation.measure.ConfidenceLevel;
@@ -68,13 +70,11 @@ public class MLCDataInfo
 	public int numMissingAllowed;
 	public int discretizationLevel;
 	public boolean includeV;
-	private HashMap<String, String> classValues = new HashMap<String, String>();
+	//	private HashMap<String, String> classValues = new HashMap<String, String>();
 
 	public int[] ones_per_label;
 	public int[] zeros_per_label;
 	public int[] missings_per_label;
-
-	private CSVFile csvFile;
 
 	private static HashMap<MultiLabelInstances, MLCDataInfo> map = new HashMap<MultiLabelInstances, MLCDataInfo>();
 
@@ -86,6 +86,8 @@ public class MLCDataInfo
 			map.put(dataset, new MLCDataInfo(dataset));
 		return map.get(dataset);
 	}
+
+	private CSVFile csvFile;
 
 	private CSVFile getCSV()
 	{
@@ -185,17 +187,17 @@ public class MLCDataInfo
 				discretizationLevel = IntegerUtil.parseInteger(string.substring("discretization-level:".length()));
 			else if (string.startsWith("include-v:"))
 				includeV = Boolean.parseBoolean(string.substring("include-v:".length()));
-			else if (string.startsWith("class-value-0:"))
-				classValues.put("0", string.substring("class-value-0:".length()).replace("_", " "));
-			else if (string.startsWith("class-value-1:"))
-				classValues.put("1", string.substring("class-value-1:".length()).replace("_", " "));
-			else if (string.startsWith("class-value-missing:"))
-				classValues.put("missing", string.substring("class-value-missing:".length()).replace("_", " "));
+			//			else if (string.startsWith("class-value-0:"))
+			//				classValues.put("0", string.substring("class-value-0:".length()).replace("_", " "));
+			//			else if (string.startsWith("class-value-1:"))
+			//				classValues.put("1", string.substring("class-value-1:".length()).replace("_", " "));
+			//			else if (string.startsWith("class-value-missing:"))
+			//				classValues.put("missing", string.substring("class-value-missing:".length()).replace("_", " "));
 		}
 		if (numEndpoints != dataset.getNumLabels())
 			throw new IllegalStateException();
-		if (classValues.size() != 3)
-			throw new IllegalStateException("class values missing");
+		//		if (classValues.size() != 3)
+		//			throw new IllegalStateException("class values missing");
 
 		this.dataset = dataset;
 
@@ -281,45 +283,9 @@ public class MLCDataInfo
 		}
 	}
 
-	public String getClassValuesZero()
-	{
-		return classValues.get("0");
-	}
-
-	public String getClassValuesOne()
-	{
-		return classValues.get("1");
-	}
-
-	public String getMissingClassValueNice()
-	{
-		return "missing";
-	}
-
-	public String getClassValuesZeroNice()
-	{
-		return "inactive";
-	}
-
-	public String getClassValuesOneNice()
-	{
-		return "active";
-	}
-
-	public String[] getNonMissingClassValues()
-	{
-		return new String[] { classValues.get("0"), classValues.get("1") };
-	}
-
-	public String getNonMissingClassValuesString()
-	{
-		return ArrayUtil.toString(getNonMissingClassValues(), " / ", "", "");
-	}
-
-	public String getMissingClassValue()
-	{
-		return classValues.get("missing");
-	}
+	public static String ACTIVE = "active";
+	public static String INACTIVE = "inactive";
+	public static String MISSING = "missing";
 
 	public String toString(boolean details)
 	{
@@ -331,8 +297,8 @@ public class MLCDataInfo
 		s.add("num-instances: " + dataset.getNumInstances());
 		s.add("discretization-level: " + discretizationLevel);
 		s.add("include-V: " + includeV);
-		s.add("class-values: " + getNonMissingClassValuesString());
-		s.add("missing-values: " + getMissingClassValue());
+		//		s.add("class-values: " + getNonMissingClassValuesString());
+		//		s.add("missing-values: " + getMissingClassValue());
 
 		if (details)
 		{
@@ -376,7 +342,7 @@ public class MLCDataInfo
 		double[] all = getRealValues(labelAttr.name());
 		double[] active = getRealValues(labelAttr.name(), "1");
 
-		List<String> clazz = ArrayUtil.toList(new String[] { getClassValuesZero(), getClassValuesOne() });
+		List<String> clazz = ArrayUtil.toList(new String[] { INACTIVE, ACTIVE });
 
 		if (zeros_per_label[j] + ones_per_label[j] != all.length)
 			throw new IllegalStateException("should contain both " + (zeros_per_label[j] + ones_per_label[j]) + " != "
@@ -404,6 +370,47 @@ public class MLCDataInfo
 		return h.getChartPanel();
 	}
 
+	public ChartPanel plotRealValueStudyDurationHistogram(int j, boolean zoom)
+	{
+		Attribute labelAttr = dataset.getDataSet().attribute(dataset.getLabelIndices()[j]);
+
+		System.out.println("create clazz histogram for " + labelAttr.name());
+
+		double[] all = getRealValues(labelAttr.name());
+		double[] subset = ArrayUtil.toPrimitiveDoubleArray(getStudyDurationValues(j, StudyDuration.chronic));
+
+		List<String> clazz = ArrayUtil
+				.toList(new String[] { StudyDuration.accute.name(), StudyDuration.chronic.name() });
+
+		List<String> subtitles = ArrayUtil
+				.toList(new String[] { (all.length - subset.length) + " / " + subset.length });
+		if (zoom)
+		{
+			int cut = (int) Math.floor(all.length * 9.0 / 10.0);
+			double cutValue = all[cut];
+			all = Arrays.copyOfRange(all, 0, cut);
+			int cutSubset = -1;
+			for (int i = 0; i < subset.length; i++)
+				if (subset[i] >= cutValue)
+				{
+					cutSubset = i;
+					break;
+				}
+			if (cutSubset != -1)
+				subset = Arrays.copyOfRange(subset, 0, cutSubset);
+			subtitles.add("Zoomed in: without " + (all.length - cut) + " top compounds");
+
+		}
+		List<double[]> vals = new ArrayList<double[]>();
+		vals.add(all);
+		vals.add(subset);
+		HistogramPanel h = new HistogramPanel("Real values for " + labelAttr.name() + (zoom ? " (zoom)" : ""),
+				subtitles, "value", "num compounds", clazz, vals, 50);
+		h.setIntegerTickUnits();
+
+		return h.getChartPanel();
+	}
+
 	public ChartPanel plotCorrelationHistogramm() throws IOException
 	{
 		if (histData2.size() > 0)
@@ -413,8 +420,8 @@ public class MLCDataInfo
 
 			//			Dimension dim = new Dimension(400, 300);
 			HistogramPanel p = new HistogramPanel("Class distributions of " + dataset.getNumLabels() + " endpoints",
-					null, "Class distribution ratio, 0.0 -> class is '" + getClassValuesZero()
-							+ "' for all endpoints, 1.0 -> class is '" + getClassValuesOne() + "' for all endpoints",
+					null, "Class distribution ratio, 0.0 -> class is '" + INACTIVE
+							+ "' for all endpoints, 1.0 -> class is '" + ACTIVE + "' for all endpoints",
 					"num compounds", "All compounds with at least 2 non-missing endpoint values (" + histData2.size()
 							+ ")", ArrayUtil.toPrimitiveDoubleArray(ListUtil.toArray(histData2)), 9);
 
@@ -438,9 +445,9 @@ public class MLCDataInfo
 
 	public ChartPanel plotMissingPerCompound() throws IOException
 	{
-		BarPlotPanel p = new BarPlotPanel("Num missing values for each compound (missing = '" + getMissingClassValue()
-				+ "')", "num compounds", ArrayUtil.toPrimitiveDoubleArray(ArrayUtil.toDoubleArray(ArrayUtil
-				.toIntegerArray(numMissing))), labels);
+		BarPlotPanel p = new BarPlotPanel("Num missing values for each compound"// (missing = '" + getMissingClassValue()+ "')
+				, "num compounds", ArrayUtil.toPrimitiveDoubleArray(ArrayUtil.toDoubleArray(ArrayUtil
+						.toIntegerArray(numMissing))), labels);
 
 		JFreeChart c = p.getChartPanel().getChart();
 		c.setSubtitles(ArrayUtil.toList(new Title[] { new TextTitle(dataset.getNumLabels() + " endpoint values"),
@@ -452,12 +459,9 @@ public class MLCDataInfo
 	public ChartPanel plotMissingPerLabel() throws IOException
 	{
 		LinkedHashMap<String, List<Double>> plotData = new LinkedHashMap<String, List<Double>>();
-		plotData.put(classValues.get("0"),
-				ArrayUtil.toList(ArrayUtil.toDoubleArray(ArrayUtil.toIntegerArray(zeros_per_label))));
-		plotData.put(classValues.get("1"),
-				ArrayUtil.toList(ArrayUtil.toDoubleArray(ArrayUtil.toIntegerArray(ones_per_label))));
-		plotData.put(getMissingClassValue(),
-				ArrayUtil.toList(ArrayUtil.toDoubleArray(ArrayUtil.toIntegerArray(missings_per_label))));
+		plotData.put(INACTIVE, ArrayUtil.toList(ArrayUtil.toDoubleArray(ArrayUtil.toIntegerArray(zeros_per_label))));
+		plotData.put(ACTIVE, ArrayUtil.toList(ArrayUtil.toDoubleArray(ArrayUtil.toIntegerArray(ones_per_label))));
+		plotData.put(MISSING, ArrayUtil.toList(ArrayUtil.toDoubleArray(ArrayUtil.toIntegerArray(missings_per_label))));
 
 		StackedBarPlot sbp = new StackedBarPlot("Class and missing values", "endpoints", "num compounds", plotData,
 				labelNames);
@@ -476,8 +480,8 @@ public class MLCDataInfo
 		{
 			int r = rs.addResult();
 			rs.setResultValue(r, "endpoint", labelNames[i]);
-			rs.setResultValue(r, getNonMissingClassValuesString(), zeros_per_label[i] + "/" + ones_per_label[i]);
-			rs.setResultValue(r, getMissingClassValue(), missings_per_label[i]);
+			rs.setResultValue(r, INACTIVE + "/" + ACTIVE, zeros_per_label[i] + "/" + ones_per_label[i]);
+			rs.setResultValue(r, MISSING, missings_per_label[i]);
 		}
 		return rs;
 	}
@@ -679,7 +683,7 @@ public class MLCDataInfo
 				+ datasetName);
 		if (clazz)
 			p.setSubtitleString("1 := high correlation, 0 := no correlation, -1 := inverse correlation, the small numbers below correspond to the number of class values of "
-					+ getClassValuesZero() + "/" + getClassValuesOne() + " per endpoint or endpoint-pair");
+					+ INACTIVE + "/" + ACTIVE + " per endpoint or endpoint-pair");
 		else
 			p.setSubtitleString("1 := high correlation, 0 := no correlation, -1 := inverse correlation, the small numbers below correspond to the number of real values per endpoint or endpoint-pair");
 
@@ -765,6 +769,120 @@ public class MLCDataInfo
 		return realVals.get(key);
 	}
 
+	HashMap<String, List<Double>> studyDurationValues = new HashMap<String, List<Double>>();
+	HashMap<String, List<Double>> routeValues = new HashMap<String, List<Double>>();
+
+	public static enum StudyDuration
+	{
+		accute, chronic
+	}
+
+	public static enum Route
+	{
+		inhalation, oral
+	}
+
+	public StudyDuration getStudyDuration(int compoundIndex)
+	{
+		return getStudyDuration(datasetName, compoundIndex);
+	}
+
+	public static StudyDuration getStudyDuration(String datasetName, int compoundIndex)
+	{
+		//		Attribute a = dataset.getDataSet().attribute(dataset.getLabelIndices()[label]);
+		//		if (dataset.getDataSet().get(compoundIndex).isMissing(a))
+		//			throw new IllegalStateException("missing!");
+		String dur = getCompoundInfoValue(datasetName, compoundIndex, "study-duration").toString();
+		if (dur.contains(StudyDuration.accute.toString()))
+			return StudyDuration.accute;
+		else if (dur.contains(StudyDuration.chronic.toString()))
+			return StudyDuration.chronic;
+		else
+			throw new Error("wtf: " + dur);
+	}
+
+	public Route getRoute(int compoundIndex)
+	{
+		return getRoute(datasetName, compoundIndex);
+	}
+
+	public static Route getRoute(String datasetName, int compoundIndex)
+	{
+		String r = getCompoundInfoValue(datasetName, compoundIndex, "route").toString();
+		if (r.contains(Route.inhalation.toString()))
+			return Route.inhalation;
+		else if (r.contains(Route.oral.toString()))
+			return Route.oral;
+		else
+			throw new Error("wtf: " + r);
+	}
+
+	public List<Double> getStudyDurationValues(int label, StudyDuration studyDuration)
+	{
+		return getStudyDurationValues(label, studyDuration, null);
+	}
+
+	public List<Double> getStudyDurationValues(int label, StudyDuration studyDuration, String clazz)
+	{
+		String key = label + "#" + studyDuration + "#" + clazz;
+		if (!studyDurationValues.containsKey(key))
+		{
+			Attribute a = dataset.getDataSet().attribute(dataset.getLabelIndices()[label]);
+			String name = a.name();
+
+			String s[] = getCSV().getColumn(name);
+
+			for (StudyDuration d : StudyDuration.values())
+				for (String c : new String[] { "1", "0", null })
+					studyDurationValues.put(label + "#" + d + "#" + c, new ArrayList<Double>());
+			for (int i = 0; i < dataset.getNumInstances(); i++)
+				if (!dataset.getDataSet().get(i).isMissing(a))
+				{
+					double v = getRealValue(i, name);
+					StudyDuration d = getStudyDuration(i);
+					studyDurationValues.get(label + "#" + d + "#" + null).add(v);
+					studyDurationValues.get(label + "#" + d + "#" + s[i]).add(v);
+				}
+			for (StudyDuration d : StudyDuration.values())
+				for (String c : new String[] { "1", "0", null })
+					Collections.sort(studyDurationValues.get(label + "#" + d + "#" + c));
+		}
+		return studyDurationValues.get(label + "#" + studyDuration + "#" + clazz);
+	}
+
+	public List<Double> getRouteValues(int label, Route route)
+	{
+		return getRouteValues(label, route, null);
+	}
+
+	public List<Double> getRouteValues(int label, Route route, String clazz)
+	{
+		String key = label + "#" + route + "#" + clazz;
+		if (!routeValues.containsKey(key))
+		{
+			Attribute a = dataset.getDataSet().attribute(dataset.getLabelIndices()[label]);
+			String name = a.name();
+
+			String s[] = getCSV().getColumn(name);
+
+			for (Route d : Route.values())
+				for (String c : new String[] { "1", "0", null })
+					routeValues.put(label + "#" + d + "#" + c, new ArrayList<Double>());
+			for (int i = 0; i < dataset.getNumInstances(); i++)
+				if (!dataset.getDataSet().get(i).isMissing(a))
+				{
+					double v = getRealValue(i, name);
+					Route d = getRoute(i);
+					routeValues.get(label + "#" + d + "#" + null).add(v);
+					routeValues.get(label + "#" + d + "#" + s[i]).add(v);
+				}
+			for (Route d : Route.values())
+				for (String c : new String[] { "1", "0", null })
+					Collections.sort(routeValues.get(label + "#" + d + "#" + c));
+		}
+		return routeValues.get(label + "#" + route + "#" + clazz);
+	}
+
 	public List<Object[]> getConfusionMatrix(ResultSet results, int l, ConfidenceLevel confLevel)
 	{
 		if (results.getNumResults() > 1)
@@ -772,7 +890,7 @@ public class MLCDataInfo
 		String s = confLevel.getShortName();
 		return ConfusionMatrix.buildMatrix((Double) results.getUniqueValue("TP#" + l + s),
 				(Double) results.getUniqueValue("TN#" + l + s), (Double) results.getUniqueValue("FP#" + l + s),
-				(Double) results.getUniqueValue("FN#" + l + s), getClassValuesOneNice(), getClassValuesZeroNice());
+				(Double) results.getUniqueValue("FN#" + l + s), ACTIVE, INACTIVE);
 	}
 
 	Boolean realData = null;
@@ -785,5 +903,78 @@ public class MLCDataInfo
 			realData = (getCSV().getColumnIndex(labelAttr.name() + "_real") != -1);
 		}
 		return realData;
+	}
+
+	private static HashMap<String, CSVFile> csvCompoundInfo = new HashMap<String, FileUtil.CSVFile>();
+
+	private static CSVFile getCSVCompoundInfo(String datasetName)
+	{
+		if (!csvCompoundInfo.containsKey(datasetName))
+		{
+			if (new File(Settings.csvCompoundInfo(datasetName)).exists())
+			{
+				System.out.println("reading csv-compoundInfo: " + Settings.csvCompoundInfo(datasetName));
+				csvCompoundInfo.put(datasetName, FileUtil.readCSV(Settings.csvCompoundInfo(datasetName)));
+				if (!csvCompoundInfo.get(datasetName).getHeader()[0].equals("id"))
+					throw new IllegalStateException("no id column");
+			}
+		}
+		return csvCompoundInfo.get(datasetName);
+	}
+
+	public boolean hasCompoundInfoData()
+	{
+		return hasCompoundInfoData(datasetName);
+	}
+
+	public static boolean hasCompoundInfoData(String datasetName)
+	{
+		return getCSVCompoundInfo(datasetName) != null;
+	}
+
+	public String[] getCompoundInfoFields()
+	{
+		return getCompoundInfoFields(datasetName);
+	}
+
+	public static String[] getCompoundInfoFields(String datasetName)
+	{
+		return ArrayUtil.removeAt(String.class, getCSVCompoundInfo(datasetName).getHeader(), 0);
+	}
+
+	public String getCompoundInfoValue(int compoundIndex, String f)
+	{
+		return getCompoundInfoValue(datasetName, compoundIndex, f);
+	}
+
+	public static String getCompoundInfoValue(String datasetName, int compoundIndex, String f)
+	{
+		CSVFile compoundInfo = getCSVCompoundInfo(datasetName);
+		return compoundInfo.content.get(compoundIndex + 1)[compoundInfo.getColumnIndex(f)];
+	}
+
+	public String getClassRatio()
+	{
+		List<Double> ratios = new ArrayList<Double>();
+		for (int l = 0; l < numEndpoints; l++)
+			ratios.add(ones_per_label[l] / (double) (ones_per_label[l] + zeros_per_label[l]));
+		DoubleArraySummary summ = DoubleArraySummary.create(ratios);
+		return summ.toString();
+	}
+
+	DiscMethod discMethod;
+
+	public Object getEndpointDiscDescription(boolean b, int l)
+	{
+		if (discMethod == null)
+		{
+			String s[] = datasetName.split("_");
+			discMethod = DiscMethod.fromString(s[2]);
+			if (discMethod == null)
+				throw new Error("no disc method " + s[2]);
+		}
+
+		return discMethod.getEndpointDescription(b, l, this);
+
 	}
 }

@@ -2,8 +2,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
+import mlc.ClusterEndpoint;
 import mlc.ConfusionMatrix;
 import mlc.MLCDataInfo;
 import mlc.ModelInfo;
@@ -107,8 +109,8 @@ public class RunMLC extends MLCOptions
 			ad = new NeighborDistanceBasedApplicabilityDomain();
 			if (params.containsKey("neighbors"))
 			{
-				((NeighborDistanceBasedApplicabilityDomain) ad)
-						.setNumNeighbors(Integer.parseInt(params.get("neighbors")));
+				((NeighborDistanceBasedApplicabilityDomain) ad).setNumNeighbors(Integer.parseInt(params
+						.get("neighbors")));
 				params.remove("neighbors");
 			}
 		}
@@ -547,13 +549,10 @@ public class RunMLC extends MLCOptions
 		});
 	}
 
-	public void buildModel(final String modelName, final String features) throws Exception
+	public void buildModel(final String modelName) throws Exception
 	{
-		if (modelName == null || getExperimentName() == null || features == null)
-			throw new Error("specify model name and validation-experiment name and features");
 		iterate(false, new MLCMethod()
 		{
-
 			@Override
 			public void runMLC(String datasetNameStr, MultiLabelInstances dataset, MLCDataInfo di,
 					String mlcAlgorithmStr, MultiLabelLearner mlcAlgorithm, String imputationString,
@@ -561,8 +560,12 @@ public class RunMLC extends MLCOptions
 					String appDomainStr, String appDomainParamsStr, int seed, ResultSet res, File resFile,
 					SinglePredictionTracker tracker) throws Exception
 			{
-				ReportMLC rep = new ReportMLC(Settings.modelDescriptionReport(modelName), "Description of model "
-						+ modelName);
+				Settings.createModelDirectory(modelName);
+
+				ReportMLC rep = new ReportMLC(Settings.modelDescriptionReport(modelName),
+						"Technical model description", false);
+				rep.report.addParagraph("This is a technical description of model "
+						+ rep.report.encodeLink(".", modelName) + ".");
 				rep.report.newSection("General");
 				ResultSet rs = new ResultSet();
 				int r = rs.addResult();
@@ -610,7 +613,8 @@ public class RunMLC extends MLCOptions
 				System.out.println("writing mlc model to file: " + Settings.modelFile(modelName));
 				SerializationHelper.write(Settings.modelFile(modelName), mlcAlgorithm);
 
-				ModelInfo.writeModelProps(modelName, datasetNameStr, features, getExperimentName());
+				ModelInfo.writeModelProps(modelName, datasetNameStr,
+						Settings.getFeaturesFromDatabaseName(datasetNameStr), getExperimentName());
 				//					MultiLabelLearner mlcAlgorithm2 = (MultiLabelLearner) SerializationHelper.read("/tmp/test.model");
 			}
 		});
@@ -754,33 +758,50 @@ public class RunMLC extends MLCOptions
 
 	enum Function
 	{
-		build_model, predict_compounds, predict_appdomain, validate, multi_validation_report, validation_report,
-		model_report, dataset_report, predict, fill_missing, cluster, filter_missclassified, compound_table,
-		endpoint_table;
+		predict_compounds, predict_appdomain, validate, multi_validation_report, validation_report, model_report,
+		dataset_report, predict, fill_missing, cluster, filter_missclassified, compound_table, endpoint_table;
 	}
 
 	public static void main(String args[]) throws Exception
 	{
+		Locale.setDefault(Locale.US);
+
 		if (args != null && args.length == 1 && args[0].equals("debug"))
 		{
-			Settings.PWD = "/home/martin/workspace/BMBF-MLC/";
+			String a;
+
+			//			Settings.PWD = "/home/martin/workspace/BMBF-MLC/";
 			//args = "dataset_report -d dataY_OB".split(" "); //,dataR_noV_EqF_PCFP,dataR_noV_Cl68_PCFP
 			//			args = "validate -a BR -c RandomForest -d dataB_noV_Cl68_PC -e ADtest -q None,Centroid -w default,continous=false"
 			//					.split(" ");
 			//args = "validate -a BR -c RandomForest -d dataB_noV_Cl68_PC -e ADtest -q None -w default".split(" ");
-			//args = "validate -a BR -i 0 -u 10 -c RandomForest -d dataR_noV_Cl68_PC -e BRnoAD -q None -w default"
-			//		.split(" ");
-			//args = "validate -a BR -i 0 -u 3 -c RandomForest -d dataY_OB -e BRY -q Centroid -w continous=false"
-			//		.split(" ");
 
-			args = ("validate -a BR -i 0 -u 1 -c RandomForest -d dataR_noV_Cl68_PC -e BRAD -q Neighbor " + "-w default")
-					.split(" ");
+			//			args = ("validate -a BR -i 0 -u 1 -c RandomForest -d dataR_noV_Cl68_PC -e BRAD -q Neighbor " + "-w default")
+			//					.split(" ");
 			//args = "multi_validation_report -d dataR_noV_Cl68_PC -e BRAD -z all -o only-repdose-model".split(" ");
 
-			//			args = "validation_report -d dataY_OB -e BRY -z all -o cpdbas".split(" ");
-			//args = "build_model -o MLC_model_v0.0.1 -y PC -e ECC -c RandomForest -d dataB_noV_Cl68_PC -q Centroid"
+			//a = "validate -a BR -i 0 -u 1 -c RandomForest -d dataB_noV_EqF_PC -e BR-BEqF -q None -o RepdoseNeustoff-EqF";
+			//a = "endpoint_table -o RepdoseNeustoff";
+
+			//a = "validate -a BR -i 0 -u 2 -c RandomForest -d dataR_noV_Cl68_PC -e BR-R -q Centroid -w continous=false -o Repdose";
+			//a = "validation_report -o Repdose -z all";
+			//a = "endpoint_table -o Repdose";
+			//a = "compound_table -o Repdose";
+			//a = "predict_compounds -o Repdose -v 8746894c3510f705bb330497272a4602";
+
+			String cl = "Ca15-20c20";
+			a = "validate -a BR -i 0 -u 1 -c RandomForest -d dataB_noV_" + cl + "_PC -e BR-B-" + cl
+					+ " -q None -o RepdoseNeustoff-" + cl;
+			//a = "validation_report -o RepdoseNeustoff-" + cl + " -z all";
+			//a = "endpoint_table -o RepdoseNeustoff-" + cl;
+			//a = "compound_table -o RepdoseNeustoff-" + cl;
+
+			//args = "validate -a BR -i 0 -u 3 -c RandomForest -d dataY_OB -e BRY -q Centroid -w continous=false -o cpdbas"
 			//		.split(" ");
-			//args = "build_model -o cpdbas -y OB -e BRY -a BR -c RandomForest -d dataY_OB -q Centroid".split(" ");
+			//args = "validation_report -d dataY_OB -e BRY -z all -o cpdbas".split(" ");
+			//a = "compound_table -d dataY_OB -o cpdbas";
+			//args = "endpoint_table -d dataY_OB -o cpdbas".split(" ");
+
 			//args = "predict_compounds -o MLC_model_v0.0.1 -v f9451e3ab767e8317afb8a939af279fe".split(" ");
 			//args = "predict_compounds -o MLC_model_v0.0.1 -v c29c3a4367a8d417c99addd3e1e2ebfc".split(" ");
 			//args = "predict_compounds -o MLC_model_v0.0.1 -v 75a9bfd8e5fbc442cbc9b811364d8d2b".split(" ");
@@ -793,12 +814,15 @@ public class RunMLC extends MLCOptions
 			//					.split(" ");
 
 			//args = "dataset_report -d dataR_withV_RvsV_PCFP".split(" ");
-			//args = "compound_table -d dataY_OB".split(" ");
-			//args = "endpoint_table -d dataR_noV_Cl68_PC".split(" ");
-			//args = "endpoint_table -d dataY_OB".split(" ");
+			//
+			//args = "endpoint_table -d dataR_noV_Cl68_PC -o cpdbas".split(" ");
+			//
 			//args = "fill_missing -a BR -c RandomForest -d dataB_noV_Cl68_PC -m class -e test".split(" ");
 
-			//args = "cluster -1 data/dataZ_noV.csv -2 data/dataZ_noV_Cl68.csv -3 8 -4 0.6 -5 0.8".split(" ");
+			//a = "cluster -1 data/dataR_noV.csv -2 data/dataR_noV_Cl68.csv -3 ratio -4 0.6 -5 0.8";
+			//a = "multi_validation_report -e CL -d dataB_noV_EqF_PC,dataB_noV_Cl68_PC,dataB_noV_Cl15-20a_PC -z all";
+
+			args = a.split(" ");
 		}
 
 		Function func = null;
@@ -831,10 +855,10 @@ public class RunMLC extends MLCOptions
 		options.addOption("z", "performance-measure", true, "Performance measure for validation report (accuracy|auc)");
 		options.addOption("1", "cluster-infile", true, "csv infile for clustering");
 		options.addOption("2", "cluster-outfile", true, "csv outfile for clustering");
-		options.addOption("3", "cluster-num-no-endpoint-columns", true, "min number of non-endpoint columns in infile");
+		options.addOption("3", "cluster-method", true, "one of " + ArrayUtil.toString(ClusterEndpoint.Method.values()));
 		options.addOption("4", "cluster-low-threshold", true, "min threshold for discretization point");
 		options.addOption("5", "cluster-high-threshold", true, "max threshold for discretization point");
-		options.addOption("o", "model-name", true, "Model name");
+		options.addOption("o", "model-name", true, "Model name (builds this model when validating)");
 		options.addOption("v", "compound-arff-file", true, "compound arff file name for prediction");
 		options.addOption("q", "app-domain", true, "AppDomain algortihm");
 		options.addOption("w", "app-domain-params", true, "AppDomain algortihm params");
@@ -872,9 +896,6 @@ public class RunMLC extends MLCOptions
 
 		switch (func)
 		{
-			case build_model:
-				mlc.buildModel(cmd.getOptionValue("o"), cmd.getOptionValue("y"));
-				break;
 			case predict_compounds:
 				PredictCompounds.predictCompounds(cmd.getOptionValue("o"), cmd.getOptionValue("v"));
 				break;
@@ -883,11 +904,21 @@ public class RunMLC extends MLCOptions
 						Integer.parseInt(cmd.getOptionValue("b")), cmd.getOptionValue("s"));
 				break;
 			case validate:
+				if (cmd.hasOption("o"))
+				{
+					// disable cv-repetitions for model building
+					int min = mlc.getMinSeed();
+					int max = mlc.getMaxSeedExclusive();
+					mlc.setMinSeed(0);
+					mlc.setMaxSeedExclusive(1);
+					mlc.buildModel(cmd.getOptionValue("o"));
+					mlc.setMinSeed(min);
+					mlc.setMaxSeedExclusive(max);
+				}
 				mlc.validate();
 				break;
 			case validation_report:
-				ValidationReport.validationReport(mlc.getExperimentName(), mlc.getDatasetNames(),
-						cmd.getOptionValue("z"), cmd.getOptionValue("o"));
+				ValidationReport.validationReport(cmd.getOptionValue("z"), cmd.getOptionValue("o"));
 				break;
 			case multi_validation_report:
 				MultiValidationReport.multiValidationReport(mlc.getExperimentName(), mlc.getDatasetNames(),
@@ -897,18 +928,19 @@ public class RunMLC extends MLCOptions
 				ReportMLC.datasetReport(mlc.getDatasetNames());
 				break;
 			case compound_table:
-				ReportMLC.compoundTable(mlc.getDatasetNames());
+				ReportMLC.compoundTable(cmd.getOptionValue("o"));
 				break;
 			case endpoint_table:
-				ReportMLC.endpointTable(mlc.getDatasetNames());
+				ReportMLC.endpointTable(cmd.getOptionValue("o"));
 				break;
 			case model_report:
 				ReportMLC.modelReport();
 				break;
 			case cluster:
-				ClusterEndpoint.discretisize(cmd.getOptionValue("1"), cmd.getOptionValue("2"),
-						Integer.parseInt(cmd.getOptionValue("3")), Double.parseDouble(cmd.getOptionValue("4")),
-						Double.parseDouble(cmd.getOptionValue("5")));
+				ClusterEndpoint.apply(cmd.getOptionValue("1"), cmd.getOptionValue("2"),
+						ClusterEndpoint.Method.valueOf(cmd.getOptionValue("3")),
+						Double.parseDouble(cmd.getOptionValue("4")), Double.parseDouble(cmd.getOptionValue("5")),
+						Double.parseDouble(cmd.getOptionValue("6")));
 				break;
 			case filter_missclassified:
 				FilterMissclassified.doFilter(mlc.getDatasetNames(), mlc.getExperimentName(), cmd.getOptionValue("s"));

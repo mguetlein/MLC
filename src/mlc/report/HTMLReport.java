@@ -14,17 +14,22 @@ import org.rendersnake.HtmlCanvas;
 import org.rendersnake.Renderable;
 
 import util.StringUtil;
+import util.TimeFormatUtil;
 import datamining.ResultSet;
 
 public class HTMLReport extends AbstractReport
 {
 	HtmlCanvas html;
-	HtmlCanvas body;
 	String outfile;
 
 	//	String image_dir;
 
-	public HTMLReport(String outfile, String title)
+	public HTMLReport(String outfile, String portalTitle, String pageTitle)
+	{
+		this(outfile, portalTitle, pageTitle, null);
+	}
+
+	public HTMLReport(String outfile, String portalTitle, String pageTitle, Boolean wide)
 	{
 		//		super(outfile, title);
 		this.outfile = outfile;
@@ -34,17 +39,47 @@ public class HTMLReport extends AbstractReport
 		{
 			html = new HtmlCanvas().html();
 			html.head();
-			html.macros().stylesheet(Settings.cssFile());
-			html.title().content(title);
+			String loc = "";
+			for (int i = 0; i < StringUtil.numOccurences(outfile, "/"); i++)
+				loc += "../";
+			html.macros().stylesheet(loc + Settings.cssFile());
+			html.title().content(pageTitle + " - " + portalTitle);
 			//			html.write("<script type=\"text/javascript\">" + "function toggle(control){"
 			//					+ "var elem = document.getElementById(control);" + "if(elem.style.display == \"none\"){"
 			//					+ "	elem.style.display = \"block\";" + "}else{" + "	elem.style.display = \"none\";" + "}"
 			//					+ "}</script>", HtmlCanvas.NO_ESCAPE);
 
 			html._head();
-			body = html.body();
-			body.h1().content(title);
-			body.div().write("Created at " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()))._div();
+			html.body();
+			html.div(HtmlAttributesFactory.id("header")).h1().content(portalTitle);
+			html._div();
+			if (wide == null)
+				wide = true;
+			html.div(HtmlAttributesFactory.id(wide ? "wide-content" : "content"));
+			newSection(pageTitle);
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	public void close(String footer)
+	{
+		try
+		{
+			html._div();
+			html._body();
+			html.footer().write("Created at " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + ", ");
+			html.write(footer, HtmlCanvas.NO_ESCAPE);
+			html._footer();
+			html._html();
+			//System.out.println(html.toHtml());
+
+			BufferedWriter buffy = new BufferedWriter(new FileWriter(outfile));
+			buffy.write(html.toHtml());
+			buffy.close();
+			System.out.println("wrote report to " + outfile);
 		}
 		catch (Exception e)
 		{
@@ -205,7 +240,7 @@ public class HTMLReport extends AbstractReport
 
 	public static void main(String[] args)
 	{
-		HTMLReport rep = new HTMLReport("/tmp/delme.html", "Title");
+		HTMLReport rep = new HTMLReport("/tmp/delme.html", "Title", "Title of this page");
 		rep.newSection("Section");
 		rep.addParagraph("Bla a lot of test\nmore text");
 
@@ -239,25 +274,7 @@ public class HTMLReport extends AbstractReport
 		set.setResultValue(idx, "blub", 456);
 		rep.addTable(set);
 
-		rep.close();
-	}
-
-	public void close()
-	{
-		try
-		{
-			html._body()._html();
-			//System.out.println(html.toHtml());
-
-			BufferedWriter buffy = new BufferedWriter(new FileWriter(outfile));
-			buffy.write(html.toHtml());
-			buffy.close();
-			System.out.println("wrote report to " + outfile);
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
+		rep.close("");
 	}
 
 	public static class Image implements Renderable
@@ -298,7 +315,7 @@ public class HTMLReport extends AbstractReport
 	{
 		try
 		{
-			body.h2(getAnker(title)).content(title);
+			html.h2(getAnker(title)).content(title);
 		}
 		catch (IOException e)
 		{
@@ -310,7 +327,7 @@ public class HTMLReport extends AbstractReport
 	{
 		try
 		{
-			body.div().render(new TextWithLinks(text))._div();
+			html.div().render(new TextWithLinks(text))._div();
 		}
 		catch (IOException e)
 		{
@@ -326,7 +343,7 @@ public class HTMLReport extends AbstractReport
 			//					FileUtil.createParentFolders(f);
 			//					FileUtil.copy(file, new File(f));
 			//					file.delete();
-			body.div().render(new Image(file))._div();
+			html.div().render(new Image(file))._div();
 		}
 		catch (IOException e)
 		{
@@ -338,7 +355,7 @@ public class HTMLReport extends AbstractReport
 	{
 		try
 		{
-			HtmlCanvas table = body.table();
+			HtmlCanvas table = html.table();
 			int i = 0;
 			for (String file : smallImages)
 			{
@@ -451,10 +468,9 @@ public class HTMLReport extends AbstractReport
 			init(html);
 			if (val != null)
 			{
-				//				if (prop.equals("runtime"))
-				//					html.write(TimeFormatUtil.format(((Double) val).longValue()));
-				//				else 
-				if (val instanceof Renderable)
+				if (prop.equals("runtime") && !val.equals("runtime"))
+					html.write(TimeFormatUtil.format(((Double) val).longValue()));
+				else if (val instanceof Renderable)
 					html.render((Renderable) val);
 				else if (val instanceof Double)
 					html.write(StringUtil.formatDouble((Double) val, 2));
@@ -527,7 +543,7 @@ public class HTMLReport extends AbstractReport
 		{
 			try
 			{
-				body.h4().content(title);
+				html.h4().content(title);
 			}
 			catch (IOException e)
 			{
@@ -537,7 +553,7 @@ public class HTMLReport extends AbstractReport
 
 		try
 		{
-			HtmlCanvas table = body.table();
+			HtmlCanvas table = html.table();
 			if ((transpose == null && rs.getProperties().size() > 8 && rs.getProperties().size() > rs.getNumResults() + 1)
 					|| (transpose != null && transpose))
 			{
@@ -638,7 +654,7 @@ public class HTMLReport extends AbstractReport
 	{
 		try
 		{
-			body.br();
+			html.br();
 		}
 		catch (IOException e)
 		{
@@ -650,7 +666,7 @@ public class HTMLReport extends AbstractReport
 	{
 		try
 		{
-			body.h3(getAnker(string)).content(string);
+			html.h3(getAnker(string)).content(string);
 		}
 		catch (IOException e)
 		{

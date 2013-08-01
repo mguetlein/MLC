@@ -7,7 +7,6 @@ import java.util.List;
 
 import mlc.MLCDataInfo;
 import mlc.ModelInfo;
-import mlc.report.HTMLReport;
 import mulan.classifier.MultiLabelLearner;
 import mulan.classifier.MultiLabelOutput;
 import mulan.data.MultiLabelInstances;
@@ -15,6 +14,7 @@ import mulan.evaluation.Settings;
 import mulan.evaluation.measure.ConfidenceLevelProvider;
 import util.ArrayUtil;
 import util.FileUtil;
+import util.ListUtil;
 import util.StringUtil;
 import weka.WekaUtil;
 import weka.core.Instance;
@@ -147,9 +147,15 @@ public class PredictCompounds
 
 	private void buildReport() throws Exception
 	{
-		String out = Settings.predictionOutfile(modelName, compoundsName);
-		HTMLReport report = new HTMLReport(out + ".locked", "Prediction Report");
-		report.addParagraph("Prediction with model " + report.encodeLink(linkToModel(), modelName));
+		String out = Settings.predictionReport(modelName, compoundsName);
+		String loc = "";
+		for (int i = 0; i < StringUtil.numOccurences(out, "/"); i++)
+			loc += "../";
+		//		HTMLReport report = new HTMLReport(out + ".locked", "Prediction Report", false);
+
+		ReportMLC rep = new ReportMLC(out + ".tmp", "Compound prediction", false);
+
+		rep.report.addParagraph("Prediction with model " + rep.report.encodeLink(linkToModel(), modelName));
 
 		// for each test instance
 		for (int i = 0; i < testData.numInstances(); i++)
@@ -157,39 +163,40 @@ public class PredictCompounds
 			Instance inst = testData.get(i);
 			System.out.println(inst);
 
-			// add smiles and 2d picture
-			report.newSection("Prediction " + (i + 1) + "/" + testData.numInstances() + " : " + testDataSmiles[i]);
-
-			report.addParagraph("Inchi: " + testDataInchi[i]);
+			if (testData.numInstances() > 1)
+				rep.report.newSection((i + 1) + "/" + testData.numInstances() + ": " + testDataSmiles[i]);
+			else
+				rep.report.newSection(testDataSmiles[i]);
+			rep.report.addParagraph("Inchi: " + testDataInchi[i]);
 
 			ResultSet rs = new ResultSet();
 			int r = rs.addResult();
-			rs.setResultValue(r, "2D-depiction", report.getImage(Settings.compoundPicture(testDataSmiles[i])));
+			rs.setResultValue(r, "2D-depiction", rep.report.getImage(loc + Settings.compoundPicture(testDataSmiles[i])));
 			if (i == 0)
 				rs.setResultValue(
 						r,
 						"3D-depiction",
-						report.getJSmolPlugin(compoundsName + ".sdf"
+						rep.report.getJSmolPlugin(compoundsName + ".sdf"
 								+ (testData.numInstances() > 1 ? ("?idx=" + i) : "")));
-			report.addTable(rs);
+			rep.report.addTable(rs);
 
 			// add number of training dataset occurences
 
 			List<Integer> equalIndices = getDatasetMatches(inst, testDataInchi[i]);
 			if (equalIndices.size() == 0)
-				report.addParagraph("Compound is not included in the training dataset");
+				rep.report.addParagraph("Compound is not included in the training dataset");
 			else
 			{
 				String s = "Compound is included " + equalIndices.size() + " times in the training dataset (";
 				for (int j = 0; j < equalIndices.size(); j++)
 				{
 					String idx = (equalIndices.get(j) + 1) + "";
-					s += report.encodeLink(linkToModel() + "/compounds#" + idx, "#" + idx);
+					s += rep.report.encodeLink(linkToModel() + "/compounds#" + idx, "#" + idx);
 					if (j + 1 < equalIndices.size())
 						s += (", ");
 				}
 				s += (")");
-				report.addParagraph(s);
+				rep.report.addParagraph(s);
 			}
 
 			// add global app domain
@@ -200,10 +207,10 @@ public class PredictCompounds
 				if (appDomain.isContinous())
 					pStr += " (" + StringUtil.formatDouble(p * 100, 1) + "%)";
 
-				report.addParagraph("Checking if compound is within "
-						+ report.encodeLink(linkToModel() + "/appdomain", "applicability domain")
-						+ " of the complete dataset: "
-						+ report.encodeLink(linkToModel() + "/predict/" + compoundsName + "/appdomain/" + i, pStr));
+				rep.report.addParagraph("Checking if compound is within "
+						+ rep.report.encodeLink(linkToModel() + "/description#applicability-domain",
+								"applicability domain") + " of the complete dataset: "
+						+ rep.report.encodeLink(linkToModel() + "/predict/" + compoundsName + "/appdomain/" + i, pStr));
 
 				//				report.addToggleImage("Inside total dataset app-domain: " + pStr, FreeChartUtil.toFile(
 				//						Settings.imageFile(UUID.randomUUID().toString()),
@@ -211,8 +218,8 @@ public class PredictCompounds
 				//								(DistanceBasedMLCApplicabilityDomain) appDomain, -1, inst).getChartPanel(),
 				//						new Dimension(800, 500)));
 			}
-			report.addParagraph(" ");
-			report.addGap();
+			rep.report.addParagraph(" ");
+			rep.report.addGap();
 
 			// add result for each endpoint
 			MultiLabelOutput prediction = mlcAlgorithm.makePrediction(inst);
@@ -222,8 +229,8 @@ public class PredictCompounds
 				String labelName = trainingDataset.getDataSet().attribute(trainingDataset.getLabelIndices()[l]).name();
 				boolean predicted = prediction.getBipartition()[l];
 				int resCount = res.addResult();
-				res.setResultValue(resCount, report.encodeLink(linkToModel() + "/endpoints", "endpoint"),
-						report.encodeLink(linkToModel() + "/endpoints#" + labelName, labelName));
+				res.setResultValue(resCount, rep.report.encodeLink(linkToModel() + "/endpoints", "endpoint"),
+						rep.report.encodeLink(linkToModel() + "/endpoints#" + labelName, labelName));
 
 				// add activity for each training dataset occurence
 				for (Integer equalIndex : equalIndices)
@@ -231,11 +238,11 @@ public class PredictCompounds
 					Instance equalInst = trainingDataset.getDataSet().get(equalIndex);
 					String val;
 					if (equalInst.isMissing(trainingDataset.getLabelIndices()[l]))
-						val = trainingDataInfo.getMissingClassValueNice();
+						val = MLCDataInfo.MISSING;
 					else if (equalInst.value(trainingDataset.getLabelIndices()[l]) == 0)
-						val = trainingDataInfo.getClassValuesZeroNice();
+						val = MLCDataInfo.INACTIVE;
 					else if (equalInst.value(trainingDataset.getLabelIndices()[l]) == 1)
-						val = trainingDataInfo.getClassValuesOneNice();
+						val = MLCDataInfo.ACTIVE;
 					else
 						throw new Error("WTF");
 
@@ -244,11 +251,13 @@ public class PredictCompounds
 						if (trainingDataInfo.hasRealData())
 							val += " (" + StringUtil.formatDouble(trainingDataInfo.getRealValue(equalIndex, labelName))
 									+ "" + trainingDataInfo.getRealValueUnit() + ")";
-						res.setResultValue(
-								resCount,
-								report.encodeLink(linkToModel() + "/compounds#" + (equalIndex + 1),
-										"measured activity (#" + (equalIndex + 1)) + ")", val);
 					}
+					else
+						val = null;
+					res.setResultValue(
+							resCount,
+							rep.report.encodeLink(linkToModel() + "/compounds#" + (equalIndex + 1),
+									"measured activity (#" + (equalIndex + 1)) + ")", val);
 				}
 
 				boolean outsideAD = false;
@@ -261,11 +270,9 @@ public class PredictCompounds
 					if (appDomain.isContinous())
 						pStr += " (" + StringUtil.formatDouble(p * 100, 1) + "%)";
 
-					res.setResultValue(
-							resCount,
-							report.encodeLink(linkToModel() + "/appdomain", "applicability domain"),
-							report.encodeLink(linkToModel() + "/predict/" + compoundsName + "/appdomain/" + i + "/"
-									+ labelName, pStr));
+					res.setResultValue(resCount, rep.report.encodeLink(linkToModel()
+							+ "/description#applicability-domain", "applicability domain"), rep.report.encodeLink(
+							linkToModel() + "/predict/" + compoundsName + "/appdomain/" + i + "/" + labelName, pStr));
 
 					//					res.setResultValue(
 					//							resCount,
@@ -278,14 +285,13 @@ public class PredictCompounds
 				}
 
 				// add prediciton result
-				System.out.println(trainingDataset.getDataSet().attribute(trainingDataset.getLabelIndices()[l]).name()
-						+ " " + prediction.getConfidences()[l]);
+				//				System.out.println(trainingDataset.getDataSet().attribute(trainingDataset.getLabelIndices()[l]).name()
+				//						+ " " + prediction.getConfidences()[l]);
 				res.setResultValue(
 						resCount,
-						report.encodeLink(linkToModel() + "/validation#model-confidence", "predicted activity"),
-						(predicted ? trainingDataInfo.getClassValuesOneNice() : trainingDataInfo
-								.getClassValuesZeroNice())
-								+ " ("
+						rep.report.encodeLink(linkToModel() + "/description#model-confidence",
+								"predicted activity (with confidence)"),
+						(predicted ? MLCDataInfo.ACTIVE : MLCDataInfo.INACTIVE) + " ("
 								+ trainingDataInfo.getConfidenceLevelNice(prediction.getConfidences()[l]) + ")");
 
 				// add validation result
@@ -310,20 +316,23 @@ public class PredictCompounds
 					}
 
 					String pct = StringUtil.formatDouble(100 * propCorrect, 1) + "%";
-					res.setResultValue(resCount, report.encodeLink(
+					res.setResultValue(resCount, rep.report.encodeLink(
 							linkToModel() + "/validation#"
 									+ Settings.text("probability-correct").toLowerCase().replaceAll(" ", "-"),
-							"prediction correct"), report.encodeLink(linkToModel() + "/validation#" + labelName, pct));
+							"prediction correct"), rep.report.encodeLink(linkToModel() + "/validation#" + labelName,
+							pct));
 				}
 			}
-			report.addTable(res);
+
+			System.out.println(ListUtil.toString(res.getProperties()));
+			rep.report.addTable(res);
 		}
-		report.close();
-		if (!new File(out + ".locked").exists())
+		rep.close();
+		if (!new File(out + ".tmp.html").exists())
 			throw new Error("could not find report");
-		if (!FileUtil.robustRenameTo(out + ".locked", out))
+		if (!FileUtil.robustRenameTo(out + ".tmp.html", out + ".html"))
 			throw new Error("could not rename file");
-		System.out.println("report created: " + out);
+		System.out.println("report created: " + out + ".html");
 	}
 
 }

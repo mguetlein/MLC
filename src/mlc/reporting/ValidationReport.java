@@ -4,9 +4,9 @@ import java.awt.Dimension;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import mlc.MLCDataInfo;
+import mlc.ModelInfo;
 import mulan.data.MultiLabelInstances;
 import mulan.evaluation.Settings;
 import mulan.evaluation.measure.ConfidenceLevel;
@@ -17,37 +17,37 @@ import org.jfree.chart.ChartPanel;
 import util.ArrayUtil;
 import datamining.ResultSet;
 import datamining.ResultSetIO;
-import freechart.FreeChartUtil;
 
 public class ValidationReport
 {
 
-	public static void validationReport(String experimentName, String[] datasetNames, String performanceMeasure,
-			String modelName) throws Exception
+	public static void validationReport(String performanceMeasure, String modelName) throws Exception
 	{
-		if (experimentName == null || datasetNames.length != 1)
-			throw new Error("experimentName and/or datasetNames missing, nof datasets should be 1");
-		System.out.println("create result report for " + Settings.resultFile(experimentName, datasetNames));
+		ModelInfo mi = ModelInfo.get(modelName);
+		System.out.println("create result report for " + Settings.resultFile(mi.getExperiment(), mi.getDataset()));
 		System.out.println("reading results:");
-		ResultSet results = ResultSetIO.parseFromFile(new File(Settings.resultFile(experimentName, datasetNames)));
+		ResultSet results = ResultSetIO
+				.parseFromFile(new File(Settings.resultFile(mi.getExperiment(), mi.getDataset())));
 		ReportMLC.PerformanceMeasures measures = ReportMLC.PerformanceMeasures.accuracy;
 		measures = ReportMLC.PerformanceMeasures.valueOf(performanceMeasure);
-		String outfile = Settings.validationReportFile(experimentName, datasetNames, measures.toString());
-		ValidationReport.validationReport(outfile, datasetNames[0], results, measures, modelName);
+		String outfile = Settings.validationReportFile(modelName);
+		ValidationReport.validationReport(outfile, mi.getDataset(), results, measures, modelName);
 	}
 
-	private static String linkToModel(String model)
-	{
-		return "../" + model;
-	}
+	//	private static String linkToModel(String model)
+	//	{
+	//		return "../" + model;
+	//	}
 
 	public static void validationReport(String outfile, String datasetName, ResultSet results,
 			ReportMLC.PerformanceMeasures measures, String model) throws Exception
 	{
 		MultiLabelInstances data = ReportMLC.getData(datasetName);
-		MLCDataInfo di = MLCDataInfo.get(data);
+		//		MLCDataInfo di = MLCDataInfo.get(data);
 
-		ReportMLC rep = new ReportMLC(outfile, "Validation of " + model);
+		ReportMLC rep = new ReportMLC(outfile, "Validation results", false);
+		rep.report.addParagraph("This is a validation report for model " + rep.report.encodeLink(".", model) + ".");
+		rep.report.addGap();
 
 		rep.report.newSection("General information");
 
@@ -57,8 +57,7 @@ public class ValidationReport
 
 		rep.report.newSubsection("Performance measures");
 
-		rep.report.addTable(ReportMLC.getInfo(measures, di.getClassValuesZeroNice(), di.getClassValuesOneNice()), null,
-				null, false);
+		rep.report.addTable(ReportMLC.getInfo(measures, MLCDataInfo.INACTIVE, MLCDataInfo.ACTIVE), null, null, false);
 
 		rep.report.newSubsection(Settings.text("probability-correct"));
 		rep.report.addParagraph(Settings.text("probability-correct.description"));
@@ -110,6 +109,8 @@ public class ValidationReport
 					{
 						String prop = catProps.get(p) + confLevel.getShortName();
 						String pNice = dispProps.get(p);
+						if (results.getResultValue(i, prop) == null)
+							throw new Error("result value is null: " + prop);
 						Double val = (Double) results.getResultValue(i, prop) * 100;
 						rs.setResultValue(n, pNice, val);
 					}
@@ -119,10 +120,9 @@ public class ValidationReport
 			//			System.out.println(rs.toNiceString());
 			//			System.out.println(rs);
 
-			rs.setNicePropery(confStr,
-					rep.report.encodeLink(linkToModel(model) + "/validation#model-confidence", confStr));
+			rs.setNicePropery(confStr, rep.report.encodeLink("description#model-confidence", confStr));
 			for (String p : dispProps)
-				rs.setNicePropery(p, rep.report.encodeLink(linkToModel(model) + "/validation#" + p, p));
+				rs.setNicePropery(p, rep.report.encodeLink("#" + p, p));
 
 			rep.report.addTable(rs.join(confStr));
 
@@ -132,8 +132,8 @@ public class ValidationReport
 					dispProps, null, 5.0);
 			//			ChartPanel boxPlot = results.boxPlot("Performance for endpoint " + labelName, "Performance", null,
 			//					"dataset-name", catProps, dispProps, 0.05);
-			rep.report.addImage(FreeChartUtil.toFile(Settings.imageFile(UUID.randomUUID().toString()), boxPlot,
-					new Dimension(800, 400)));
+
+			rep.addImage("validation_boxplot_" + labelName + "_" + measures, boxPlot, new Dimension(800, 400));
 
 			//			for (ConfidenceLevel confLevel : ConfidenceLevelProvider.LEVELS)
 			//			{

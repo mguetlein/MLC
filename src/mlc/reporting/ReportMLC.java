@@ -15,9 +15,9 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
 import javax.swing.JDialog;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -28,6 +28,8 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
 import mlc.MLCDataInfo;
+import mlc.MLCDataInfo.StudyDuration;
+import mlc.ModelInfo;
 import mlc.report.HTMLReport;
 import mulan.data.InvalidDataFormatException;
 import mulan.data.MultiLabelInstances;
@@ -40,9 +42,10 @@ import org.jfree.chart.plot.CategoryPlot;
 
 import util.ArrayUtil;
 import util.CollectionUtil;
-import util.DoubleArraySummary;
+import util.FileUtil;
 import util.StringUtil;
 import util.SwingUtil;
+import weka.core.Attribute;
 import weka.core.Instance;
 
 import com.itextpdf.text.DocumentException;
@@ -68,11 +71,16 @@ public class ReportMLC
 
 	public ReportMLC(String outfile, String title)
 	{
+		this(outfile, title, null);
+	}
+
+	public ReportMLC(String outfile, String title, Boolean wide)
+	{
 		try
 		{
 			file = outfile + ".html";
 			//report = new PDFReport(outfile+".pdf", "Dataset Report");
-			report = new HTMLReport(file, title);
+			report = new HTMLReport(file, Settings.text("title"), title, wide);
 		}
 		catch (Exception e)
 		{
@@ -87,7 +95,7 @@ public class ReportMLC
 
 	public void close()
 	{
-		report.close();
+		report.close(Settings.text("footer"));
 		System.out.println("created report: " + file);
 	}
 
@@ -116,8 +124,8 @@ public class ReportMLC
 			res.setResultValue(r, "num-instances", di.dataset.getNumInstances());
 			res.setResultValue(r, "discretization-level", di.discretizationLevel);
 			res.setResultValue(r, "include-V", di.includeV);
-			res.setResultValue(r, "class-values (inactive/active)", di.getNonMissingClassValuesString());
-			res.setResultValue(r, "missing-values", di.getMissingClassValue());
+			//			res.setResultValue(r, "class-values (inactive/active)", di.getNonMissingClassValuesString());
+			//			res.setResultValue(r, "missing-values", di.getMissingClassValue());
 		}
 		return res;
 	}
@@ -140,7 +148,7 @@ public class ReportMLC
 			case auc:
 				return new String[] { "auc" };
 			case all:
-				return new String[] { "accuracy", "auc", "sensitivity", "specificity", "ppv", "npv", "inside-ad" };
+				return new String[] { "accuracy", "auc", "sensitivity", "specificity", "ppv", "npv" };
 			case fmeasure:
 				return new String[] { "f-measure" };
 		}
@@ -165,9 +173,8 @@ public class ReportMLC
 				return new String[] { "micro-f-measure", "macro-f-measure", "weighted-macro-f-measure",
 						"subset-accuracy" };
 			case all:
-				return new String[] { "macro-accuracy", "weighted-macro-accuracy", "macro-auc", "weighted-macro-auc",
-						"macro-sensitivity", "macro-specificity", "macro-ppv", "macro-npv", "subset-accuracy",
-						"macro-inside-ad" };
+				return new String[] { "macro-accuracy", "macro-auc", "macro-sensitivity", "macro-specificity",
+						"macro-ppv", "macro-npv", "subset-accuracy", "macro-inside-ad" };//"weighted-macro-accuracy","weighted-macro-auc",
 
 				//				return new String[] { "micro-accuracy", "macro-accuracy", "weighted-macro-accuracy", "1-hamming-loss",
 				//						"micro-auc", "macro-auc", "weighted-macro-auc", "micro-mcc", "macro-mcc", "weighted-macro-mcc",
@@ -345,8 +352,8 @@ public class ReportMLC
 	//		}
 	//	}
 
-	void addBoxPlots(ResultSet results, String compareProp, String titleSuffix, PerformanceMeasures measures)
-			throws IOException, DocumentException
+	void addBoxPlots(ResultSet results, String compareProp, String titleSuffix, String fileSuffix,
+			PerformanceMeasures measures) throws IOException, DocumentException
 	{
 		report.newSection("Compare " + compareProp + titleSuffix);
 
@@ -379,8 +386,7 @@ public class ReportMLC
 				new String[] { "runtime" })));
 		report.addTable(rs);
 
-		report.addImage(FreeChartUtil.toFile(Settings.imageFile(UUID.randomUUID().toString()), boxPlot1, new Dimension(
-				1200, 600)));
+		addImage("boxplot_" + measures + "_" + compareProp + "_" + fileSuffix, boxPlot1, new Dimension(1200, 600));
 
 		//		if (getProps(measures).length > 3)
 		//		{
@@ -412,8 +418,8 @@ public class ReportMLC
 			CategoryPlot plot = (CategoryPlot) boxPlot2.getChart().getPlot();
 			CategoryAxis xAxis = (CategoryAxis) plot.getDomainAxis();
 			xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
-			report.addImage(FreeChartUtil.toFile(Settings.imageFile(UUID.randomUUID().toString()), boxPlot2,
-					new Dimension(1200, 800)));
+			addImage("boxplot_perLabel-" + prop + "_" + compareProp + "_" + fileSuffix, boxPlot2, new Dimension(1800,
+					800));
 		}
 
 		//			ResultSet rs2 = results.join(ArrayUtil.toList(new String[] { compareProp }), null, catProps);
@@ -450,21 +456,16 @@ public class ReportMLC
 		report.addTable(getDatasetOverviewTable(di.datasetName));
 		report.addTable(di.getMissingPerLabel());
 
-		report.addImage(FreeChartUtil.toFile(Settings.imageFile(UUID.randomUUID().toString()),
-				di.plotMissingPerLabel(), new Dimension(1200, 800)));
+		addImage(datasetName + "_missingPerLabel", di.plotMissingPerLabel(), new Dimension(1200, 800));
 
-		report.addImage(FreeChartUtil.toFile(Settings.imageFile(UUID.randomUUID().toString()),
-				di.plotMissingPerCompound(), new Dimension(1200, 600)));
+		addImage(datasetName + "_missingPerCompound", di.plotMissingPerCompound(), new Dimension(1200, 600));
 
-		report.addImage(FreeChartUtil.toFile(Settings.imageFile(UUID.randomUUID().toString()),
-				di.plotCorrelationHistogramm(), new Dimension(1200, 600)));
+		addImage(datasetName + "_correlationHistogramm", di.plotCorrelationHistogramm(), new Dimension(1200, 600));
 
 		if (di.hasRealData())
-			report.addImage(SwingUtil.toFile(Settings.imageFile(UUID.randomUUID().toString()),
-					di.plotCorrelationMatrix(false), new Dimension(1200, 1150)));
+			addImage(datasetName + "correlationMatrixReal", di.plotCorrelationMatrix(false), new Dimension(1200, 1150));
 
-		report.addImage(SwingUtil.toFile(Settings.imageFile(UUID.randomUUID().toString()),
-				di.plotCorrelationMatrix(true), new Dimension(1200, 1150)));
+		addImage(datasetName + "_correlationMatrixClass", di.plotCorrelationMatrix(true), new Dimension(1200, 1150));
 
 		//		di.plotCorrelationMatrix(true, csv, true);
 
@@ -473,10 +474,9 @@ public class ReportMLC
 		{
 			for (int j = 0; j < di.dataset.getNumLabels(); j++)
 			{
-				smallImages.add(FreeChartUtil.toFile(Settings.imageFile(UUID.randomUUID().toString()),
+				smallImages.add(createImage(datasetName + "_realValueHistogramm_" + j,
 						di.plotRealValueHistogram(j, false), new Dimension(600, 300)));
-
-				smallImages.add(FreeChartUtil.toFile(Settings.imageFile(UUID.randomUUID().toString()),
+				smallImages.add(createImage(datasetName + "_realValueHistogrammZoom_" + j,
 						di.plotRealValueHistogram(j, true), new Dimension(600, 300)));
 			}
 			report.addSmallImages(ArrayUtil.toArray(smallImages));
@@ -596,7 +596,7 @@ public class ReportMLC
 				System.out.println("reading results:");
 				ResultSet rs = ResultSetIO.parseFromFile(new File("results/" + name + ".results"));
 				PerformanceMeasures measures = PerformanceMeasures.accuracy;
-				MultiValidationReport.multiValidationReport(name + "_" + measures + "_report", rs, measures);
+				MultiValidationReport.multiValidationReport(name + "_" + measures + "_report", name, rs, measures);
 			}
 		}
 	}
@@ -620,94 +620,114 @@ public class ReportMLC
 
 	}
 
-	public static void endpointTable(String[] datasetNames) throws Exception
+	public static void endpointTable(String modelName) throws Exception
 	{
-		if (datasetNames == null || datasetNames.length == 0)
-			throw new IllegalArgumentException("please give a least one dataset name (-d, comma seperated)");
+		ModelInfo mi = ModelInfo.get(modelName);
+		ReportMLC rep = new ReportMLC(Settings.endpointTableFile(modelName), "Predicted endpoints", true);
+		rep.report.addParagraph("This is the predicted enpoint table for model "
+				+ rep.report.encodeLink(".", modelName) + ".");
+		rep.report.addGap();
 
-		ReportMLC rep = new ReportMLC(Settings.endpointTableFile(datasetNames), "Dataset Endpoints");
+		ResultSet res = new ResultSet();
+		MultiLabelInstances data = getData(mi.getDataset());
+		MLCDataInfo di = MLCDataInfo.get(data);
 
-		for (String datasetName : datasetNames)
+		for (int l = 0; l < data.getNumLabels(); l++)
 		{
-			ResultSet res = new ResultSet();
-			MultiLabelInstances data = getData(datasetName);
-			MLCDataInfo di = MLCDataInfo.get(data);
-
-			for (int l = 0; l < data.getNumLabels(); l++)
+			Attribute a = data.getDataSet().attribute(data.getLabelIndices()[l]);
+			String labelName = a.name();
+			int r = res.addResult();
+			res.setResultValue(r, "endpoint", labelName);
+			res.setResultValue(r, "#active", di.ones_per_label[l]);
+			res.setResultValue(r, "#inactive", di.zeros_per_label[l]);
+			res.setResultValue(r, "#missing", di.missings_per_label[l]);
+			if (di.hasRealData())
 			{
-				String labelName = data.getDataSet().attribute(data.getLabelIndices()[l]).name();
-				int r = res.addResult();
-				res.setResultValue(r, "endpoint", labelName);
-				res.setResultValue(r, "#active", di.ones_per_label[l]);
-				res.setResultValue(r, "#inactive", di.zeros_per_label[l]);
-				res.setResultValue(r, "#missing", di.missings_per_label[l]);
-				if (di.hasRealData())
+				//				DoubleArraySummary active = DoubleArraySummary.create(di.getRealValues(labelName, "1"));
+				//				DoubleArraySummary inactive = DoubleArraySummary.create(di.getRealValues(labelName, "0"));
+				//				res.setResultValue(r, "mmol active range", StringUtil.formatDouble(active.getMin()) + " - "
+				//						+ StringUtil.formatDouble(active.getMax()));
+				//				res.setResultValue(r, "mmol inactive range", StringUtil.formatDouble(inactive.getMin()) + " - "
+				//						+ StringUtil.formatDouble(inactive.getMax()));
+				res.setResultValue(r, "active", di.getEndpointDiscDescription(true, l));
+				res.setResultValue(r, "inactive", di.getEndpointDiscDescription(false, l));
+
+				String uri = rep.createImage(mi.getDataset() + "_realValueHistogrammZoom_" + l,
+						di.plotRealValueHistogram(l, true), new Dimension(600, 300));
+				res.setResultValue(r, "histogram", rep.report.getImage(uri, 300, 150));
+
+				if (di.hasCompoundInfoData())
 				{
-					DoubleArraySummary active = DoubleArraySummary.create(di.getRealValues(labelName, "1"));
-					DoubleArraySummary inactive = DoubleArraySummary.create(di.getRealValues(labelName, "0"));
-					res.setResultValue(r, "mmol active range", StringUtil.formatDouble(active.getMin()) + " - "
-							+ StringUtil.formatDouble(active.getMax()));
-					res.setResultValue(r, "mmol inactive range", StringUtil.formatDouble(inactive.getMin()) + " - "
-							+ StringUtil.formatDouble(inactive.getMax()));
-					res.setResultValue(r, "#missing", di.missings_per_label[l]);
+					List<Double> acc = di.getStudyDurationValues(l, StudyDuration.accute);
+					res.setResultValue(r, "#sub-" + StudyDuration.accute, acc.size());// + " " + DoubleArraySummary.create(acc));
+					List<Double> chr = di.getStudyDurationValues(l, StudyDuration.chronic);
+					res.setResultValue(r, "#sub-" + StudyDuration.chronic, chr.size());// + " " + DoubleArraySummary.create(chr));
+					String uri2 = rep.createImage(mi.getDataset() + "_realValueStudyDurationHistogrammZoom_" + l,
+							di.plotRealValueStudyDurationHistogram(l, true), new Dimension(600, 300));
+					res.setResultValue(r, "histogram-study", rep.report.getImage(uri2, 300, 150));
 
-					String uri = FreeChartUtil.toFile(Settings.imageFile(UUID.randomUUID().toString()),
-							di.plotRealValueHistogram(l, true), new Dimension(600, 300));
+					//					List<Double> inh = di.getRouteValues(l, Route.inhalation);
+					//					res.setResultValue(r, Route.inhalation.toString(),
+					//							inh.size() + " " + DoubleArraySummary.create(inh));
+					//					List<Double> oral = di.getRouteValues(l, Route.oral);
+					//					res.setResultValue(r, Route.oral.toString(), oral.size() + " " + DoubleArraySummary.create(oral));
 
-					res.setResultValue(r, "histogram", rep.report.getImage(uri, 300, 150));
 				}
 			}
-			rep.report.addTable(res);
+
 		}
+		rep.report.addTable(res);
 
 		rep.close();
 	}
 
-	public static void compoundTable(String[] datasetNames) throws Exception
+	public static void compoundTable(String modelName) throws Exception
 	{
-		if (datasetNames == null || datasetNames.length == 0)
-			throw new IllegalArgumentException("please give a least one dataset name (-d, comma seperated)");
+		ModelInfo mi = ModelInfo.get(modelName);
+		ReportMLC rep = new ReportMLC(Settings.compoundTableFile(modelName), "Training dataset compounds");
+		rep.report.addParagraph("This is the training dataset compound table for model "
+				+ rep.report.encodeLink(".", modelName) + ".");
+		rep.report.addGap();
 
-		ReportMLC rep = new ReportMLC(Settings.compoundTableFile(datasetNames), "Dataset Compounds");
+		ResultSet res = new ResultSet();
+		MultiLabelInstances data = getData(mi.getDataset());
+		MLCDataInfo di = MLCDataInfo.get(data);
 
-		for (String datasetName : datasetNames)
+		for (int i = 0; i < data.getNumInstances(); i++)
 		{
-			ResultSet res = new ResultSet();
-			MultiLabelInstances data = getData(datasetName);
-			MLCDataInfo di = MLCDataInfo.get(data);
+			Instance instance = data.getDataSet().get(i);
+			int r = res.addResult();
+			res.setResultValue(r, "Index", i + 1);
 
-			for (int i = 0; i < data.getNumInstances(); i++)
+			res.setResultValue(r, "SMILES", di.getSmiles(i));
+			res.setResultValue(r, "InChI", di.getInchi(i));
+
+			if (di.hasCompoundInfoData())
+				for (String f : di.getCompoundInfoFields())
+					res.setResultValue(r, f, di.getCompoundInfoValue(i, f));
+
+			for (int l = 0; l < data.getNumLabels(); l++)
 			{
-				Instance instance = data.getDataSet().get(i);
-				int r = res.addResult();
-				res.setResultValue(r, "Index", i + 1);
+				String labelName = data.getDataSet().attribute(data.getLabelIndices()[l]).name();
 
-				res.setResultValue(r, "SMILES", di.getSmiles(i));
-				res.setResultValue(r, "InChI", di.getInchi(i));
+				String val;
+				if (instance.isMissing(data.getLabelIndices()[l]))
+					val = MLCDataInfo.MISSING;
+				else if (instance.value(data.getLabelIndices()[l]) == 0)
+					val = MLCDataInfo.INACTIVE;
+				else if (instance.value(data.getLabelIndices()[l]) == 1)
+					val = MLCDataInfo.ACTIVE;
+				else
+					throw new Error("WTF");
 
-				for (int l = 0; l < data.getNumLabels(); l++)
-				{
-					String labelName = data.getDataSet().attribute(data.getLabelIndices()[l]).name();
+				if (di.hasRealData())
+					if (!instance.isMissing(data.getLabelIndices()[l]))
+						val += " (" + StringUtil.formatDouble(di.getRealValue(i, labelName)) + ")";
 
-					String val;
-					if (instance.isMissing(data.getLabelIndices()[l]))
-						val = di.getMissingClassValueNice();
-					else if (instance.value(data.getLabelIndices()[l]) == 0)
-						val = di.getClassValuesZeroNice();
-					else if (instance.value(data.getLabelIndices()[l]) == 1)
-						val = di.getClassValuesOneNice();
-					else
-						throw new Error("WTF");
-
-					if (di.hasRealData())
-						if (!instance.isMissing(data.getLabelIndices()[l]))
-							val += " (" + StringUtil.formatDouble(di.getRealValue(i, labelName)) + ")";
-
-					res.setResultValue(r, labelName, val);
-				}
+				res.setResultValue(r, labelName, val);
 			}
-			rep.report.addTable(res);
 		}
+		rep.report.addTable(res);
 
 		rep.close();
 	}
@@ -721,7 +741,7 @@ public class ReportMLC
 	{
 		if (args == null || args.length == 0)
 		{
-			Settings.PWD = "/home/martin/workspace/BMBF-MLC";
+			//			Settings.PWD = "/home/martin/workspace/BMBF-MLC";
 			chooseWithDialog();
 		}
 		System.exit(0);
@@ -818,6 +838,25 @@ public class ReportMLC
 		//		col.setMinWidth(width);
 		//		col.setMaxWidth(width);
 		return width;
+	}
+
+	public String createImage(String imageName, ChartPanel plot, Dimension dim)
+	{
+		String dir = FileUtil.getParent(getOutfile());
+		System.out.println("created image: " + FreeChartUtil.toFile(dir + "/images/" + imageName + ".png", plot, dim));
+		return "images/" + imageName + ".png";
+	}
+
+	public void addImage(String imageName, ChartPanel plot, Dimension dim)
+	{
+		report.addImage(createImage(imageName, plot, dim));
+	}
+
+	public void addImage(String imageName, JPanel p, Dimension dim)
+	{
+		String dir = FileUtil.getParent(getOutfile());
+		System.out.println("created image: " + SwingUtil.toFile(dir + "/images/" + imageName + ".png", p, dim));
+		report.addImage("images/" + imageName + ".png");
 	}
 
 }
