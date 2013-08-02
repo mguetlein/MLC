@@ -33,7 +33,7 @@ public abstract class AbstractDistanceBasedApplicabilityDomain implements Distan
 	@Override
 	public boolean isAdjustConfidence()
 	{
-		return false;
+		return adjustConfidence;
 	}
 
 	@Override
