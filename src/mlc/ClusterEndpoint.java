@@ -90,19 +90,13 @@ public class ClusterEndpoint extends DiscMethod
 	{
 		String c = "C";
 		c += method.toString().charAt(0);
-		c += (int) (minTh * 10);
-		if (c.length() == 3)
-			c += "0";
+		c += StringUtil.concatChar("" + (int) (minTh * 10), 2, '0', false);
 		c += "-";
-		c += (int) (highTh * 10);
-		if (c.length() == 6)
-			c += "0";
+		c += StringUtil.concatChar("" + (int) (highTh * 10), 2, '0', false);
 		if (adjustChronic != null)
 		{
 			c += "c";
-			c += (int) (adjustChronic * 10);
-			if (c.length() == 9)
-				c += "0";
+			c += StringUtil.concatChar("" + (int) (adjustChronic * 10), 2, '0', false);
 		}
 		return c;
 	}
@@ -349,29 +343,29 @@ public class ClusterEndpoint extends DiscMethod
 		//			for (double minLow : new double[] { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7 })
 
 		HashMap<double[], Method> runs = new LinkedHashMap<double[], Method>();
-		runs.put(new double[] { 0.5, 1.5 }, Method.absolute);
-		runs.put(new double[] { 0.75, 1.75 }, Method.absolute);
-		runs.put(new double[] { 1.0, 2.0 }, Method.absolute);
-		runs.put(new double[] { 1.25, 2.25 }, Method.absolute);
-		runs.put(new double[] { 1.5, 2.5 }, Method.absolute);
-		runs.put(new double[] { 1.75, 2.75 }, Method.absolute);
-		runs.put(new double[] { 2.0, 3.0 }, Method.absolute);
+		//		runs.put(new double[] { 0.5, 1.5 }, Method.absolute);
+		//		runs.put(new double[] { 0.75, 1.75 }, Method.absolute);
+		//		runs.put(new double[] { 1.0, 2.0 }, Method.absolute);
+		//		runs.put(new double[] { 1.25, 2.25 }, Method.absolute);
+		//		runs.put(new double[] { 1.5, 2.5 }, Method.absolute);
+		//		runs.put(new double[] { 1.75, 2.75 }, Method.absolute);
+		//		runs.put(new double[] { 2.0, 3.0 }, Method.absolute);
 		//
-		runs.put(new double[] { 0.5, 1.0 }, Method.absolute);
-		runs.put(new double[] { 0.75, 1.25 }, Method.absolute);
-		runs.put(new double[] { 1.0, 1.5 }, Method.absolute);
-		runs.put(new double[] { 1.25, 1.75 }, Method.absolute);
-		runs.put(new double[] { 1.5, 2.0 }, Method.absolute);
-		runs.put(new double[] { 1.75, 2.25 }, Method.absolute);
+		//		runs.put(new double[] { 0.5, 1.0 }, Method.absolute);
+		//		runs.put(new double[] { 0.75, 1.25 }, Method.absolute);
+		//		runs.put(new double[] { 1.0, 1.5 }, Method.absolute);
+		//		runs.put(new double[] { 1.25, 1.75 }, Method.absolute);
+		//		runs.put(new double[] { 1.5, 2.0 }, Method.absolute);
+		//		runs.put(new double[] { 1.75, 2.25 }, Method.absolute);
 		runs.put(new double[] { 2.0, 2.5 }, Method.absolute);
-		runs.put(new double[] { 2.25, 2.75 }, Method.absolute);
-		runs.put(new double[] { 2.5, 3.0 }, Method.absolute);
+		//		runs.put(new double[] { 2.25, 2.75 }, Method.absolute);
+		//		runs.put(new double[] { 2.5, 3.0 }, Method.absolute);
 
 		//runs.put(new double[] { 0.6, 0.8 }, Method.ratio);
 
 		for (double[] ths : runs.keySet())
 		{
-			for (final Double chronicAdjust : new Double[] { null })//, 1.3, 1.6, 2.0, 2.3 })
+			for (final Double chronicAdjust : new Double[] { null, 1.3, 1.6, 2.0, 2.3 })
 			{
 				double minLow = ths[0];
 				double minHigh = ths[1];

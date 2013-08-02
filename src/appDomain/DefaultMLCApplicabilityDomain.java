@@ -111,9 +111,9 @@ public class DefaultMLCApplicabilityDomain implements DistanceBasedMLCApplicabil
 	}
 
 	@Override
-	public boolean isContinous()
+	public boolean isAdjustConfidence()
 	{
-		return adCompleteDataset.isContinous();
+		return adCompleteDataset.isAdjustConfidence();
 	}
 
 }

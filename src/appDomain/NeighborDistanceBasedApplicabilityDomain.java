@@ -157,20 +157,14 @@ public class NeighborDistanceBasedApplicabilityDomain extends AbstractDistanceBa
 	}
 
 	@Override
-	public boolean isContinous()
-	{
-		throw new IllegalStateException("not yet implemented");
-	}
-
-	@Override
 	public DistanceBasedApplicabilityDomain copy()
 	{
 		NeighborDistanceBasedApplicabilityDomain ad = new NeighborDistanceBasedApplicabilityDomain();
 		ad.setNumNeighbors(numNeighbors);
 		ad.setMethod(method);
 		ad.setDistanceMultiplier(distanceMultiplier);
-		ad.setContinous(continous);
-		ad.setContinousFullDistanceMultiplier(continousFullDistanceMultiplier);
+		ad.setAdjustConfidence(adjustConfidence);
+		ad.setFullDistanceMultiplier(fullDistanceMultiplier);
 		return ad;
 	}
 }

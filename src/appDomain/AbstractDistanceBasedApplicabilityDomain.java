@@ -9,8 +9,8 @@ public abstract class AbstractDistanceBasedApplicabilityDomain implements Distan
 
 	protected Method method = Method.median;
 	protected double distanceMultiplier = 3.0;
-	protected boolean continous = true;
-	protected double continousFullDistanceMultiplier = 1.0;
+	protected boolean adjustConfidence = true;
+	protected double fullDistanceMultiplier = 1.0;
 
 	@Override
 	public void setMethod(Method method)
@@ -25,21 +25,21 @@ public abstract class AbstractDistanceBasedApplicabilityDomain implements Distan
 	}
 
 	@Override
-	public void setContinous(boolean continous)
+	public void setAdjustConfidence(boolean adjustConfidence)
 	{
-		this.continous = continous;
+		this.adjustConfidence = adjustConfidence;
 	}
 
 	@Override
-	public boolean isContinous()
+	public boolean isAdjustConfidence()
 	{
-		return continous;
+		return false;
 	}
 
 	@Override
-	public void setContinousFullDistanceMultiplier(double continousFullDistanceMultiplier)
+	public void setFullDistanceMultiplier(double fullDistanceMultiplier)
 	{
-		this.continousFullDistanceMultiplier = continousFullDistanceMultiplier;
+		this.fullDistanceMultiplier = fullDistanceMultiplier;
 	}
 
 	@Override
@@ -51,7 +51,7 @@ public abstract class AbstractDistanceBasedApplicabilityDomain implements Distan
 	@Override
 	public double getContinousFullApplicabilityDomainDistance()
 	{
-		return getAverageTrainingDistance() * continousFullDistanceMultiplier;
+		return getAverageTrainingDistance() * fullDistanceMultiplier;
 	}
 
 	@Override
@@ -78,26 +78,19 @@ public abstract class AbstractDistanceBasedApplicabilityDomain implements Distan
 			throw new Error();
 		if (x > getApplicabilityDomainDistance())
 			return 0;
-		if (continous)
-		{
-			if (x < getContinousFullApplicabilityDomainDistance())
-				return 1;
-			//map fullAd-ad to -3, 3
-			x -= getContinousFullApplicabilityDomainDistance();
-			x /= (getApplicabilityDomainDistance() - getContinousFullApplicabilityDomainDistance());
-			x *= 6;
-			x -= 3;
-			double y = Math.tanh(x);
-			// put upside down
-			y *= -1;
-			// transition from -1 - 1 to 0-1
-			y += 1;
-			y /= 2.0;
-			return y;
-		}
-		else
-		{
-			return 1;
-		}
+		if (x < getContinousFullApplicabilityDomainDistance())
+			return 1.0;
+		//map fullAd-ad to -3, 3
+		x -= getContinousFullApplicabilityDomainDistance();
+		x /= (getApplicabilityDomainDistance() - getContinousFullApplicabilityDomainDistance());
+		x *= 6;
+		x -= 3;
+		double y = Math.tanh(x);
+		// put upside down
+		y *= -1;
+		// transition from -1 - 1 to 0-1
+		y += 1;
+		y /= 2.0;
+		return y;
 	}
 }

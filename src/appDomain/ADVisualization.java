@@ -148,11 +148,7 @@ public class ADVisualization extends JFrame
 		if (drawTestToForeground)
 			h.setSeriesColor(seriesCount++, ChartColor.LIGHT_BLUE.brighter());
 
-		String lines[];
-		if (ad.isContinous())
-			lines = new String[] { "inside", "full", "test" };//{ "inside", "full", "half", "test" };
-		else
-			lines = new String[] { "inside", "test" };
+		String lines[] = new String[] { "inside", "full", "test" };//{ "inside", "full", "half", "test" };
 		for (String s : lines)//{ "full", "inside" })
 		{
 			if (!drawTestToForeground)
@@ -373,7 +369,7 @@ public class ADVisualization extends JFrame
 
 		CentroidBasedApplicabilityDomain ad = new CentroidBasedApplicabilityDomain();
 		ad.debug = true;
-		ad.setContinous(true);
+		ad.setAdjustConfidence(true);
 		ad.init(data);
 		showDistHistogramm("Testdata", ad, ad.getDistance(data.get(0)));
 		if (true == true)

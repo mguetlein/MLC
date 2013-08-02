@@ -107,7 +107,7 @@ public class PredictCompounds
 		if (compoundsName == null)
 			throw new Error("specify compoundsName");
 		testData = new ArffReader(new FileReader(new File(Settings.compoundsArffFile(compoundsName,
-				modelInfo.getFeatures())))).getData();
+				modelInfo.getDataset())))).getData();
 		if (testData.numInstances() == 0)
 			throw new Error("no compounds found");
 
@@ -204,8 +204,7 @@ public class PredictCompounds
 			{
 				double p = appDomain.getApplicabilityDomainPropabilityCompleteDataset(inst);
 				String pStr = p > 0 ? "inside" : "outside";
-				if (appDomain.isContinous())
-					pStr += " (" + StringUtil.formatDouble(p * 100, 1) + "%)";
+				pStr += " (" + StringUtil.formatDouble(p * 100, 1) + "%)";
 
 				rep.report.addParagraph("Checking if compound is within "
 						+ rep.report.encodeLink(linkToModel() + "/description#applicability-domain",
@@ -267,8 +266,7 @@ public class PredictCompounds
 					double p = appDomain.getApplicabilityDomainPropability(inst, l);
 					outsideAD = p == 0;
 					String pStr = p > 0 ? "inside" : "outside";
-					if (appDomain.isContinous())
-						pStr += " (" + StringUtil.formatDouble(p * 100, 1) + "%)";
+					pStr += " (" + StringUtil.formatDouble(p * 100, 1) + "%)";
 
 					res.setResultValue(resCount, rep.report.encodeLink(linkToModel()
 							+ "/description#applicability-domain", "applicability domain"), rep.report.encodeLink(

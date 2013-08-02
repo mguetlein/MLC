@@ -121,10 +121,10 @@ public class RunMLC extends MLCOptions
 				ad.setMethod(CentroidBasedApplicabilityDomain.Method.valueOf(params.get(key)));
 			else if (key.equals("distance"))
 				ad.setDistanceMultiplier(Double.parseDouble(params.get(key)));
-			else if (key.equals("continous"))
-				ad.setContinous(Boolean.parseBoolean(params.get(key)));
+			else if (key.equals("confidence"))
+				ad.setAdjustConfidence(Boolean.parseBoolean(params.get(key)));
 			else if (key.equals("full"))
-				ad.setContinousFullDistanceMultiplier(Double.parseDouble(params.get(key)));
+				ad.setFullDistanceMultiplier(Double.parseDouble(params.get(key)));
 			else
 				throw new IllegalArgumentException("not a app-domain param: " + key);
 		}
@@ -777,7 +777,7 @@ public class RunMLC extends MLCOptions
 
 			//			args = ("validate -a BR -i 0 -u 1 -c RandomForest -d dataR_noV_Cl68_PC -e BRAD -q Neighbor " + "-w default")
 			//					.split(" ");
-			//args = "multi_validation_report -d dataR_noV_Cl68_PC -e BRAD -z all -o only-repdose-model".split(" ");
+			a = "multi_validation_report -e BR-AD -d dataB_noV_Ca15-20c20_PCFP -z all";
 
 			//a = "validate -a BR -i 0 -u 1 -c RandomForest -d dataB_noV_EqF_PC -e BR-BEqF -q None -o RepdoseNeustoff-EqF";
 			//a = "endpoint_table -o RepdoseNeustoff";
@@ -788,17 +788,16 @@ public class RunMLC extends MLCOptions
 			//a = "compound_table -o Repdose";
 			//a = "predict_compounds -o Repdose -v 8746894c3510f705bb330497272a4602";
 
-			a = "validate -x 1 -d dataY_PC -i 0 -u 1 -f 10 -a BR -t false -c IBk -e FeatWekaY -q None";
+			//a = "validate -x 1 -d dataY_PC -i 0 -u 1 -f 10 -a BR -t false -c IBk -e FeatWekaY -q None";
 
-			//			String cl = "Ca15-20c20";
+			//String cl = "Ca15-20c20";
 			//			a = "validate -a BR -i 0 -u 1 -c RandomForest -d dataB_noV_" + cl + "_PC -e BR-B-" + cl
 			//					+ " -q None -o RepdoseNeustoff-" + cl;
 			//a = "validation_report -o RepdoseNeustoff-" + cl + " -z all";
 			//a = "endpoint_table -o RepdoseNeustoff-" + cl;
 			//a = "compound_table -o RepdoseNeustoff-" + cl;
 
-			//args = "validate -a BR -i 0 -u 3 -c RandomForest -d dataY_OB -e BRY -q Centroid -w continous=false -o cpdbas"
-			//		.split(" ");
+			//a = "validate -a ECC -i 0 -u 3 -c RandomForest -d dataY_PCFP -e ECC-Y -q Centroid -w continous=false -o CPDBAS";
 			//args = "validation_report -d dataY_OB -e BRY -z all -o cpdbas".split(" ");
 			//a = "compound_table -d dataY_OB -o cpdbas";
 			//args = "endpoint_table -d dataY_OB -o cpdbas".split(" ");

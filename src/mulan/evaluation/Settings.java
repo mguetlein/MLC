@@ -164,9 +164,9 @@ public class Settings
 		return PWD + "models/" + modelName + "/description";
 	}
 
-	public static String compoundsArffFile(String compoundsName, String features)
+	public static String compoundsArffFile(String compoundsName, String trainingDataset)
 	{
-		return PWD + "predictions/" + compoundsName + "_" + features + ".arff";
+		return PWD + "predictions/" + compoundsName + "_" + trainingDataset + ".arff";
 	}
 
 	public static String compoundsSmilesFile(String compoundsName)

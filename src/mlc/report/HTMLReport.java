@@ -26,10 +26,10 @@ public class HTMLReport extends AbstractReport
 
 	public HTMLReport(String outfile, String portalTitle, String pageTitle)
 	{
-		this(outfile, portalTitle, pageTitle, null);
+		this(outfile, portalTitle, pageTitle, true);
 	}
 
-	public HTMLReport(String outfile, String portalTitle, String pageTitle, Boolean wide)
+	public HTMLReport(String outfile, String portalTitle, String pageTitle, boolean wide)
 	{
 		//		super(outfile, title);
 		this.outfile = outfile;
@@ -53,8 +53,6 @@ public class HTMLReport extends AbstractReport
 			html.body();
 			html.div(HtmlAttributesFactory.id("header")).h1().content(portalTitle);
 			html._div();
-			if (wide == null)
-				wide = true;
 			html.div(HtmlAttributesFactory.id(wide ? "wide-content" : "content"));
 			newSection(pageTitle);
 		}

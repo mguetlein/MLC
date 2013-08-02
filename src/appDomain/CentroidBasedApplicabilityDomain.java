@@ -140,8 +140,8 @@ public class CentroidBasedApplicabilityDomain extends AbstractDistanceBasedAppli
 		CentroidBasedApplicabilityDomain ad = new CentroidBasedApplicabilityDomain();
 		ad.setMethod(method);
 		ad.setDistanceMultiplier(distanceMultiplier);
-		ad.setContinous(continous);
-		ad.setContinousFullDistanceMultiplier(continousFullDistanceMultiplier);
+		ad.setAdjustConfidence(adjustConfidence);
+		ad.setFullDistanceMultiplier(fullDistanceMultiplier);
 		return ad;
 	}
 

@@ -1,20 +1,11 @@
 package mlc.reporting;
 
-import java.awt.Dimension;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 import mlc.MLCDataInfo;
 import mlc.ModelInfo;
 import mulan.data.MultiLabelInstances;
 import mulan.evaluation.Settings;
-import mulan.evaluation.measure.ConfidenceLevel;
-import mulan.evaluation.measure.ConfidenceLevelProvider;
-
-import org.jfree.chart.ChartPanel;
-
-import util.ArrayUtil;
 import datamining.ResultSet;
 import datamining.ResultSetIO;
 
@@ -78,71 +69,18 @@ public class ValidationReport
 		//		//		System.out.println(results.toNiceString());
 		//		System.exit(1);
 
+		rep.report.newSection("Average performance over all endpoints");
+
+		rep.addBoxPlots(results, "mlc-algorithm", "", "no_file", measures, false);
+
 		rep.report.newSection("Single endpoint validation");
 
 		for (int l = 0; l < data.getNumLabels(); l++)
 		{
 			String labelName = data.getDataSet().attribute(data.getLabelIndices()[l]).name();
-
 			System.out.println(l + " " + labelName);
-
 			rep.report.newSubsection(labelName);
-
-			List<String> catProps = new ArrayList<String>();
-			List<String> dispProps = ArrayUtil.toList(ReportMLC.getSingleMacroPropNames(measures));
-			for (String p : ReportMLC.getSingleMacroPropNames(measures))
-				catProps.add("macro-" + p + "#" + l);
-
-			String confStr = "model confidence";
-			ResultSet rs = new ResultSet();
-			for (ConfidenceLevel confLevel : ConfidenceLevelProvider.LEVELS)
-			{
-				for (int i = 0; i < results.getNumResults(); i++)
-				{
-					int n = rs.addResult();
-					if (confLevel == ConfidenceLevelProvider.CONFIDENCE_LEVEL_ALL)
-						rs.setResultValue(n, confStr, "all predictions (" + confLevel.getNiceName() + ")");
-					else
-						rs.setResultValue(n, confStr, "predictions with " + confLevel.getNiceName());
-
-					for (int p = 0; p < catProps.size(); p++)
-					{
-						String prop = catProps.get(p) + confLevel.getShortName();
-						String pNice = dispProps.get(p);
-						if (results.getResultValue(i, prop) == null)
-							throw new Error("result value is null: " + prop);
-						Double val = (Double) results.getResultValue(i, prop) * 100;
-						rs.setResultValue(n, pNice, val);
-					}
-				}
-			}
-
-			//			System.out.println(rs.toNiceString());
-			//			System.out.println(rs);
-
-			rs.setNicePropery(confStr, rep.report.encodeLink("description#model-confidence", confStr));
-			for (String p : dispProps)
-				rs.setNicePropery(p, rep.report.encodeLink("#" + p, p));
-
-			rep.report.addTable(rs.join(confStr));
-
-			rep.report.addGap();
-
-			ChartPanel boxPlot = rs.boxPlot("Performance for endpoint " + labelName, "Performance", null, confStr,
-					dispProps, null, 5.0);
-			//			ChartPanel boxPlot = results.boxPlot("Performance for endpoint " + labelName, "Performance", null,
-			//					"dataset-name", catProps, dispProps, 0.05);
-
-			rep.addImage("validation_boxplot_" + labelName + "_" + measures, boxPlot, new Dimension(800, 400));
-
-			//			for (ConfidenceLevel confLevel : ConfidenceLevelProvider.LEVELS)
-			//			{
-			//				rep.report.addTable(ResultSet.build(di.getConfusionMatrix(joined, l, confLevel)), "Confusion Matrix "
-			//						+ confLevel.getName());
-			//			}
-
-			//			if (l > 2)
-			//				break;
+			rep.addSingleEndpointConfidencePlot(results, l, labelName, measures);
 		}
 
 		rep.close();

@@ -1,7 +1,9 @@
 package mlc.reporting;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -34,10 +36,14 @@ import mlc.report.HTMLReport;
 import mulan.data.InvalidDataFormatException;
 import mulan.data.MultiLabelInstances;
 import mulan.evaluation.Settings;
+import mulan.evaluation.measure.ConfidenceLevel;
+import mulan.evaluation.measure.ConfidenceLevelProvider;
 
 import org.jfree.chart.ChartPanel;
+import org.jfree.chart.StandardChartTheme;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
+import org.jfree.chart.block.BlockBorder;
 import org.jfree.chart.plot.CategoryPlot;
 
 import util.ArrayUtil;
@@ -68,17 +74,19 @@ public class ReportMLC
 	//	}
 
 	String file;
+	boolean wide;
 
 	public ReportMLC(String outfile, String title)
 	{
-		this(outfile, title, null);
+		this(outfile, title, true);
 	}
 
-	public ReportMLC(String outfile, String title, Boolean wide)
+	public ReportMLC(String outfile, String title, boolean wide)
 	{
 		try
 		{
 			file = outfile + ".html";
+			this.wide = wide;
 			//report = new PDFReport(outfile+".pdf", "Dataset Report");
 			report = new HTMLReport(file, Settings.text("title"), title, wide);
 		}
@@ -86,6 +94,11 @@ public class ReportMLC
 		{
 			e.printStackTrace();
 		}
+	}
+
+	public int getMaxPlotWidthNarrow()
+	{
+		return 960;
 	}
 
 	public String getOutfile()
@@ -132,7 +145,7 @@ public class ReportMLC
 
 	public static enum PerformanceMeasures
 	{
-		accuracy, fmeasure, auc, appdomain, all, accuracy_confidence
+		accuracy, fmeasure, auc, appdomain, all, all_ad, accuracy_confidence
 	}
 
 	public static String[] getSingleMacroPropNames(PerformanceMeasures measures)
@@ -144,11 +157,13 @@ public class ReportMLC
 			case accuracy_confidence:
 				return new String[] { "accuracy" };
 			case appdomain:
-				return new String[] { "accuracy", "auc", "appdomain" };
+				return new String[] { "accuracy", "auc", "inside-ad" };
 			case auc:
 				return new String[] { "auc" };
 			case all:
 				return new String[] { "accuracy", "auc", "sensitivity", "specificity", "ppv", "npv" };
+			case all_ad:
+				return new String[] { "accuracy", "auc", "sensitivity", "specificity", "ppv", "npv", "inside-ad" };
 			case fmeasure:
 				return new String[] { "f-measure" };
 		}
@@ -174,7 +189,10 @@ public class ReportMLC
 						"subset-accuracy" };
 			case all:
 				return new String[] { "macro-accuracy", "macro-auc", "macro-sensitivity", "macro-specificity",
-						"macro-ppv", "macro-npv", "subset-accuracy", "macro-inside-ad" };//"weighted-macro-accuracy","weighted-macro-auc",
+						"macro-ppv", "macro-npv", "subset-accuracy", "macro-inside-ad" };//"weighted-macro-auc","weighted-macro-accuracy","weighted-macro-auc",
+			case all_ad:
+				return new String[] { "macro-accuracy", "macro-auc", "macro-sensitivity", "macro-specificity",
+						"macro-ppv", "macro-npv", "subset-accuracy" };//"weighted-macro-auc","weighted-macro-accuracy","weighted-macro-auc",
 
 				//				return new String[] { "micro-accuracy", "macro-accuracy", "weighted-macro-accuracy", "1-hamming-loss",
 				//						"micro-auc", "macro-auc", "weighted-macro-auc", "micro-mcc", "macro-mcc", "weighted-macro-mcc",
@@ -188,8 +206,10 @@ public class ReportMLC
 	{
 		ResultSet set = new ResultSet();
 
-		for (String p : getSingleMacroPropNames(measures))
+		for (String p : getProps(measures))
 		{
+			p = p.replaceAll("macro-", "");
+
 			int r = set.addResult();
 			set.setResultValue(r, "measure", p);
 			for (String s : new String[] { "full-name", "synonyms", "description", "details" })
@@ -352,26 +372,73 @@ public class ReportMLC
 	//		}
 	//	}
 
+	private void formatPlot(ChartPanel p)
+	{
+		StandardChartTheme chartTheme = (StandardChartTheme) StandardChartTheme.createJFreeTheme();
+		Font extraLargeFont = new Font("Trebuchet MS", Font.PLAIN, chartTheme.getExtraLargeFont().getSize());
+		Font largeFont = new Font("Trebuchet MS", Font.PLAIN, chartTheme.getLargeFont().getSize());
+		Font regularFont = new Font("Trebuchet MS", Font.PLAIN, chartTheme.getRegularFont().getSize());
+		Font smallFont = new Font("Trebuchet MS", Font.PLAIN, chartTheme.getSmallFont().getSize());
+		chartTheme.setExtraLargeFont(extraLargeFont);
+		chartTheme.setLargeFont(largeFont);
+		chartTheme.setRegularFont(regularFont);
+		chartTheme.setSmallFont(smallFont);
+		chartTheme.setChartBackgroundPaint(Color.WHITE);
+		chartTheme.setPlotBackgroundPaint(Color.decode("#eeeeee"));
+		chartTheme.setRangeGridlinePaint(Color.decode("#eeeeee").darker().darker());
+		chartTheme.apply(p.getChart());
+
+		if (p.getChart().getLegend() != null)
+			p.getChart().getLegend().setFrame(BlockBorder.NONE);
+	}
+
 	void addBoxPlots(ResultSet results, String compareProp, String titleSuffix, String fileSuffix,
 			PerformanceMeasures measures) throws IOException, DocumentException
 	{
-		report.newSection("Compare " + compareProp + titleSuffix);
+		addBoxPlots(results, compareProp, titleSuffix, fileSuffix, measures, true);
+	}
 
+	void addBoxPlots(ResultSet results, String compareProp, String titleSuffix, String fileSuffix,
+			PerformanceMeasures measures, boolean addPerEndpointPlots) throws IOException, DocumentException
+	{
 		String numCompounds = CollectionUtil.toString(results.getResultValues("num-compounds").values());
 		String numLabels = CollectionUtil.toString(results.getResultValues("num-labels").values());
 		int numCVSeeds = results.getResultValues("cv-seed").size();
 		Double numCVFolds = Double.parseDouble(results.getUniqueValue("num-folds") + "");
+		String title;
+		String[] subtitle;
+		if (results.getResultValues(compareProp).size() == 1)
+		{
+			title = "Performance measures" + titleSuffix;
+			subtitle = new String[0];
+		}
+		else
+		{
+			report.newSection("Compare " + compareProp + titleSuffix);
+			title = "Performance measures for different " + compareProp + titleSuffix;
+			subtitle = new String[] { "compounds: " + numCompounds + ", labels: " + numLabels + ", " + numCVSeeds
+					+ " x " + numCVFolds + "-fold CV" };
+		}
 
 		List<String> catProps = ArrayUtil.toList(getProps(measures));
-		ChartPanel boxPlot1 = results.boxPlot("Performance for different " + compareProp + titleSuffix, "Performance",
-				new String[] { "compounds: " + numCompounds + ", labels: " + numLabels + ", " + numCVSeeds + " x "
-						+ numCVFolds + "-fold CV" }, compareProp, catProps, null, 0.05);
+		List<String> dispProps = new ArrayList<String>();
+		for (String p : catProps)
+			dispProps.add(p.replaceAll("macro-", ""));
+		ChartPanel boxPlot1 = results.boxPlot(title, "Performance", subtitle, compareProp, catProps, dispProps, 0.05);
+		formatPlot(boxPlot1);
+
+		//	    }
+
+		int extraHeight = 0;
 		if (getProps(measures).length > 6)
 		{
 			CategoryPlot plot = (CategoryPlot) boxPlot1.getChart().getPlot();
 			CategoryAxis xAxis = (CategoryAxis) plot.getDomainAxis();
 			xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
+			extraHeight += 75;
 		}
+		if (results.getResultValues(compareProp).size() == 1)
+			extraHeight -= 100;
 
 		//		{
 		//			//			for (int i = 0; i < Double.parseDouble(results.getUniqueValue("num-labels") + ""); i++)
@@ -382,11 +449,25 @@ public class ReportMLC
 		//		}
 
 		ResultSet rs = results.join(ArrayUtil.toList(new String[] { compareProp }), null, catProps);
-		rs.excludeProperties(ArrayUtil.toList(ArrayUtil.concat(new String[] { compareProp }, getProps(measures),
-				new String[] { "runtime" })));
-		report.addTable(rs);
+		List<String> tableProps = new ArrayList<String>();
+		if (results.getResultValues(compareProp).size() > 1)
+			tableProps.add(compareProp);
+		tableProps.addAll(ArrayUtil.toList(getProps(measures)));
+		if (results.getResultValues(compareProp).size() > 1)
+			tableProps.add("runtime");
+		rs.excludeProperties(tableProps);
+		for (String p : tableProps)
+		{
+			rs.movePropertyBack(p);
+			rs.setNicePropery(p, report.encodeLink("#" + p.replace("macro-", ""), p.replace("macro-", "")));
+		}
 
-		addImage("boxplot_" + measures + "_" + compareProp + "_" + fileSuffix, boxPlot1, new Dimension(1200, 600));
+		report.addParagraph(Settings.text("macro-measures.description"));
+		report.addGap();
+		report.addTable(rs);
+		report.addGap();
+		addImage("boxplot_" + measures + "_" + compareProp + "_" + fileSuffix, boxPlot1, new Dimension(wide ? 1800
+				: getMaxPlotWidthNarrow(), 400 + extraHeight));
 
 		//		if (getProps(measures).length > 3)
 		//		{
@@ -401,26 +482,28 @@ public class ReportMLC
 		//		if (results.getResultValues("dataset-name").size() == 1)
 		//		{
 
-		for (String prop : getSingleMacroPropNames(measures))
-		{
-			Double numLabelsInt = Double.parseDouble(results.getUniqueValue("num-labels") + "");
-			catProps.clear();
-			for (int i = 0; i < numLabelsInt; i++)
-				catProps.add("macro-" + prop + "#" + i);
-			List<String> catPropsDisp = new ArrayList<String>();
-			for (int i = 0; i < numLabelsInt; i++)
-				catPropsDisp.add(results.getUniqueValue("label#" + i).toString());
-			System.out.println("Endpoint " + prop + " for different " + compareProp + titleSuffix);
-			ChartPanel boxPlot2 = results
-					.boxPlot("Endpoint " + prop + " for different " + compareProp + titleSuffix, "Performance",
-							new String[] { "compounds: " + numCompounds + ", labels: " + numLabels + ", " + numCVSeeds
-									+ " x " + numCVFolds + "-fold CV" }, compareProp, catProps, catPropsDisp, 0.05);
-			CategoryPlot plot = (CategoryPlot) boxPlot2.getChart().getPlot();
-			CategoryAxis xAxis = (CategoryAxis) plot.getDomainAxis();
-			xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
-			addImage("boxplot_perLabel-" + prop + "_" + compareProp + "_" + fileSuffix, boxPlot2, new Dimension(1800,
-					800));
-		}
+		if (addPerEndpointPlots)
+			for (String prop : getSingleMacroPropNames(measures))
+			{
+				Double numLabelsInt = Double.parseDouble(results.getUniqueValue("num-labels") + "");
+				catProps.clear();
+				for (int i = 0; i < numLabelsInt; i++)
+					catProps.add("macro-" + prop + "#" + i);
+				List<String> catPropsDisp = new ArrayList<String>();
+				for (int i = 0; i < numLabelsInt; i++)
+					catPropsDisp.add(results.getUniqueValue("label#" + i).toString());
+				System.out.println("Endpoint " + prop + " for different " + compareProp + titleSuffix);
+				ChartPanel boxPlot2 = results.boxPlot("Endpoint " + prop + " for different " + compareProp
+						+ titleSuffix, "Performance", new String[] { "compounds: " + numCompounds + ", labels: "
+						+ numLabels + ", " + numCVSeeds + " x " + numCVFolds + "-fold CV" }, compareProp, catProps,
+						catPropsDisp, 0.05);
+				formatPlot(boxPlot2);
+				CategoryPlot plot = (CategoryPlot) boxPlot2.getChart().getPlot();
+				CategoryAxis xAxis = (CategoryAxis) plot.getDomainAxis();
+				xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
+				addImage("boxplot_perLabel-" + prop + "_" + compareProp + "_" + fileSuffix, boxPlot2, new Dimension(
+						1800, 800));
+			}
 
 		//			ResultSet rs2 = results.join(ArrayUtil.toList(new String[] { compareProp }), null, catProps);
 		//			rs2.excludeProperties(ArrayUtil.toList(ArrayUtil.concat(new String[] { compareProp },
@@ -623,15 +706,16 @@ public class ReportMLC
 	public static void endpointTable(String modelName) throws Exception
 	{
 		ModelInfo mi = ModelInfo.get(modelName);
-		ReportMLC rep = new ReportMLC(Settings.endpointTableFile(modelName), "Predicted endpoints", true);
+		MultiLabelInstances data = getData(mi.getDataset());
+		MLCDataInfo di = MLCDataInfo.get(data);
+
+		ReportMLC rep = new ReportMLC(Settings.endpointTableFile(modelName), "Predicted endpoints", di.hasRealData()
+				&& di.hasCompoundInfoData());
 		rep.report.addParagraph("This is the predicted enpoint table for model "
 				+ rep.report.encodeLink(".", modelName) + ".");
 		rep.report.addGap();
 
 		ResultSet res = new ResultSet();
-		MultiLabelInstances data = getData(mi.getDataset());
-		MLCDataInfo di = MLCDataInfo.get(data);
-
 		for (int l = 0; l < data.getNumLabels(); l++)
 		{
 			Attribute a = data.getDataSet().attribute(data.getLabelIndices()[l]);
@@ -857,6 +941,67 @@ public class ReportMLC
 		String dir = FileUtil.getParent(getOutfile());
 		System.out.println("created image: " + SwingUtil.toFile(dir + "/images/" + imageName + ".png", p, dim));
 		report.addImage("images/" + imageName + ".png");
+	}
+
+	public void addSingleEndpointConfidencePlot(ResultSet results, int l, String labelName, PerformanceMeasures measures)
+	{
+		List<String> catProps = new ArrayList<String>();
+		List<String> dispProps = ArrayUtil.toList(ReportMLC.getSingleMacroPropNames(measures));
+		for (String p : ReportMLC.getSingleMacroPropNames(measures))
+			catProps.add("macro-" + p + "#" + l);
+
+		String confStr = "model confidence";
+		ResultSet rs = new ResultSet();
+		for (ConfidenceLevel confLevel : ConfidenceLevelProvider.LEVELS)
+		{
+			for (int i = 0; i < results.getNumResults(); i++)
+			{
+				int n = rs.addResult();
+				if (confLevel == ConfidenceLevelProvider.CONFIDENCE_LEVEL_ALL)
+					rs.setResultValue(n, confStr, "all predictions (" + confLevel.getNiceName() + ")");
+				else
+					rs.setResultValue(n, confStr, "predictions with " + confLevel.getNiceName());
+
+				for (int p = 0; p < catProps.size(); p++)
+				{
+					String prop = catProps.get(p) + confLevel.getShortName();
+					String pNice = dispProps.get(p);
+					if (results.getResultValue(i, prop) == null)
+						throw new Error("result value is null: " + prop);
+					Double val = (Double) results.getResultValue(i, prop) * 100;
+					rs.setResultValue(n, pNice, val);
+				}
+			}
+		}
+
+		//			System.out.println(rs.toNiceString());
+		//			System.out.println(rs);
+
+		rs.setNicePropery(confStr, report.encodeLink("description#model-confidence", confStr));
+		for (String p : dispProps)
+			rs.setNicePropery(p, report.encodeLink("#" + p, p));
+
+		report.addTable(rs.join(confStr));
+
+		report.addGap();
+
+		ChartPanel boxPlot = rs.boxPlot("Performance for endpoint " + labelName, "Performance", null, confStr,
+				dispProps, null, 5.0);
+		formatPlot(boxPlot);
+		//			ChartPanel boxPlot = results.boxPlot("Performance for endpoint " + labelName, "Performance", null,
+		//					"dataset-name", catProps, dispProps, 0.05);
+
+		addImage("validation_boxplot_" + labelName + "_" + measures, boxPlot, new Dimension(getMaxPlotWidthNarrow(),
+				400));
+
+		//			for (ConfidenceLevel confLevel : ConfidenceLevelProvider.LEVELS)
+		//			{
+		//				rep.report.addTable(ResultSet.build(di.getConfusionMatrix(joined, l, confLevel)), "Confusion Matrix "
+		//						+ confLevel.getName());
+		//			}
+
+		//			if (l > 2)
+		//				break;
 	}
 
 }
