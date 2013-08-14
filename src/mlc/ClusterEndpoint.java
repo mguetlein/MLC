@@ -399,12 +399,12 @@ public class ClusterEndpoint extends DiscMethod
 						|| (create != null && create))
 				{
 					c.apply("data/" + data + ".csv", "data/" + data + "_" + name + ".csv");
-					ExternalTool t = new ExternalTool();
-					t.run("create arff/csv/xml", "ruby1.9.1 prepare_mlc.rb -e data/" + data + "_" + name
-							+ ".csv -c data/" + dat + "_compoundInfo.csv -f features/" + feat_file + "_" + feat
-							+ ".csv -r data/" + data + ".csv -n " + numEndpoints + " -m " + (numEndpoints - 1) + " -d "
-							+ data + "_" + name + "_" + feat, null, true, null, new File(
-							"/home/martin/workspace/BMBF-MLC"));
+					ExternalTool t = new ExternalTool(null);
+					t.run("create arff/csv/xml", new String[] { "ruby1.9.1", "prepare_mlc.rb", "-e",
+							"data/" + data + "_" + name + ".csv", "-c", "data/" + dat + "_compoundInfo.csv", "-f",
+							"features/" + feat_file + "_" + feat + ".csv", "-r", "data/" + data + ".csv", "-n",
+							numEndpoints + "", "-m", (numEndpoints - 1) + "", "-d", data + "_" + name + "_" + feat },
+							null, true, null, new File("/home/martin/workspace/BMBF-MLC"));
 				}
 
 				MLCDataInfo di = MLCDataInfo.get(ReportMLC.getData("" + data + "_" + name + "_" + feat));
