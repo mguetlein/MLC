@@ -50,15 +50,8 @@ public class PredictCompounds
 		PredictCompounds pc = new PredictCompounds();
 		pc.modelName = modelName;
 		pc.compoundsName = compoundsName;
-		try
-		{
-			pc.init();
-			pc.buildReport();
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
+		pc.init();
+		pc.buildReport();
 	}
 
 	public static void predictAppDomain(String modelName, String compoundsName, int compoundIndex, String endpoint)
@@ -66,69 +59,69 @@ public class PredictCompounds
 		PredictCompounds pc = new PredictCompounds();
 		pc.modelName = modelName;
 		pc.compoundsName = compoundsName;
+		pc.init();
+		int labelIndex = -1;
+		if (endpoint != null)
+			for (int l = 0; l < pc.trainingDataset.getNumLabels(); l++)
+			{
+				String labelName = pc.trainingDataset.getDataSet().attribute(pc.trainingDataset.getLabelIndices()[l])
+						.name();
+				if (endpoint.equals(labelName))
+				{
+					labelIndex = l;
+					break;
+				}
+			}
+		FreeChartUtil.toFile(
+				Settings.appDomainImageFile(modelName, compoundsName, compoundIndex, endpoint),
+				ADVisualization.getDistHistogramm(pc.modelInfo.getDataset(),
+						(DistanceBasedMLCApplicabilityDomain) pc.appDomain, labelIndex, pc.testData.get(compoundIndex))
+						.getChartPanel(), new Dimension(800, 500));
+	}
+
+	private void init()
+	{
 		try
 		{
-			pc.init();
-			int labelIndex = -1;
-			if (endpoint != null)
-				for (int l = 0; l < pc.trainingDataset.getNumLabels(); l++)
-				{
-					String labelName = pc.trainingDataset.getDataSet()
-							.attribute(pc.trainingDataset.getLabelIndices()[l]).name();
-					if (endpoint.equals(labelName))
-					{
-						labelIndex = l;
-						break;
-					}
-				}
-			FreeChartUtil.toFile(
-					Settings.appDomainImageFile(modelName, compoundsName, compoundIndex, endpoint),
-					ADVisualization.getDistHistogramm(pc.modelInfo.getDataset(),
-							(DistanceBasedMLCApplicabilityDomain) pc.appDomain, labelIndex,
-							pc.testData.get(compoundIndex)).getChartPanel(), new Dimension(800, 500));
+			if (modelName == null)
+				throw new Error("specify model name");
+			modelInfo = ModelInfo.get(modelName);
+			mlcAlgorithm = (MultiLabelLearner) SerializationHelper.read(Settings.modelFile(modelName));
+
+			appDomain = null;
+			if (new File(Settings.modelADFile(modelName)).exists())
+				appDomain = (MLCApplicabilityDomain) SerializationHelper.read(Settings.modelADFile(modelName));
+
+			if (compoundsName == null)
+				throw new Error("specify compoundsName");
+			testData = new ArffReader(new FileReader(new File(Settings.compoundsArffFile(compoundsName,
+					modelInfo.getDataset())))).getData();
+			if (testData.numInstances() == 0)
+				throw new Error("no compounds found");
+
+			String smilesContent = FileUtil.readStringFromFile(Settings.compoundsSmilesFile(compoundsName));
+			testDataSmiles = smilesContent.split("\n");
+			for (int i = 0; i < testDataSmiles.length; i++)
+				testDataSmiles[i] = testDataSmiles[i].split("\t")[0];
+			System.out.println(ArrayUtil.toString(testDataSmiles));
+
+			String inchiContent = FileUtil.readStringFromFile(Settings.compoundsInchiFile(compoundsName));
+			testDataInchi = inchiContent.split("\n");
+			for (int i = 0; i < testDataInchi.length; i++)
+				testDataInchi[i] = testDataInchi[i].split("\t")[0];
+			System.out.println(ArrayUtil.toString(testDataInchi));
+
+			trainingDataset = new MultiLabelInstances(Settings.arffFile(modelInfo.getDataset()),
+					Settings.xmlFile(modelInfo.getDataset()));
+			trainingDataInfo = MLCDataInfo.get(trainingDataset);
+
+			if (testDataSmiles.length != testData.numInstances() || testDataSmiles.length != testDataInchi.length)
+				throw new Error("num compounds does not match");
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			throw new Error(e);
 		}
-	}
-
-	private void init() throws Exception
-	{
-		if (modelName == null)
-			throw new Error("specify model name");
-		modelInfo = ModelInfo.get(modelName);
-		mlcAlgorithm = (MultiLabelLearner) SerializationHelper.read(Settings.modelFile(modelName));
-
-		appDomain = null;
-		if (new File(Settings.modelADFile(modelName)).exists())
-			appDomain = (MLCApplicabilityDomain) SerializationHelper.read(Settings.modelADFile(modelName));
-
-		if (compoundsName == null)
-			throw new Error("specify compoundsName");
-		testData = new ArffReader(new FileReader(new File(Settings.compoundsArffFile(compoundsName,
-				modelInfo.getDataset())))).getData();
-		if (testData.numInstances() == 0)
-			throw new Error("no compounds found");
-
-		String smilesContent = FileUtil.readStringFromFile(Settings.compoundsSmilesFile(compoundsName));
-		testDataSmiles = smilesContent.split("\n");
-		for (int i = 0; i < testDataSmiles.length; i++)
-			testDataSmiles[i] = testDataSmiles[i].split("\t")[0];
-		System.out.println(ArrayUtil.toString(testDataSmiles));
-
-		String inchiContent = FileUtil.readStringFromFile(Settings.compoundsInchiFile(compoundsName));
-		testDataInchi = inchiContent.split("\n");
-		for (int i = 0; i < testDataInchi.length; i++)
-			testDataInchi[i] = testDataInchi[i].split("\t")[0];
-		System.out.println(ArrayUtil.toString(testDataInchi));
-
-		trainingDataset = new MultiLabelInstances(Settings.arffFile(modelInfo.getDataset()), Settings.xmlFile(modelInfo
-				.getDataset()));
-		trainingDataInfo = MLCDataInfo.get(trainingDataset);
-
-		if (testDataSmiles.length != testData.numInstances() || testDataSmiles.length != testDataInchi.length)
-			throw new Error("num compounds does not match");
 	}
 
 	private List<Integer> getDatasetMatches(Instance inst, String inchi)
@@ -145,7 +138,7 @@ public class PredictCompounds
 		return "../../" + modelName;
 	}
 
-	private void buildReport() throws Exception
+	private void buildReport()
 	{
 		String out = Settings.predictionReport(modelName, compoundsName);
 		String loc = "";
@@ -221,7 +214,15 @@ public class PredictCompounds
 			rep.report.addGap();
 
 			// add result for each endpoint
-			MultiLabelOutput prediction = mlcAlgorithm.makePrediction(inst);
+			MultiLabelOutput prediction = null;
+			try
+			{
+				prediction = mlcAlgorithm.makePrediction(inst);
+			}
+			catch (Exception e)
+			{
+				throw new Error(e);
+			}
 			ResultSet res = new ResultSet();
 			for (int l = 0; l < trainingDataset.getNumLabels(); l++)
 			{

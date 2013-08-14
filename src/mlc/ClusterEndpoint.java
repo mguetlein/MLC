@@ -20,6 +20,7 @@ import util.CountedSet;
 import util.DoubleArraySummary;
 import util.FileUtil;
 import util.FileUtil.CSVFile;
+import util.ListUtil;
 import util.StringUtil;
 import weka.clusterers.ClusterEvaluation;
 import weka.core.Attribute;
@@ -56,6 +57,18 @@ public class ClusterEndpoint extends DiscMethod
 							StudyDuration.accute, "1"));
 					DoubleArraySummary chronic = DoubleArraySummary.create(di.getStudyDurationValues(label,
 							StudyDuration.chronic, "1"));
+					if (di.getLabelName(label).equals("thyroid-gland"))
+					{
+						System.out.println("accute inactive "
+								+ ListUtil.toString(di.getStudyDurationValues(label, StudyDuration.accute, "0")));
+						System.out.println("accute   active "
+								+ ListUtil.toString(di.getStudyDurationValues(label, StudyDuration.accute, "1")));
+						System.out.println("chronic inactive "
+								+ ListUtil.toString(di.getStudyDurationValues(label, StudyDuration.chronic, "0")));
+						System.out.println("chronic   active "
+								+ ListUtil.toString(di.getStudyDurationValues(label, StudyDuration.chronic, "1")));
+					}
+
 					return "sub-accute <= " + StringUtil.formatDouble(accute.getMax()) + ", sub-chronic <= "
 							+ StringUtil.formatDouble(chronic.getMax());
 				}
@@ -133,7 +146,6 @@ public class ClusterEndpoint extends DiscMethod
 		this.minTh = minTh;
 		this.highTh = highTh;
 		this.adjustChronic = adjustChronic;
-
 	}
 
 	private double adjustChronic(int compoundIndex)
@@ -149,10 +161,13 @@ public class ClusterEndpoint extends DiscMethod
 		}
 	}
 
+	public static int numCompounds;
+
 	private void apply(String filename, String outfile)
 	{
 		this.dataset = FileUtil.getFilename(filename, false);
 		CSVFile file = FileUtil.readCSV(filename);
+		numCompounds = file.content.size() - 1;
 
 		System.out.println("clustering [" + minTh + " - " + centerTh + " - " + highTh + "]");
 
@@ -312,7 +327,7 @@ public class ClusterEndpoint extends DiscMethod
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			throw new Error(e);
 		}
 	}
 
@@ -321,18 +336,21 @@ public class ClusterEndpoint extends DiscMethod
 		//			MLCDataInfo di = MLCDataInfo.get(ReportMLC.getData("dataB-PC"));
 		//			di.plotCorrelationMatrix(false, null, false);
 
-		Boolean create = null;
+		Boolean create = true;
 		boolean addVToHighValues = false;
 
+		String dat = "dataA";
+		int numEndpoints = 22;
+		String feat = "PCFP";
 		String data;
 		if (addVToHighValues)
-			data = "dataB_withV";
+			data = dat + "_withV";
 		else
-			data = "dataB_noV";
-		String feat = "dataF2";
+			data = dat + "_noV";
+		String feat_file = "dataF2";
 
-		final MLCDataInfo diBase = MLCDataInfo.get(ReportMLC
-				.getData(data + (addVToHighValues ? "_RvsV_PC" : "_EqF_PC")));
+		final MLCDataInfo diBase = MLCDataInfo.get(ReportMLC.getData(data + (addVToHighValues ? "_RvsV_" : "_EqF_")
+				+ feat));
 		CorrelationMatrix<Double> realMatrix = diBase.getRealValueCorrelationMatrix();
 		CorrelationMatrix<Boolean> classMatrix = diBase.getClassCorrelationMatrix();
 		System.out.println(diBase.getClassRatio());
@@ -355,9 +373,9 @@ public class ClusterEndpoint extends DiscMethod
 		//		runs.put(new double[] { 0.75, 1.25 }, Method.absolute);
 		//		runs.put(new double[] { 1.0, 1.5 }, Method.absolute);
 		//		runs.put(new double[] { 1.25, 1.75 }, Method.absolute);
-		//		runs.put(new double[] { 1.5, 2.0 }, Method.absolute);
+		runs.put(new double[] { 1.5, 2.0 }, Method.absolute);
 		//		runs.put(new double[] { 1.75, 2.25 }, Method.absolute);
-		runs.put(new double[] { 2.0, 2.5 }, Method.absolute);
+		//		runs.put(new double[] { 2.0, 2.5 }, Method.absolute);
 		//		runs.put(new double[] { 2.25, 2.75 }, Method.absolute);
 		//		runs.put(new double[] { 2.5, 3.0 }, Method.absolute);
 
@@ -365,7 +383,7 @@ public class ClusterEndpoint extends DiscMethod
 
 		for (double[] ths : runs.keySet())
 		{
-			for (final Double chronicAdjust : new Double[] { null, 1.3, 1.6, 2.0, 2.3 })
+			for (final Double chronicAdjust : new Double[] { 2.0 })//{ null, 1.3, 1.6, 2.0, 2.3 })
 			{
 				double minLow = ths[0];
 				double minHigh = ths[1];
@@ -377,17 +395,19 @@ public class ClusterEndpoint extends DiscMethod
 				String name = c.getShortName();
 				System.out.println("\nXXXXXXXXXXX " + name + " XXXXXXXXXXX\n");
 
-				if ((create == null && !new File("arff/" + data + "_" + name + "_PC.arff").exists())
+				if ((create == null && !new File("arff/" + data + "_" + name + "_" + feat + ".arff").exists())
 						|| (create != null && create))
 				{
 					c.apply("data/" + data + ".csv", "data/" + data + "_" + name + ".csv");
 					ExternalTool t = new ExternalTool();
 					t.run("create arff/csv/xml", "ruby1.9.1 prepare_mlc.rb -e data/" + data + "_" + name
-							+ ".csv -f features/" + feat + "_PC.csv -r data/" + data + ".csv -n all -m all -d " + data
-							+ "_" + name + "_PC", null, true, null, new File("/home/martin/workspace/BMBF-MLC"));
+							+ ".csv -c data/" + dat + "_compoundInfo.csv -f features/" + feat_file + "_" + feat
+							+ ".csv -r data/" + data + ".csv -n " + numEndpoints + " -m " + (numEndpoints - 1) + " -d "
+							+ data + "_" + name + "_" + feat, null, true, null, new File(
+							"/home/martin/workspace/BMBF-MLC"));
 				}
 
-				MLCDataInfo di = MLCDataInfo.get(ReportMLC.getData("" + data + "_" + name + "_PC"));
+				MLCDataInfo di = MLCDataInfo.get(ReportMLC.getData("" + data + "_" + name + "_" + feat));
 				classMatrix = di.getClassCorrelationMatrix();
 				System.out.println(di.getClassRatio());
 				System.out.println(realMatrix.rmse(classMatrix));
@@ -397,5 +417,4 @@ public class ClusterEndpoint extends DiscMethod
 		}
 		System.exit(0);
 	}
-
 }

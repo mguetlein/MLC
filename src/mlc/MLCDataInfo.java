@@ -16,6 +16,7 @@ import java.util.Random;
 import javax.swing.JFrame;
 
 import mlc.report.DiscMethod;
+import mlc.reporting.ReportMLC;
 import mulan.data.MultiLabelInstances;
 import mulan.evaluation.Settings;
 import mulan.evaluation.measure.ConfidenceLevel;
@@ -80,6 +81,11 @@ public class MLCDataInfo
 
 	private HashMap<String, DoubleArraySummary> endpointSummaryMap;
 
+	public static MLCDataInfo get(String datasetName)
+	{
+		return get(ReportMLC.getData(datasetName));
+	}
+
 	public static MLCDataInfo get(MultiLabelInstances dataset)
 	{
 		if (!map.containsKey(dataset))
@@ -87,16 +93,24 @@ public class MLCDataInfo
 		return map.get(dataset);
 	}
 
-	private CSVFile csvFile;
+	private static HashMap<MultiLabelInstances, CSVFile> csvFiles = new HashMap<MultiLabelInstances, FileUtil.CSVFile>();
 
 	private CSVFile getCSV()
 	{
-		if (csvFile == null)
+		return getCSV(dataset);
+	}
+
+	private static CSVFile getCSV(MultiLabelInstances dataset)
+	{
+		if (!csvFiles.containsKey(dataset))
 		{
 			System.out.println("reading csv: " + Settings.csvFile(get(dataset).datasetName));
-			csvFile = FileUtil.readCSV(Settings.csvFile(get(dataset).datasetName));
+			csvFiles.put(dataset, FileUtil.readCSV(Settings.csvFile(get(dataset).datasetName)));
+			if (dataset.getDataSet().numInstances() != csvFiles.get(dataset).content.size() - 1)
+				throw new Error("num instances does not fit, csv file: " + (csvFiles.get(dataset).content.size() - 1)
+						+ ", arff file: " + dataset.getDataSet().numInstances());
 		}
-		return csvFile;
+		return csvFiles.get(dataset);
 	}
 
 	private HashMap<String, String> idInchiMap;
@@ -846,6 +860,17 @@ public class MLCDataInfo
 			for (StudyDuration d : StudyDuration.values())
 				for (String c : new String[] { "1", "0", null })
 					Collections.sort(studyDurationValues.get(label + "#" + d + "#" + c));
+			for (StudyDuration d : StudyDuration.values())
+				if (ListUtil.last(studyDurationValues.get(label + "#" + d + "#1")) >= studyDurationValues.get(
+						label + "#" + d + "#0").get(0))
+				{
+
+					System.err.println(name + " " + d + "   active: "
+							+ ListUtil.toString(studyDurationValues.get(label + "#" + d + "#1")));
+					System.err.println(name + " " + d + " inactive: "
+							+ ListUtil.toString(studyDurationValues.get(label + "#" + d + "#0")));
+					throw new Error("data inconsistent!!!!");
+				}
 		}
 		return studyDurationValues.get(label + "#" + studyDuration + "#" + clazz);
 	}
@@ -911,12 +936,25 @@ public class MLCDataInfo
 	{
 		if (!csvCompoundInfo.containsKey(datasetName))
 		{
-			if (new File(Settings.csvCompoundInfo(datasetName)).exists())
+			boolean base = ClusterEndpoint.numCompounds != 0;
+			System.out.println("reading csv-compoundInfo: " + Settings.csvCompoundInfo(datasetName, base));
+			csvCompoundInfo.put(datasetName, FileUtil.readCSV(Settings.csvCompoundInfo(datasetName, base)));
+			if (!csvCompoundInfo.get(datasetName).getHeader()[0].equals("id"))
+				throw new IllegalStateException("no id column");
+			if (base)
 			{
-				System.out.println("reading csv-compoundInfo: " + Settings.csvCompoundInfo(datasetName));
-				csvCompoundInfo.put(datasetName, FileUtil.readCSV(Settings.csvCompoundInfo(datasetName)));
-				if (!csvCompoundInfo.get(datasetName).getHeader()[0].equals("id"))
-					throw new IllegalStateException("no id column");
+				if (ClusterEndpoint.numCompounds != csvCompoundInfo.get(datasetName).content.size() - 1)
+					throw new Error("num instances does not fit, info file: "
+							+ (csvCompoundInfo.get(datasetName).content.size() - 1) + ", cluster file: "
+							+ ClusterEndpoint.numCompounds);
+			}
+			else
+			{
+				if (ReportMLC.getData(datasetName).getDataSet().numInstances() != csvCompoundInfo.get(datasetName).content
+						.size() - 1)
+					throw new Error("num instances does not fit, info file: "
+							+ (csvCompoundInfo.get(datasetName).content.size() - 1) + ", arff file: "
+							+ ReportMLC.getData(datasetName).getDataSet().numInstances());
 			}
 		}
 		return csvCompoundInfo.get(datasetName);
@@ -929,7 +967,7 @@ public class MLCDataInfo
 
 	public static boolean hasCompoundInfoData(String datasetName)
 	{
-		return getCSVCompoundInfo(datasetName) != null;
+		return new File(Settings.csvCompoundInfo(datasetName, ClusterEndpoint.numCompounds != 0)).exists();
 	}
 
 	public String[] getCompoundInfoFields()
@@ -976,5 +1014,10 @@ public class MLCDataInfo
 
 		return discMethod.getEndpointDescription(b, l, this);
 
+	}
+
+	public String getLabelName(int label)
+	{
+		return dataset.getDataSet().attribute(dataset.getLabelIndices()[label]).name();
 	}
 }

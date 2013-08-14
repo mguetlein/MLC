@@ -1,11 +1,16 @@
 package mlc.reporting;
 
 import java.io.File;
+import java.util.HashMap;
 
+import mlc.ConfusionMatrix;
 import mlc.MLCDataInfo;
 import mlc.ModelInfo;
 import mulan.data.MultiLabelInstances;
 import mulan.evaluation.Settings;
+import mulan.evaluation.measure.ConfidenceLevel;
+import mulan.evaluation.measure.ConfidenceLevelProvider;
+import datamining.Result;
 import datamining.ResultSet;
 import datamining.ResultSetIO;
 
@@ -34,7 +39,7 @@ public class ValidationReport
 			ReportMLC.PerformanceMeasures measures, String model) throws Exception
 	{
 		MultiLabelInstances data = ReportMLC.getData(datasetName);
-		//		MLCDataInfo di = MLCDataInfo.get(data);
+		MLCDataInfo di = MLCDataInfo.get(data);
 
 		ReportMLC rep = new ReportMLC(outfile, "Validation results", false);
 		rep.report.addParagraph("This is a validation report for model " + rep.report.encodeLink(".", model) + ".");
@@ -74,12 +79,39 @@ public class ValidationReport
 		rep.addBoxPlots(results, "mlc-algorithm", "", "no_file", measures, false);
 
 		rep.report.newSection("Single endpoint validation");
+		ResultSet summed = results.join("cv-seed", Result.JOIN_MODE_SUM);
+		summed.clearMergeCountAndVariance();
+		ResultSet joined = summed.join("mlc-algorithm");
+		if (joined.getNumResults() != 1)
+			throw new Error("should be one result");
 
 		for (int l = 0; l < data.getNumLabels(); l++)
 		{
 			String labelName = data.getDataSet().attribute(data.getLabelIndices()[l]).name();
 			System.out.println(l + " " + labelName);
 			rep.report.newSubsection(labelName);
+			String s = "The endpoint " + rep.report.encodeLink("endpoints#" + labelName, labelName) + " is "
+					+ di.zeros_per_label[l] + " x active, " + di.ones_per_label[l] + " x inactive and "
+					+ di.missings_per_label[l] + " x missing in the training dataset. ";
+
+			HashMap<ConfidenceLevel, Double> numResults = new HashMap<ConfidenceLevel, Double>();
+			for (ConfidenceLevel level : ConfidenceLevelProvider.LEVELS)
+			{
+				Double sum = 0.0;
+				for (ConfusionMatrix.Values v : ConfusionMatrix.Values.values())
+					sum += (Double) joined.getResultValue(0, v.toString() + "#" + l + level.getShortName());
+				numResults.put(level, sum);
+			}
+			s += "In each cross-validation ";
+			s += numResults.get(ConfidenceLevelProvider.CONFIDENCE_LEVEL_HIGH) + " (of all "
+					+ (di.ones_per_label[l] + di.zeros_per_label[l]) + " non-missing compounds) were predicted with "
+					+ ConfidenceLevelProvider.CONFIDENCE_LEVEL_HIGH.getNiceName() + ", ";
+			s += numResults.get(ConfidenceLevelProvider.CONFIDENCE_LEVEL_MEDIUM) + " with "
+					+ ConfidenceLevelProvider.CONFIDENCE_LEVEL_MEDIUM.getNiceName() + " and ";
+			s += numResults.get(ConfidenceLevelProvider.CONFIDENCE_LEVEL_LOW) + " with "
+					+ ConfidenceLevelProvider.CONFIDENCE_LEVEL_LOW.getNiceName() + ".";
+			rep.report.addParagraph(s);
+			rep.report.addGap();
 			rep.addSingleEndpointConfidencePlot(results, l, labelName, measures);
 		}
 

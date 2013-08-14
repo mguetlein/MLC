@@ -3,6 +3,7 @@ package mlc.reporting;
 import java.io.File;
 
 import mlc.MLCDataInfo;
+import mulan.data.MultiLabelInstances;
 import mulan.evaluation.Settings;
 import util.ArrayUtil;
 import util.CountedSet;
@@ -38,6 +39,23 @@ public class MultiValidationReport
 	public static void multiValidationReport(String outfile, String experimentName, String[] datasetNames,
 			ResultSet results, ReportMLC.PerformanceMeasures measures) throws Exception
 	{
+		{
+			if (datasetNames.length > 1)
+				throw new IllegalStateException();
+
+			MultiLabelInstances data = ReportMLC.getData(datasetNames[0]);
+			MLCDataInfo di = MLCDataInfo.get(data);
+			ResultSet join = results.join("mlc-algorithm");
+			for (int i = 0; i < data.getNumLabels(); i++)
+			{
+				System.out.println(results.getResultValue(0, "label#" + i) + ","
+						+ join.getResultValue(0, "macro-auc#" + i) + ","
+						+ (di.ones_per_label[i] + di.zeros_per_label[i]) + "," + di.ones_per_label[i] + ","
+						+ di.zeros_per_label[i]);
+			}
+
+		}
+
 		//		String mod = "";
 		//			if (args.length > 2)
 		//			{
@@ -146,12 +164,6 @@ public class MultiValidationReport
 				res.exclude(cmp2, val);
 				rep.addBoxPlots(res, cmp1, " (" + cmp2 + ": " + val + ")", boxSuffix + "_" + cmp2 + "-" + val, measures);
 			}
-		}
-
-		for (String dataset : datasetNames)
-		{
-			rep.report.addParagraph("Dataset " + dataset);
-
 		}
 
 		rep.close();

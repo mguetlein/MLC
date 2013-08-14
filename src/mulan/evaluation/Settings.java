@@ -57,17 +57,20 @@ public class Settings
 		return PWD + "arff/" + datasetName + ".csv";
 	}
 
+	public static String csvCompoundInfo(String datasetName, boolean base)
+	{
+		if (base)
+			return PWD + "data/" + datasetName.split("_")[0] + "_compoundInfo.csv";
+		else
+			return PWD + "arff/" + datasetName + "_compoundInfo.csv";
+	}
+
 	public static String getFeaturesFromDatabaseName(String datasetName)
 	{
 		String features = ArrayUtil.last(datasetName.split("_"));
 		if (ArrayUtil.indexOf(new String[] { "PC", "PCFP", "FP", "OB" }, features) == -1)
 			throw new IllegalStateException("unknown feature : " + features);
 		return features;
-	}
-
-	public static String csvCompoundInfo(String datasetName)
-	{
-		return PWD + "data/" + datasetName.split("_")[0] + "_compoundInfo.csv";
 	}
 
 	public static String inchiFile(String datasetName)

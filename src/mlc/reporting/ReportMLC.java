@@ -88,11 +88,11 @@ public class ReportMLC
 			file = outfile + ".html";
 			this.wide = wide;
 			//report = new PDFReport(outfile+".pdf", "Dataset Report");
-			report = new HTMLReport(file, Settings.text("title"), title, wide);
+			report = new HTMLReport(file, Settings.text("title"), Settings.text("header"), title, wide);
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			throw new Error(e);
 		}
 	}
 
@@ -515,14 +515,20 @@ public class ReportMLC
 
 	private static HashMap<String, MultiLabelInstances> dataMap = new HashMap<String, MultiLabelInstances>();
 
-	public static MultiLabelInstances getData(String datasetName) throws InvalidDataFormatException, IOException,
-			DocumentException
+	public static MultiLabelInstances getData(String datasetName)
 	{
 		if (!dataMap.containsKey(datasetName))
 		{
 			System.out.println("reading " + datasetName);
-			dataMap.put(datasetName,
-					new MultiLabelInstances(Settings.arffFile(datasetName), Settings.xmlFile(datasetName)));
+			try
+			{
+				dataMap.put(datasetName,
+						new MultiLabelInstances(Settings.arffFile(datasetName), Settings.xmlFile(datasetName)));
+			}
+			catch (InvalidDataFormatException e)
+			{
+				throw new Error(e);
+			}
 		}
 		return dataMap.get(datasetName);
 	}

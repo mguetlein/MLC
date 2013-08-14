@@ -50,6 +50,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Options;
 
+import pct.PredictiveClusteringTrees;
 import util.ArrayUtil;
 import util.FileUtil;
 import util.FileUtil.CSVFile;
@@ -211,6 +212,10 @@ public class RunMLC extends MLCOptions
 				}
 			}
 			return new HOMER(method, numClusters, HierarchyBuilder.Method.BalancedClustering);
+		}
+		else if (mlcAlgorithmStr.equals("PCT"))
+		{
+			return new PredictiveClusteringTrees();
 		}
 		else
 			throw new Error("unknown mlc algorithm: " + mlcAlgorithmStr);
@@ -777,25 +782,28 @@ public class RunMLC extends MLCOptions
 
 			//			args = ("validate -a BR -i 0 -u 1 -c RandomForest -d dataR_noV_Cl68_PC -e BRAD -q Neighbor " + "-w default")
 			//					.split(" ");
-			a = "multi_validation_report -e BR-AD -d dataB_noV_Ca15-20c20_PCFP -z all";
+			//a = "multi_validation_report -e BR-AD -d dataB_noV_Ca15-20c20_PCFP -z all";
 
-			//a = "validate -a BR -i 0 -u 1 -c RandomForest -d dataB_noV_EqF_PC -e BR-BEqF -q None -o RepdoseNeustoff-EqF";
+			a = "validate -a PCT -i 0 -u 1 -c RandomForest -d dataB_noV_EqF_PC -e BR-BEqF -q None";
 			//a = "endpoint_table -o RepdoseNeustoff";
 
 			//a = "validate -a BR -i 0 -u 2 -c RandomForest -d dataR_noV_Cl68_PC -e BR-R -q Centroid -w continous=false -o Repdose";
-			//a = "validation_report -o Repdose -z all";
+			//a = "validation_report -o CPDBAS -z all";
+			//a = "validation_report -o RepdoseNeustoff-EqF -z all";
 			//a = "endpoint_table -o Repdose";
 			//a = "compound_table -o Repdose";
 			//a = "predict_compounds -o Repdose -v 8746894c3510f705bb330497272a4602";
 
 			//a = "validate -x 1 -d dataY_PC -i 0 -u 1 -f 10 -a BR -t false -c IBk -e FeatWekaY -q None";
 
-			//String cl = "Ca15-20c20";
-			//			a = "validate -a BR -i 0 -u 1 -c RandomForest -d dataB_noV_" + cl + "_PC -e BR-B-" + cl
-			//					+ " -q None -o RepdoseNeustoff-" + cl;
-			//a = "validation_report -o RepdoseNeustoff-" + cl + " -z all";
-			//a = "endpoint_table -o RepdoseNeustoff-" + cl;
-			//a = "compound_table -o RepdoseNeustoff-" + cl;
+			//			String cl = "Ca15-20c20";
+			//			String data = "dataA";
+			//			String model = "RepdoseNeustoff-old-" + cl;
+			//			//			a = "validate -a BR -i 0 -u 1 -c RandomForest -d " + data + "_noV_" + cl + "_PC -e BR-B-" + cl
+			//			//					+ " -q None -o " + model;
+			//			//a = "validation_report -o RepdoseNeustoff-" + cl + " -z all";
+			//			a = "endpoint_table -o " + model;
+			//			//a = "compound_table -o RepdoseNeustoff-" + cl;
 
 			//a = "validate -a ECC -i 0 -u 3 -c RandomForest -d dataY_PCFP -e ECC-Y -q Centroid -w continous=false -o CPDBAS";
 			//args = "validation_report -d dataY_OB -e BRY -z all -o cpdbas".split(" ");
@@ -821,6 +829,8 @@ public class RunMLC extends MLCOptions
 
 			//a = "cluster -1 data/dataR_noV.csv -2 data/dataR_noV_Cl68.csv -3 ratio -4 0.6 -5 0.8";
 			//a = "multi_validation_report -e CL -d dataB_noV_EqF_PC,dataB_noV_Cl68_PC,dataB_noV_Cl15-20a_PC -z all";
+			//a = "multi_validation_report -e ECC -d dataB_noV_Ca15-20c20_PCFP -z all";
+			//a = "multi_validation_report -e BR -d dataB_noV_Ca15-20c20_PCFP -z all";
 
 			args = a.split(" ");
 		}

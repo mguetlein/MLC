@@ -24,12 +24,12 @@ public class HTMLReport extends AbstractReport
 
 	//	String image_dir;
 
-	public HTMLReport(String outfile, String portalTitle, String pageTitle)
+	public HTMLReport(String outfile, String portalTitle, String portalHeader, String pageTitle)
 	{
-		this(outfile, portalTitle, pageTitle, true);
+		this(outfile, portalTitle, portalHeader, pageTitle, true);
 	}
 
-	public HTMLReport(String outfile, String portalTitle, String pageTitle, boolean wide)
+	public HTMLReport(String outfile, String portalTitle, String portalHeader, String pageTitle, boolean wide)
 	{
 		//		super(outfile, title);
 		this.outfile = outfile;
@@ -51,14 +51,14 @@ public class HTMLReport extends AbstractReport
 
 			html._head();
 			html.body();
-			html.div(HtmlAttributesFactory.id("header")).h1().content(portalTitle);
+			html.div(HtmlAttributesFactory.id("header")).write(portalHeader, HtmlCanvas.NO_ESCAPE);
 			html._div();
 			html.div(HtmlAttributesFactory.id(wide ? "wide-content" : "content"));
 			newSection(pageTitle);
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			throw new Error(e);
 		}
 	}
 
@@ -68,7 +68,7 @@ public class HTMLReport extends AbstractReport
 		{
 			html._div();
 			html._body();
-			html.footer().write("Created at " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + ", ");
+			html.footer().write("Created at " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
 			html.write(footer, HtmlCanvas.NO_ESCAPE);
 			html._footer();
 			html._html();
@@ -81,7 +81,7 @@ public class HTMLReport extends AbstractReport
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			throw new Error(e);
 		}
 	}
 
@@ -238,7 +238,7 @@ public class HTMLReport extends AbstractReport
 
 	public static void main(String[] args)
 	{
-		HTMLReport rep = new HTMLReport("/tmp/delme.html", "Title", "Title of this page");
+		HTMLReport rep = new HTMLReport("/tmp/delme.html", "Title", "<h1>Title</h1>", "Title of this page");
 		rep.newSection("Section");
 		rep.addParagraph("Bla a lot of test\nmore text");
 
@@ -317,7 +317,7 @@ public class HTMLReport extends AbstractReport
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			throw new Error(e);
 		}
 	}
 
@@ -329,7 +329,7 @@ public class HTMLReport extends AbstractReport
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			throw new Error(e);
 		}
 	}
 
@@ -345,7 +345,7 @@ public class HTMLReport extends AbstractReport
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			throw new Error(e);
 		}
 	}
 
@@ -371,7 +371,7 @@ public class HTMLReport extends AbstractReport
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			throw new Error(e);
 		}
 
 	}
@@ -545,7 +545,7 @@ public class HTMLReport extends AbstractReport
 			}
 			catch (IOException e)
 			{
-				e.printStackTrace();
+				throw new Error(e);
 			}
 		}
 
@@ -596,7 +596,7 @@ public class HTMLReport extends AbstractReport
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			throw new Error(e);
 		}
 	}
 
@@ -656,7 +656,7 @@ public class HTMLReport extends AbstractReport
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			throw new Error(e);
 		}
 	}
 
@@ -668,7 +668,7 @@ public class HTMLReport extends AbstractReport
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			throw new Error(e);
 		}
 	}
 
