@@ -223,7 +223,7 @@ public class RunMLC extends MLCOptions
 				{
 					if (keys.equals("heuristic"))
 						heuristic = PredictiveClusteringTrees.Heuristic.valueOf(mlcParamHash.get(keys));
-					if (keys.equals("pruning"))
+					else if (keys.equals("pruning"))
 						pruningMethod = PredictiveClusteringTrees.PruningMethod.valOf(mlcParamHash.get(keys));
 					else
 						throw new IllegalArgumentException("illegal param for PCT: '" + keys + "'");
@@ -847,7 +847,8 @@ public class RunMLC extends MLCOptions
 			//a = "multi_validation_report -e ECC -d dataB_noV_Ca15-20c20_PCFP -z all";
 			//a = "multi_validation_report -e BR -d dataB_noV_Ca15-20c20_PCFP -z all";
 
-			a = "multi_validation_report -e ParamsPCT -d dataA_noV_Ca15-20c20_PCFP -z all";
+			//a = "multi_validation_report -e ParamsPCT -d dataA_noV_Ca15-20c20_PCFP -z all";
+			a = "validate -x 1 -d dataA_noV_Ca15-20c20_PCFP -i 0 -u 1 -f 10 -a PCT,PCT,PCT,PCT -p \"heuristic=VarianceReduction;pruning=C4.5,heuristic=GainRatio;pruning=C4.5,heuristic=VarianceReduction;pruning=None,heuristic=GainRatio;pruning=None\" -t false -c RandomForest -e ParamsPCT -q None -w \"default\"";
 
 			args = a.split(" ");
 		}
