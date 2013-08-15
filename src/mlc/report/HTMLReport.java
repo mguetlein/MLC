@@ -466,7 +466,7 @@ public class HTMLReport extends AbstractReport
 			init(html);
 			if (val != null)
 			{
-				if (prop.equals("runtime") && !val.equals("runtime"))
+				if (prop.contains("runtime") && !val.toString().contains("runtime"))
 					html.write(TimeFormatUtil.format(((Double) val).longValue()));
 				else if (val instanceof Renderable)
 					html.render((Renderable) val);

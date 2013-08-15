@@ -216,17 +216,20 @@ public class RunMLC extends MLCOptions
 		else if (mlcAlgorithmStr.equals("PCT"))
 		{
 			PredictiveClusteringTrees.Heuristic heuristic = PredictiveClusteringTrees.Heuristic.VarianceReduction;
+			PredictiveClusteringTrees.PruningMethod pruningMethod = PredictiveClusteringTrees.PruningMethod.C4_5;
 			if (mlcParamHash.size() > 0)
 			{
 				for (String keys : mlcParamHash.keySet())
 				{
 					if (keys.equals("heuristic"))
 						heuristic = PredictiveClusteringTrees.Heuristic.valueOf(mlcParamHash.get(keys));
+					if (keys.equals("pruning"))
+						pruningMethod = PredictiveClusteringTrees.PruningMethod.valOf(mlcParamHash.get(keys));
 					else
 						throw new IllegalArgumentException("illegal param for PCT: '" + keys + "'");
 				}
 			}
-			return new PredictiveClusteringTrees(heuristic);
+			return new PredictiveClusteringTrees(heuristic, pruningMethod);
 		}
 		else
 			throw new Error("unknown mlc algorithm: " + mlcAlgorithmStr);
@@ -796,7 +799,7 @@ public class RunMLC extends MLCOptions
 			//					.split(" ");
 			//a = "multi_validation_report -e BR-AD -d dataB_noV_Ca15-20c20_PCFP -z all";
 
-			a = "validate -a PCT -i 0 -u 1 -c RandomForest -d dataB_noV_EqF_PC -e BR-BEqF -q None";
+			//			a = "validate -a PCT -i 0 -u 1 -c RandomForest -d dataB_noV_EqF_PC -e BR-BEqF -q None";
 			//a = "endpoint_table -o RepdoseNeustoff";
 
 			//a = "validate -a BR -i 0 -u 2 -c RandomForest -d dataR_noV_Cl68_PC -e BR-R -q Centroid -w continous=false -o Repdose";
@@ -843,6 +846,8 @@ public class RunMLC extends MLCOptions
 			//a = "multi_validation_report -e CL -d dataB_noV_EqF_PC,dataB_noV_Cl68_PC,dataB_noV_Cl15-20a_PC -z all";
 			//a = "multi_validation_report -e ECC -d dataB_noV_Ca15-20c20_PCFP -z all";
 			//a = "multi_validation_report -e BR -d dataB_noV_Ca15-20c20_PCFP -z all";
+
+			a = "multi_validation_report -e ParamsPCT -d dataA_noV_Ca15-20c20_PCFP -z all";
 
 			args = a.split(" ");
 		}

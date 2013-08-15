@@ -94,6 +94,7 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 	public static int count = 1;
 
 	private Heuristic heuristic;
+	private PruningMethod pruningMethod;
 
 	public enum Heuristic
 	{
@@ -101,14 +102,37 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 		RDispersionAdt, RDispersionMlt
 	}
 
-	public PredictiveClusteringTrees()
+	public enum PruningMethod
 	{
-		this(Heuristic.Default);
+		Default, None, C4_5, M5, M5Multi, ReducedErrorVSB, Garofalakis, GarofalakisVSB, CartVSB, CartMaxSizeg;
+
+		@Override
+		public String toString()
+		{
+			if (this == C4_5)
+				return "C4.5";
+			else
+				return super.toString();
+		}
+
+		public static PruningMethod valOf(String s)
+		{
+			if (s.equals("C4.5"))
+				return C4_5;
+			else
+				return valueOf(s);
+		}
 	}
 
-	public PredictiveClusteringTrees(Heuristic heuristic)
+	public PredictiveClusteringTrees()
+	{
+		this(Heuristic.Default, PruningMethod.Default);
+	}
+
+	public PredictiveClusteringTrees(Heuristic heuristic, PruningMethod pruningMethod)
 	{
 		this.heuristic = heuristic;
+		this.pruningMethod = pruningMethod;
 	}
 
 	public String toString(Attribute attribute)
@@ -261,6 +285,7 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 			writer.write("Clustering = " + (dataset.getFeatureAttributes().size() + 1) + "-"
 					+ (numAttributes + numLabels) + "\n");
 			writer.write("\n[Tree]\nHeuristic = " + heuristic + "\n");
+			writer.write("PruningMethod = " + pruningMethod + "\n");
 			writer.write("\n");
 			writer.write("[Data]\n");
 			writer.write("File = " + trainArffPath + "\n");

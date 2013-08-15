@@ -4,6 +4,7 @@ import mulan.classifier.MultiLabelLearner;
 import mulan.classifier.MultiLabelOutput;
 import mulan.data.MultiLabelInstances;
 import pct.PredictiveClusteringTrees.Heuristic;
+import pct.PredictiveClusteringTrees.PruningMethod;
 
 public class TestPCT
 {
@@ -20,7 +21,7 @@ public class TestPCT
 			//			int numAttributes = dataset.getFeatureAttributes().size();
 			//			System.out.println(numLabels+", "+numAttributes);
 
-			MultiLabelLearner learner = new PredictiveClusteringTrees(Heuristic.GainRatio);
+			MultiLabelLearner learner = new PredictiveClusteringTrees(Heuristic.GainRatio, PruningMethod.None);
 
 			//learner = learner.makeCopy();
 
