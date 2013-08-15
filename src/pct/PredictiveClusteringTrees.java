@@ -93,8 +93,22 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 
 	public static int count = 1;
 
+	private Heuristic heuristic;
+
+	public enum Heuristic
+	{
+		Default, ReducedError, Gain, GainRatio, VarianceReduction, MEstimate, Morishita, DispersionAdt, DispersionMlt,
+		RDispersionAdt, RDispersionMlt
+	}
+
 	public PredictiveClusteringTrees()
 	{
+		this(Heuristic.Default);
+	}
+
+	public PredictiveClusteringTrees(Heuristic heuristic)
+	{
+		this.heuristic = heuristic;
 	}
 
 	public String toString(Attribute attribute)
@@ -246,7 +260,7 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 					+ "\n");
 			writer.write("Clustering = " + (dataset.getFeatureAttributes().size() + 1) + "-"
 					+ (numAttributes + numLabels) + "\n");
-			writer.write("\n[Tree]\nHeuristic = VarianceReduction\n");
+			writer.write("\n[Tree]\nHeuristic = " + heuristic + "\n");
 			writer.write("\n");
 			writer.write("[Data]\n");
 			writer.write("File = " + trainArffPath + "\n");
@@ -287,6 +301,8 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 			String appName = "pct-model_t" + System.currentTimeMillis() + "_h"
 					+ PredictiveClusteringTrees.this.hashCode();
 			String settingsFile = appName + ".s";
+			if (new File(settingsFile).exists())
+				throw new Error();
 			createSettingFile(settingsFile);
 
 			String[] args = new String[1];

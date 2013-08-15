@@ -215,7 +215,18 @@ public class RunMLC extends MLCOptions
 		}
 		else if (mlcAlgorithmStr.equals("PCT"))
 		{
-			return new PredictiveClusteringTrees();
+			PredictiveClusteringTrees.Heuristic heuristic = PredictiveClusteringTrees.Heuristic.VarianceReduction;
+			if (mlcParamHash.size() > 0)
+			{
+				for (String keys : mlcParamHash.keySet())
+				{
+					if (keys.equals("heuristic"))
+						heuristic = PredictiveClusteringTrees.Heuristic.valueOf(mlcParamHash.get(keys));
+					else
+						throw new IllegalArgumentException("illegal param for PCT: '" + keys + "'");
+				}
+			}
+			return new PredictiveClusteringTrees(heuristic);
 		}
 		else
 			throw new Error("unknown mlc algorithm: " + mlcAlgorithmStr);
@@ -325,8 +336,9 @@ public class RunMLC extends MLCOptions
 										System.out.println(datasetNameStr + " seed:" + seed + " imputation:"
 												+ imputationString + " wekaAlg:"
 												+ classifier.getClass().getSimpleName() + " mlcAlg:"
-												+ mlcAlgorithm.getClass().getSimpleName() + " appDomain:"
-												+ appDomainStr + " appDomainParams:" + appDomainParamsStr);
+												+ mlcAlgorithm.getClass().getSimpleName() + " mlcAlgParams:"
+												+ mlcAlgorithmParamsStr + " appDomain:" + appDomainStr
+												+ " appDomainParams:" + appDomainParamsStr);
 										try
 										{
 											method.runMLC(datasetNameStr, dataset, di, mlcAlgorithmStr, mlcAlgorithm,
