@@ -842,13 +842,16 @@ public class RunMLC extends MLCOptions
 			//
 			//args = "fill_missing -a BR -c RandomForest -d dataB_noV_Cl68_PC -m class -e test".split(" ");
 
-			//a = "cluster -1 data/dataR_noV.csv -2 data/dataR_noV_Cl68.csv -3 ratio -4 0.6 -5 0.8";
+			//a = "cluster -1 data/dataR_noV.csv -2 ratio -3 0.6 -4 0.8";
 			//a = "multi_validation_report -e CL -d dataB_noV_EqF_PC,dataB_noV_Cl68_PC,dataB_noV_Cl15-20a_PC -z all";
 			//a = "multi_validation_report -e ECC -d dataB_noV_Ca15-20c20_PCFP -z all";
 			//a = "multi_validation_report -e BR -d dataB_noV_Ca15-20c20_PCFP -z all";
 
 			//a = "multi_validation_report -e ParamsPCT -d dataA_noV_Ca15-20c20_PCFP -z all";
-			a = "validate -x 1 -d dataA_noV_Ca15-20c20_PCFP -i 0 -u 1 -f 10 -a PCT,PCT,PCT,PCT -p \"heuristic=VarianceReduction;pruning=C4.5,heuristic=GainRatio;pruning=C4.5,heuristic=VarianceReduction;pruning=None,heuristic=GainRatio;pruning=None\" -t false -c RandomForest -e ParamsPCT -q None -w \"default\"";
+			//a = "validate -x 1 -d dataA_noV_Ca15-20c20_PCFP -i 0 -u 1 -f 10 -a PCT,PCT,PCT,PCT -p \"heuristic=VarianceReduction;pruning=C4.5,heuristic=GainRatio;pruning=C4.5,heuristic=VarianceReduction;pruning=None,heuristic=GainRatio;pruning=None\" -t false -c RandomForest -e ParamsPCT -q None -w \"default\"";
+
+			a = "dataset_report -d dataC_noV_Ca15-20c20_dummy";
+			//a = "endpoint_table -d dataC_noV_Ca15-20c20_dummy";
 
 			args = a.split(" ");
 		}
@@ -882,10 +885,10 @@ public class RunMLC extends MLCOptions
 		options.addOption("y", "feature-type", true, "Feature-type for building models");
 		options.addOption("z", "performance-measure", true, "Performance measure for validation report (accuracy|auc)");
 		options.addOption("1", "cluster-infile", true, "csv infile for clustering");
-		options.addOption("2", "cluster-outfile", true, "csv outfile for clustering");
-		options.addOption("3", "cluster-method", true, "one of " + ArrayUtil.toString(ClusterEndpoint.Method.values()));
-		options.addOption("4", "cluster-low-threshold", true, "min threshold for discretization point");
-		options.addOption("5", "cluster-high-threshold", true, "max threshold for discretization point");
+		options.addOption("2", "cluster-method", true, "one of " + ArrayUtil.toString(ClusterEndpoint.Method.values()));
+		options.addOption("3", "cluster-low-threshold", true, "min threshold for discretization point");
+		options.addOption("4", "cluster-high-threshold", true, "max threshold for discretization point");
+		options.addOption("5", "cluster-adjust-chronic", true, "adjust chronic values (optional)");
 		options.addOption("o", "model-name", true, "Model name (builds this model when validating)");
 		options.addOption("v", "compound-arff-file", true, "compound arff file name for prediction");
 		options.addOption("q", "app-domain", true, "AppDomain algortihm");
@@ -959,16 +962,22 @@ public class RunMLC extends MLCOptions
 				ReportMLC.compoundTable(cmd.getOptionValue("o"));
 				break;
 			case endpoint_table:
-				ReportMLC.endpointTable(cmd.getOptionValue("o"));
+				if (cmd.hasOption("o"))
+					ReportMLC.endpointTableFromModel(cmd.getOptionValue("o"));
+				else
+				{
+					if (mlc.getDatasetNames().length != 1)
+						throw new IllegalArgumentException("plz give model or exactly one dataset");
+					ReportMLC.endpointTableFromDataset(mlc.getDatasetNames()[0]);
+				}
 				break;
 			case model_report:
 				ReportMLC.modelReport();
 				break;
 			case cluster:
-				ClusterEndpoint.apply(cmd.getOptionValue("1"), cmd.getOptionValue("2"),
-						ClusterEndpoint.Method.valueOf(cmd.getOptionValue("3")),
-						Double.parseDouble(cmd.getOptionValue("4")), Double.parseDouble(cmd.getOptionValue("5")),
-						Double.parseDouble(cmd.getOptionValue("6")));
+				ClusterEndpoint.apply(cmd.getOptionValue("1"), ClusterEndpoint.Method.valueOf(cmd.getOptionValue("2")),
+						Double.parseDouble(cmd.getOptionValue("3")), Double.parseDouble(cmd.getOptionValue("4")),
+						cmd.hasOption("5") ? Double.parseDouble(cmd.getOptionValue("5")) : null);
 				break;
 			case filter_missclassified:
 				FilterMissclassified.doFilter(mlc.getDatasetNames(), mlc.getExperimentName(), cmd.getOptionValue("s"));

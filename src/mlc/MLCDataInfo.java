@@ -495,6 +495,7 @@ public class MLCDataInfo
 			int r = rs.addResult();
 			rs.setResultValue(r, "endpoint", labelNames[i]);
 			rs.setResultValue(r, INACTIVE + "/" + ACTIVE, zeros_per_label[i] + "/" + ones_per_label[i]);
+			rs.setResultValue(r, INACTIVE + "/" + ACTIVE + " ratio", zeros_per_label[i] / (double) ones_per_label[i]);
 			rs.setResultValue(r, MISSING, missings_per_label[i]);
 		}
 		return rs;

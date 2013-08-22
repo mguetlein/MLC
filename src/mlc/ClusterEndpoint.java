@@ -101,24 +101,34 @@ public class ClusterEndpoint extends DiscMethod
 	@Override
 	public String getShortName()
 	{
-		String c = "C";
-		c += method.toString().charAt(0);
-		c += StringUtil.concatChar("" + (int) (minTh * 10), 2, '0', false);
-		c += "-";
-		c += StringUtil.concatChar("" + (int) (highTh * 10), 2, '0', false);
-		if (adjustChronic != null)
+		if (method == Method.ratio)
 		{
-			c += "c";
-			c += StringUtil.concatChar("" + (int) (adjustChronic * 10), 2, '0', false);
+			return "Cl" + (int) (minTh * 10) + (int) (highTh * 10);
 		}
-		return c;
+		else if (method == Method.absolute)
+		{
+			String c = "Ca";
+			c += StringUtil.concatChar("" + (int) (minTh * 10), 2, '0', false);
+			c += "-";
+			c += StringUtil.concatChar("" + (int) (highTh * 10), 2, '0', false);
+			if (adjustChronic != null)
+			{
+				c += "c";
+				c += StringUtil.concatChar("" + (int) (adjustChronic * 10), 2, '0', false);
+			}
+			return c;
+		}
+		else
+		{
+			throw new Error();
+		}
 	}
 
 	public static DiscMethod fromString(String s)
 	{
 		if (s.startsWith("C") && (s.length() == 7 || s.length() == 10))
 		{
-			Method m = (s.charAt(1) == 'r') ? Method.ratio : Method.absolute;
+			Method m = (s.charAt(1) == 'a') ? Method.absolute : Method.ratio;
 			double minTh = Integer.parseInt(s.substring(2, 4)) / 0.1;
 			double highTh = Integer.parseInt(s.substring(5, 7)) / 0.1;
 			Double adjustChronic = null;
@@ -129,11 +139,10 @@ public class ClusterEndpoint extends DiscMethod
 		return null;
 	}
 
-	public static void apply(String filename, String outfile, Method method, double minTh, double highTh,
-			Double adjustChronic)
+	public static void apply(String filename, Method method, double minTh, double highTh, Double adjustChronic)
 	{
 		ClusterEndpoint c = new ClusterEndpoint(method, minTh, highTh, adjustChronic);
-		c.apply(filename, outfile);
+		c.apply(filename);//, outfile);
 	}
 
 	public ClusterEndpoint(Method method, double minTh, double highTh, Double adjustChronic)
@@ -163,7 +172,7 @@ public class ClusterEndpoint extends DiscMethod
 
 	public static int numCompounds;
 
-	private void apply(String filename, String outfile)
+	private void apply(String filename) //, String outfile)
 	{
 		this.dataset = FileUtil.getFilename(filename, false);
 		CSVFile file = FileUtil.readCSV(filename);
@@ -322,6 +331,9 @@ public class ClusterEndpoint extends DiscMethod
 				file = file.addColumn(col, ArrayUtil.toStringArray(cluster));
 
 			}
+
+			String outfile = FileUtil.getParent(filename) + File.separator + FileUtil.getFilename(filename, false)
+					+ "_" + getShortName() + "." + FileUtil.getFilenamExtension(filename);
 			FileUtil.writeCSV(outfile, file, false);
 			System.out.println("\ncsv result file:\n" + outfile);
 		}
@@ -339,15 +351,19 @@ public class ClusterEndpoint extends DiscMethod
 		Boolean create = true;
 		boolean addVToHighValues = false;
 
-		String dat = "dataA";
-		int numEndpoints = 22;
-		String feat = "PCFP";
+		//String dat = "dataA";
+		String dat = "dataC";
+		//int numEndpoints = 22;
+		int numEndpoints = 40;
+		//String feat = "PCFP";
+		String feat = "dummy";
 		String data;
 		if (addVToHighValues)
 			data = dat + "_withV";
 		else
 			data = dat + "_noV";
-		String feat_file = "dataF2";
+		//String feat_file = "dataF2";
+		String feat_file = "dataFC";
 
 		final MLCDataInfo diBase = MLCDataInfo.get(ReportMLC.getData(data + (addVToHighValues ? "_RvsV_" : "_EqF_")
 				+ feat));
@@ -398,7 +414,7 @@ public class ClusterEndpoint extends DiscMethod
 				if ((create == null && !new File("arff/" + data + "_" + name + "_" + feat + ".arff").exists())
 						|| (create != null && create))
 				{
-					c.apply("data/" + data + ".csv", "data/" + data + "_" + name + ".csv");
+					c.apply("data/" + data + ".csv");
 					ExternalTool t = new ExternalTool(null);
 					t.run("create arff/csv/xml", new String[] { "ruby1.9.1", "prepare_mlc.rb", "-e",
 							"data/" + data + "_" + name + ".csv", "-c", "data/" + dat + "_compoundInfo.csv", "-f",

@@ -558,18 +558,18 @@ public class ReportMLC
 
 		//		di.plotCorrelationMatrix(true, csv, true);
 
-		List<String> smallImages = new ArrayList<String>();
-		if (!di.includeV && di.hasRealData())
-		{
-			for (int j = 0; j < di.dataset.getNumLabels(); j++)
-			{
-				smallImages.add(createImage(datasetName + "_realValueHistogramm_" + j,
-						di.plotRealValueHistogram(j, false), new Dimension(600, 300)));
-				smallImages.add(createImage(datasetName + "_realValueHistogrammZoom_" + j,
-						di.plotRealValueHistogram(j, true), new Dimension(600, 300)));
-			}
-			report.addSmallImages(ArrayUtil.toArray(smallImages));
-		}
+		//		List<String> smallImages = new ArrayList<String>();
+		//		if (!di.includeV && di.hasRealData())
+		//		{
+		//			for (int j = 0; j < di.dataset.getNumLabels(); j++)
+		//			{
+		//				smallImages.add(createImage(datasetName + "_realValueHistogramm_" + j,
+		//						di.plotRealValueHistogram(j, false), new Dimension(600, 300)));
+		//				smallImages.add(createImage(datasetName + "_realValueHistogrammZoom_" + j,
+		//						di.plotRealValueHistogram(j, true), new Dimension(600, 300)));
+		//			}
+		//			report.addSmallImages(ArrayUtil.toArray(smallImages));
+		//		}
 
 	}
 
@@ -709,16 +709,31 @@ public class ReportMLC
 
 	}
 
-	public static void endpointTable(String modelName) throws Exception
+	public static void endpointTableFromModel(String modelName) throws Exception
 	{
-		ModelInfo mi = ModelInfo.get(modelName);
-		MultiLabelInstances data = getData(mi.getDataset());
+		String datasetName = ModelInfo.get(modelName).getDataset();
+		String reportFile = Settings.endpointTableFile(modelName);
+		endpointTable(datasetName, reportFile, modelName);
+	}
+
+	public static void endpointTableFromDataset(String datasetName) throws Exception
+	{
+		String reportFile = Settings.reportFileEndpoints(datasetName);
+		endpointTable(datasetName, reportFile, null);
+	}
+
+	public static void endpointTable(String datasetName, String reportFile, String modelName) throws Exception
+	{
+		MultiLabelInstances data = getData(datasetName);
 		MLCDataInfo di = MLCDataInfo.get(data);
 
-		ReportMLC rep = new ReportMLC(Settings.endpointTableFile(modelName), "Predicted endpoints", di.hasRealData()
-				&& di.hasCompoundInfoData());
-		rep.report.addParagraph("This is the predicted enpoint table for model "
-				+ rep.report.encodeLink(".", modelName) + ".");
+		ReportMLC rep = new ReportMLC(reportFile, "Predicted endpoints", di.hasRealData() && di.hasCompoundInfoData());
+		String info;
+		if (modelName != null)
+			info = "This is the predicted enpoint table for model " + rep.report.encodeLink(".", modelName) + ".";
+		else
+			info = "This is the predicted enpoint table for dataset " + datasetName + ".";
+		rep.report.addParagraph(info);
 		rep.report.addGap();
 
 		ResultSet res = new ResultSet();
@@ -742,7 +757,7 @@ public class ReportMLC
 				res.setResultValue(r, "active", di.getEndpointDiscDescription(true, l));
 				res.setResultValue(r, "inactive", di.getEndpointDiscDescription(false, l));
 
-				String uri = rep.createImage(mi.getDataset() + "_realValueHistogrammZoom_" + l,
+				String uri = rep.createImage(datasetName + "_realValueHistogrammZoom_" + l,
 						di.plotRealValueHistogram(l, true), new Dimension(600, 300));
 				res.setResultValue(r, "histogram", rep.report.getImage(uri, 300, 150));
 
@@ -752,7 +767,7 @@ public class ReportMLC
 					res.setResultValue(r, "#sub-" + StudyDuration.accute, acc.size());// + " " + DoubleArraySummary.create(acc));
 					List<Double> chr = di.getStudyDurationValues(l, StudyDuration.chronic);
 					res.setResultValue(r, "#sub-" + StudyDuration.chronic, chr.size());// + " " + DoubleArraySummary.create(chr));
-					String uri2 = rep.createImage(mi.getDataset() + "_realValueStudyDurationHistogrammZoom_" + l,
+					String uri2 = rep.createImage(datasetName + "_realValueStudyDurationHistogrammZoom_" + l,
 							di.plotRealValueStudyDurationHistogram(l, true), new Dimension(600, 300));
 					res.setResultValue(r, "histogram-study", rep.report.getImage(uri2, 300, 150));
 

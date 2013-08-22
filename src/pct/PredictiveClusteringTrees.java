@@ -278,13 +278,18 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 				File = dataB_noV_Cl68_FP.arff 
 				TestSet = dataB_noV_Cl68_FP_test.arff 
 			 */
+			writer.write("[General]\n");
+			writer.write("Verbose = 0\n");
+			writer.write("\n");
 			writer.write("[Attributes]\n");
 			writer.write("Descriptive = 1-" + numAttributes + "\n");
 			writer.write("Target = " + (dataset.getFeatureAttributes().size() + 1) + "-" + (numAttributes + numLabels)
 					+ "\n");
 			writer.write("Clustering = " + (dataset.getFeatureAttributes().size() + 1) + "-"
 					+ (numAttributes + numLabels) + "\n");
-			writer.write("\n[Tree]\nHeuristic = " + heuristic + "\n");
+			writer.write("\n");
+			writer.write("[Tree]\n");
+			writer.write("Heuristic = " + heuristic + "\n");
 			writer.write("PruningMethod = " + pruningMethod + "\n");
 			writer.write("\n");
 			writer.write("[Data]\n");
@@ -329,6 +334,8 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 			if (new File(settingsFile).exists())
 				throw new Error();
 			createSettingFile(settingsFile);
+
+			//			System.err.println("settings:\n" + FileUtil.readStringFromFile(settingsFile));
 
 			String[] args = new String[1];
 			//			System.out.println(settingsFile);

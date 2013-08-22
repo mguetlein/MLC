@@ -114,6 +114,11 @@ public class Settings
 		return PWD + "reports/report_datasets_" + ArrayUtil.toString(datasetNames, "_", "", "", "");
 	}
 
+	public static String reportFileEndpoints(String datasetName)
+	{
+		return PWD + "reports/report_dataset_endpoints_" + datasetName;
+	}
+
 	public static String reportFile(String experimentName, String[] datasetNames, String measures)
 	{
 		return PWD + "reports/report_" + experimentName + "_" + ArrayUtil.toString(datasetNames, "_", "", "", "") + "_"
