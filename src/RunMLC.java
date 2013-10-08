@@ -557,7 +557,7 @@ public class RunMLC extends MLCOptions
 						for (String key : result.keySet())
 							res.setResultValue(resIndex, key, result.get(key));
 					}
-					if (numExperimentFolds > res.getNumResults())
+					if (numExperimentFolds < res.getNumResults())
 						throw new Error("WTF");
 					else if (numExperimentFolds == res.getNumResults())
 					{
