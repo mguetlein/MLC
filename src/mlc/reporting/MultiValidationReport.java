@@ -40,8 +40,8 @@ public class MultiValidationReport
 			ResultSet results, ReportMLC.PerformanceMeasures measures) throws Exception
 	{
 		{
-			if (datasetNames.length > 1)
-				throw new IllegalStateException();
+			//			if (datasetNames.length > 1)
+			//				throw new IllegalStateException();
 
 			MultiLabelInstances data = ReportMLC.getData(datasetNames[0]);
 			MLCDataInfo di = MLCDataInfo.get(data);

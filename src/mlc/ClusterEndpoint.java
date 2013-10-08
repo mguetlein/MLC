@@ -348,7 +348,7 @@ public class ClusterEndpoint extends DiscMethod
 		//			MLCDataInfo di = MLCDataInfo.get(ReportMLC.getData("dataB-PC"));
 		//			di.plotCorrelationMatrix(false, null, false);
 
-		Boolean create = true;
+		Boolean create = false;
 		boolean addVToHighValues = false;
 
 		//String dat = "dataA";
@@ -356,20 +356,20 @@ public class ClusterEndpoint extends DiscMethod
 		//int numEndpoints = 22;
 		int numEndpoints = 40;
 		//String feat = "PCFP";
-		String feat = "dummy";
+		String feat = "PC";
 		String data;
 		if (addVToHighValues)
 			data = dat + "_withV";
 		else
 			data = dat + "_noV";
 		//String feat_file = "dataF2";
-		String feat_file = "dataFC";
+		String feat_file = "dataC";
 
 		final MLCDataInfo diBase = MLCDataInfo.get(ReportMLC.getData(data + (addVToHighValues ? "_RvsV_" : "_EqF_")
 				+ feat));
 		CorrelationMatrix<Double> realMatrix = diBase.getRealValueCorrelationMatrix();
 		CorrelationMatrix<Boolean> classMatrix = diBase.getClassCorrelationMatrix();
-		System.out.println(diBase.getClassRatio());
+		System.out.println(diBase.getClassRatio(true));
 		System.out.println(realMatrix.rmse(classMatrix));
 		//		SwingUtil.showInFrame(new JScrollPane(di.plotCorrelationMatrix(false)), "real");
 		//		SwingUtil.showInFrame(new JScrollPane(di.plotCorrelationMatrix(true)), "class-eqf");
@@ -425,7 +425,7 @@ public class ClusterEndpoint extends DiscMethod
 
 				MLCDataInfo di = MLCDataInfo.get(ReportMLC.getData("" + data + "_" + name + "_" + feat));
 				classMatrix = di.getClassCorrelationMatrix();
-				System.out.println(di.getClassRatio());
+				System.out.println(di.getClassRatio(true));
 				System.out.println(realMatrix.rmse(classMatrix));
 				//				SwingUtil.showInFrame(new JScrollPane(di.plotCorrelationMatrix(true)), "class-" + name, true);
 

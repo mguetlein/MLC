@@ -27,6 +27,7 @@ import clus.Clus;
 import clus.algo.ClusInductionAlgorithmType;
 import clus.algo.tdidt.ClusDecisionTree;
 import clus.algo.tdidt.tune.CDTTuneFTest;
+import clus.ext.ensembles.ClusEnsembleClassifier;
 import clus.main.Settings;
 import clus.util.ClusException;
 
@@ -95,6 +96,12 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 
 	private Heuristic heuristic;
 	private PruningMethod pruningMethod;
+	private EnsembleMethod ensembleMethod;
+
+	public enum EnsembleMethod
+	{
+		None, RForest, Bagging
+	}
 
 	public enum Heuristic
 	{
@@ -126,13 +133,14 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 
 	public PredictiveClusteringTrees()
 	{
-		this(Heuristic.Default, PruningMethod.Default);
+		this(Heuristic.Default, PruningMethod.Default, EnsembleMethod.None);
 	}
 
-	public PredictiveClusteringTrees(Heuristic heuristic, PruningMethod pruningMethod)
+	public PredictiveClusteringTrees(Heuristic heuristic, PruningMethod pruningMethod, EnsembleMethod ensembleMethod)
 	{
 		this.heuristic = heuristic;
 		this.pruningMethod = pruningMethod;
+		this.ensembleMethod = ensembleMethod;
 	}
 
 	public String toString(Attribute attribute)
@@ -292,12 +300,21 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 			writer.write("Heuristic = " + heuristic + "\n");
 			writer.write("PruningMethod = " + pruningMethod + "\n");
 			writer.write("\n");
+			if (ensembleMethod != EnsembleMethod.None)
+			{
+				writer.write("[Ensemble]\n");
+				writer.write("Iterations = 10\n");
+				writer.write("EnsembleMethod = " + ensembleMethod + "\n");
+			}
+			writer.write("\n");
 			writer.write("[Data]\n");
 			writer.write("File = " + trainArffPath + "\n");
 			writer.write("TestSet = " + testArffPath + "\n");
 			writer.flush();
 
 			writer.close();
+
+			System.out.println("created settings file: " + settingsFile);
 
 		}
 		catch (Exception e)
@@ -353,6 +370,15 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 			clus.initSettings(cargs);
 			ClusInductionAlgorithmType clss = null;
 
+			if (ensembleMethod != EnsembleMethod.None)
+			{
+				sett.setEnsembleMode(true);
+				clss = new ClusEnsembleClassifier(clus);
+			}
+			else
+			{
+				clss = new ClusDecisionTree(clus);
+			}
 			clss = new ClusDecisionTree(clus);
 			if (sett.getFTestArray().isVector())
 				clss = new CDTTuneFTest(clss, sett.getFTestArray().getDoubleVector());

@@ -989,16 +989,27 @@ public class MLCDataInfo
 	public static String getCompoundInfoValue(String datasetName, int compoundIndex, String f)
 	{
 		CSVFile compoundInfo = getCSVCompoundInfo(datasetName);
-		return compoundInfo.content.get(compoundIndex + 1)[compoundInfo.getColumnIndex(f)];
+		int colIndex = compoundInfo.getColumnIndex(f);
+		if (colIndex == -1)
+			throw new IllegalStateException("column " + f + " not found in compound info");
+		return compoundInfo.content.get(compoundIndex + 1)[colIndex];
 	}
 
 	public String getClassRatio()
+	{
+		return getClassRatio(false);
+	}
+
+	public String getClassRatio(boolean withInterval)
 	{
 		List<Double> ratios = new ArrayList<Double>();
 		for (int l = 0; l < numEndpoints; l++)
 			ratios.add(ones_per_label[l] / (double) (ones_per_label[l] + zeros_per_label[l]));
 		DoubleArraySummary summ = DoubleArraySummary.create(ratios);
-		return summ.toString();
+		String s = summ.toString();
+		if (withInterval)
+			s += " [" + StringUtil.formatDouble(summ.getMin()) + "-" + StringUtil.formatDouble(summ.getMax()) + "]";
+		return s;
 	}
 
 	DiscMethod discMethod;

@@ -56,6 +56,8 @@ import util.FileUtil;
 import util.FileUtil.CSVFile;
 import util.ParallelHandler;
 import util.StringUtil;
+import weka.ArffWriter;
+import weka.FilledArffWritable;
 import weka.classifiers.Classifier;
 import weka.classifiers.functions.SMO;
 import weka.classifiers.lazy.IBk;
@@ -76,6 +78,8 @@ public class RunMLC extends MLCOptions
 {
 	MLCDataInfo data;
 	ParallelHandler parallel;
+
+	static boolean DEBUG = false;
 
 	public RunMLC()
 	{
@@ -115,7 +119,8 @@ public class RunMLC extends MLCOptions
 			}
 		}
 		else
-			throw new IllegalArgumentException("unknown app-domain: " + appDomainStr);
+			throw new IllegalArgumentException("unknown app-domain: " + appDomainStr
+					+ " available: None Centroid Neighbor");
 		for (String key : params.keySet())
 		{
 			if (key.equals("method"))
@@ -217,6 +222,7 @@ public class RunMLC extends MLCOptions
 		{
 			PredictiveClusteringTrees.Heuristic heuristic = PredictiveClusteringTrees.Heuristic.VarianceReduction;
 			PredictiveClusteringTrees.PruningMethod pruningMethod = PredictiveClusteringTrees.PruningMethod.C4_5;
+			PredictiveClusteringTrees.EnsembleMethod ensembleMethod = PredictiveClusteringTrees.EnsembleMethod.None;
 			if (mlcParamHash.size() > 0)
 			{
 				for (String keys : mlcParamHash.keySet())
@@ -225,11 +231,13 @@ public class RunMLC extends MLCOptions
 						heuristic = PredictiveClusteringTrees.Heuristic.valueOf(mlcParamHash.get(keys));
 					else if (keys.equals("pruning"))
 						pruningMethod = PredictiveClusteringTrees.PruningMethod.valOf(mlcParamHash.get(keys));
+					else if (keys.equals("ensemble"))
+						ensembleMethod = PredictiveClusteringTrees.EnsembleMethod.valueOf(mlcParamHash.get(keys));
 					else
 						throw new IllegalArgumentException("illegal param for PCT: '" + keys + "'");
 				}
 			}
-			return new PredictiveClusteringTrees(heuristic, pruningMethod);
+			return new PredictiveClusteringTrees(heuristic, pruningMethod, ensembleMethod);
 		}
 		else
 			throw new Error("unknown mlc algorithm: " + mlcAlgorithmStr);
@@ -663,10 +671,12 @@ public class RunMLC extends MLCOptions
 					final boolean confidence = fillMissingString.equals("confidence");
 
 					MultiLabelInstances data = dataset;
-					DefaultMLCApplicabilityDomain ad = new DefaultMLCApplicabilityDomain(
-							(DistanceBasedApplicabilityDomain) appDomain);
-
-					ad.init(data);
+					DefaultMLCApplicabilityDomain ad = null;
+					if (appDomain != null)
+					{
+						ad = new DefaultMLCApplicabilityDomain((DistanceBasedApplicabilityDomain) appDomain);
+						ad.init(data);
+					}
 					mlcAlgorithm.build(data);
 
 					//					SerializationHelper.write("/tmp/test.model", mlcAlgorithm);
@@ -723,8 +733,9 @@ public class RunMLC extends MLCOptions
 
 								if (!compoundPrediction.containsKey(compoundIndex))
 									compoundPrediction.put(compoundIndex, mlcAlgorithm.makePrediction(inst));
-								if (ad.isInside(inst, labelIndex))
-									insideADCount++;
+								if (appDomain != null)
+									if (ad.isInside(inst, labelIndex))
+										insideADCount++;
 
 								missings.add(inst);
 								//													else
@@ -755,20 +766,28 @@ public class RunMLC extends MLCOptions
 							}
 						}
 
-						if (toFillCount > 0)
-						{
-							System.err.println("filled " + insideADCount + "/" + toFillCount
-									+ " missing values (size ad "
-									+ ad.getApplicabilityDomain(labelIndex).getData().numInstances() + ", dist ad "
-									+ ad.getApplicabilityDomain(labelIndex).getAverageTrainingDistance() + ")");
-							ADVisualization.showDistHistogramm(attr.name(), ad, labelIndex, ArrayUtil.toArray(missings));
+						if (appDomain != null)
+							if (toFillCount > 0)
+							{
+								System.err.println("filled " + insideADCount + "/" + toFillCount
+										+ " missing values (size ad "
+										+ ad.getApplicabilityDomain(labelIndex).getData().numInstances() + ", dist ad "
+										+ ad.getApplicabilityDomain(labelIndex).getAverageTrainingDistance() + ")");
+								if (DEBUG)
+									ADVisualization.showDistHistogramm(attr.name(), ad, labelIndex,
+											ArrayUtil.toArray(missings));
 
-						}
+							}
 					}
 
 					String outfile = Settings.filledCsvFile(datasetNameStr, getExperimentName(), confidence);
-					System.out.println("writing filled" + (confidence ? "Confidence" : "Class") + " to " + outfile);
+					System.out
+							.println("writing filled csv " + (confidence ? "Confidence" : "Class") + " to " + outfile);
 					FileUtil.writeCSV(outfile, csv, false);
+					String arffFile = Settings.filledArffFile(datasetNameStr, getExperimentName(), confidence);
+					System.out.println("writing filled arff " + (confidence ? "Confidence" : "Class") + " to "
+							+ arffFile);
+					ArffWriter.writeToArffFile(new File(arffFile), new FilledArffWritable(csv));
 					//									MultipleEvaluation ev = eval.crossValidate(mlcAlgorithm, data, numFolds);
 				}
 			}
@@ -787,6 +806,7 @@ public class RunMLC extends MLCOptions
 
 		if (args != null && args.length == 1 && args[0].equals("debug"))
 		{
+			DEBUG = true;
 			String a;
 
 			//			Settings.PWD = "/home/martin/workspace/BMBF-MLC/";
@@ -799,7 +819,7 @@ public class RunMLC extends MLCOptions
 			//					.split(" ");
 			//a = "multi_validation_report -e BR-AD -d dataB_noV_Ca15-20c20_PCFP -z all";
 
-			//			a = "validate -a PCT -i 0 -u 1 -c RandomForest -d dataB_noV_EqF_PC -e BR-BEqF -q None";
+			a = "validate -a PCT,PCT -p \"ensemble=RForest,default\" -i 0 -u 1 -c RandomForest -d dataB_noV_EqF_PC -e BR-BEqF -q None";
 			//a = "endpoint_table -o RepdoseNeustoff";
 
 			//a = "validate -a BR -i 0 -u 2 -c RandomForest -d dataR_noV_Cl68_PC -e BR-R -q Centroid -w continous=false -o Repdose";
@@ -840,7 +860,7 @@ public class RunMLC extends MLCOptions
 			//
 			//args = "endpoint_table -d dataR_noV_Cl68_PC -o cpdbas".split(" ");
 			//
-			//args = "fill_missing -a BR -c RandomForest -d dataB_noV_Cl68_PC -m class -e test".split(" ");
+			//a = "fill_missing -a BR -c RandomForest -d dataB_noV_Cl68_PC -m class -q None -e test";
 
 			//a = "cluster -1 data/dataR_noV.csv -2 ratio -3 0.6 -4 0.8";
 			//a = "multi_validation_report -e CL -d dataB_noV_EqF_PC,dataB_noV_Cl68_PC,dataB_noV_Cl15-20a_PC -z all";
@@ -850,7 +870,9 @@ public class RunMLC extends MLCOptions
 			//a = "multi_validation_report -e ParamsPCT -d dataA_noV_Ca15-20c20_PCFP -z all";
 			//a = "validate -x 1 -d dataA_noV_Ca15-20c20_PCFP -i 0 -u 1 -f 10 -a PCT,PCT,PCT,PCT -p \"heuristic=VarianceReduction;pruning=C4.5,heuristic=GainRatio;pruning=C4.5,heuristic=VarianceReduction;pruning=None,heuristic=GainRatio;pruning=None\" -t false -c RandomForest -e ParamsPCT -q None -w \"default\"";
 
-			a = "dataset_report -d dataC_noV_Ca15-20c20_dummy";
+			//a = "cluster -1 data/dataC_withV.csv -2 absolute -3 1.5 -4 2.0 -5 2.0";
+			//a = "multi_validation_report -e PC12-Y -d dataY_PC1,dataY_PC2 -z all";
+			//			a = "dataset_report -d dataC_noV_Ca15-20c20_dummy";
 			//a = "endpoint_table -d dataC_noV_Ca15-20c20_dummy";
 
 			args = a.split(" ");
