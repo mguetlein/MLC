@@ -273,7 +273,7 @@ public class RunMLC extends MLCOptions
 		{
 			final MultiLabelInstances dataset = new MultiLabelInstances(Settings.arffFile(datasetNameStr),
 					Settings.xmlFile(datasetNameStr));
-			int numRepetitions = (getMaxSeedExclusive() - getMinSeed()) * getClassifiers().length
+			final int numRepetitions = (getMaxSeedExclusive() - getMinSeed()) * getClassifiers().length
 					* getMlcAlgorithms().length * getImputations().length * getAppDomains().length;
 
 			final SinglePredictionTracker tracker;
@@ -357,7 +357,7 @@ public class RunMLC extends MLCOptions
 											method.runMLC(datasetNameStr, dataset, di, mlcAlgorithmStr, mlcAlgorithm,
 													imputationString, classifierString, mlcAlgorithmParamsStr,
 													appDomain, appDomainStr, appDomainParamsStr, seed, res, resFile,
-													tracker);
+													tracker, numRepetitions * getNumFolds());
 										}
 										catch (Exception e)
 										{
@@ -390,8 +390,8 @@ public class RunMLC extends MLCOptions
 		public void runMLC(String datasetNameStr, MultiLabelInstances dataset, MLCDataInfo di, String mlcAlgorithmStr,
 				MultiLabelLearner mlcAlgorithm, String imputationString, String classifierString,
 				String mlcAlgorithmParamsStr, ApplicabilityDomain appDomain, String appDomainStr,
-				String appDomainParamsStr, int seed, ResultSet res, File resFile, SinglePredictionTracker tracker)
-				throws Exception;
+				String appDomainParamsStr, int seed, ResultSet res, File resFile, SinglePredictionTracker tracker,
+				int numExperimentFolds) throws Exception;
 	}
 
 	public void validate() throws Exception
@@ -406,7 +406,7 @@ public class RunMLC extends MLCOptions
 					String mlcAlgorithmStr, MultiLabelLearner mlcAlgorithm, String imputationString,
 					String classifierString, String mlcAlgorithmParamsStr, ApplicabilityDomain appDomain,
 					String appDomainStr, String appDomainParamsStr, int seed, ResultSet res, File resFile,
-					SinglePredictionTracker tracker)
+					SinglePredictionTracker tracker, int numExperimentFolds)
 			{
 				long start = System.currentTimeMillis();
 
@@ -557,9 +557,14 @@ public class RunMLC extends MLCOptions
 						for (String key : result.keySet())
 							res.setResultValue(resIndex, key, result.get(key));
 					}
-					System.out.println("\nprinting " + res.getNumResults() + " results to " + resFile);
-					//System.out.println(res.toNiceString());
-					ResultSetIO.printToFile(resFile, res, true);
+					if (numExperimentFolds > res.getNumResults())
+						throw new Error("WTF");
+					else if (numExperimentFolds == res.getNumResults())
+					{
+						System.out.println("\nprinting " + res.getNumResults() + " results to " + resFile);
+						//System.out.println(res.toNiceString());
+						ResultSetIO.printToFile(resFile, res, true);
+					}
 				}
 			}
 		});
@@ -574,7 +579,7 @@ public class RunMLC extends MLCOptions
 					String mlcAlgorithmStr, MultiLabelLearner mlcAlgorithm, String imputationString,
 					String classifierString, String mlcAlgorithmParamsStr, ApplicabilityDomain appDomain,
 					String appDomainStr, String appDomainParamsStr, int seed, ResultSet res, File resFile,
-					SinglePredictionTracker tracker) throws Exception
+					SinglePredictionTracker tracker, int numExperimentFolds) throws Exception
 			{
 				Settings.createModelDirectory(modelName);
 
@@ -645,7 +650,7 @@ public class RunMLC extends MLCOptions
 					String mlcAlgorithmStr, MultiLabelLearner mlcAlgorithm, String imputationString,
 					String classifierString, String mlcAlgorithmParamsStr, ApplicabilityDomain appDomain,
 					String appDomainStr, String appDomainParamsStr, int seed, ResultSet res, File resFile,
-					SinglePredictionTracker tracker) throws Exception
+					SinglePredictionTracker tracker, int numExperimentFolds) throws Exception
 			{
 				if (getFillMissings().length == 0)
 					throw new IllegalArgumentException(
