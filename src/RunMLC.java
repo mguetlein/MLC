@@ -1,8 +1,10 @@
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
 
 import mlc.ClusterEndpoint;
@@ -432,141 +434,128 @@ public class RunMLC extends MLCOptions
 				MultipleEvaluation ev = eval.crossValidate(mlcAlgorithm, data, getNumFolds());
 				//				ev.calculateStatistics();
 
+				List<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
+				for (int fold = 0; fold < getNumFolds(); fold++)
+				{
+					Map<String, Object> result = new LinkedHashMap<String, Object>();
+					result.put("dataset-name", datasetNameStr);
+					result.put("endpoint-file", di.endpointFile);
+					result.put("feature-file", di.featureFile);
+					result.put("num-endpoints", di.numEndpoints);
+					result.put("num-missing-allowed", di.numMissingAllowed);
+					result.put("discretization-level", di.discretizationLevel);
+					result.put("include-v", di.includeV);
+					result.put("runtime", System.currentTimeMillis() - start);
+
+					result.put("imputation", imputationString);
+					result.put("classifier", classifierString);
+					result.put("mlc-algorithm", mlcAlgorithmStr);
+					result.put("mlc-algorithm-params", mlcAlgorithmParamsStr);
+
+					result.put("app-domain", appDomainStr);
+					result.put("app-domain-params", appDomainParamsStr);
+
+					result.put("cv-seed", seed);
+					result.put("num-folds", getNumFolds());
+					result.put("fold", fold);
+
+					result.put("num-compounds", dataset.getNumInstances());
+					result.put("num-labels", dataset.getNumLabels());
+					for (int i = 0; i < dataset.getNumLabels(); i++)
+						result.put("label#" + i, dataset.getDataSet().attribute(dataset.getLabelIndices()[i]).name());
+
+					result.put("cardinality", dataset.getCardinality());
+
+					result.put("num-predictions", ev.getData(fold).getNumInstances());
+
+					int n = dataset.getNumLabels();
+					result.put("macro-inside-ad", ev.getPctInsideAD(fold));
+					for (int i = 0; i < n; i++)
+						result.put("macro-inside-ad#" + i, ev.getPctInsideAD(fold, i));
+
+					for (ConfidenceLevel c : ConfidenceLevelProvider.LEVELS)
+					{
+						String s = c.getShortName();
+
+						result.put("hamming-loss" + s, ev.getResult(new HammingLoss(c).getName(), fold));
+						result.put("1-hamming-loss" + s, 1 - ev.getResult(new HammingLoss(c).getName(), fold));
+
+						result.put("subset-accuracy" + s, ev.getResult(new SubsetAccuracy(c).getName(), fold));
+						//result.put( "accuracy", ev.getMean(new ExampleBasedAccuracy().getName()));
+						//result.put( "precision", ev.getMean(new ExampleBasedPrecision().getName()));
+						//result.put( "recall", ev.getMean(new ExampleBasedRecall().getName()));
+
+						result.put("macro-accuracy" + s, ev.getResult(new MacroAccuracy(c, n, false).getName(), fold));
+						result.put("weighted-macro-accuracy" + s,
+								ev.getResult(new MacroAccuracy(c, n, true).getName(), fold));
+						for (int i = 0; i < n; i++)
+							result.put("macro-accuracy#" + i + s,
+									ev.getResult(new MacroAccuracy(c, n, false).getName(), fold, i));
+						result.put("micro-accuracy" + s, ev.getResult(new MicroAccuracy(c, n).getName(), fold));
+
+						result.put("micro-f-measure" + s, ev.getResult(new MicroFMeasure(c, n).getName(), fold));
+						result.put("macro-f-measure" + s, ev.getResult(new MacroFMeasure(c, n, false).getName(), fold));
+						result.put("weighted-macro-f-measure" + s,
+								ev.getResult(new MacroFMeasure(c, n, true).getName(), fold));
+						for (int i = 0; i < n; i++)
+							result.put("macro-f-measure#" + i + s,
+									ev.getResult(new MacroFMeasure(c, n, false).getName(), fold, i));
+
+						//							result.put( "micro-auc" + s,
+						//									ev.getResult(new MicroAUC(c, n).getName(), fold));
+						result.put("macro-auc" + s, ev.getResult(new MacroAUC(c, n, false).getName(), fold));
+						result.put("weighted-macro-auc" + s, ev.getResult(new MacroAUC(c, n, true).getName(), fold));
+						for (int i = 0; i < n; i++)
+							result.put("macro-auc#" + i + s, ev.getResult(new MacroAUC(c, n, false).getName(), fold, i));
+
+						result.put("micro-mcc" + s, ev.getResult(new MicroMCC(c, n).getName(), fold));
+						result.put("macro-mcc" + s, ev.getResult(new MacroMCC(c, n, false).getName(), fold));
+						result.put("weighted-macro-mcc" + s, ev.getResult(new MacroMCC(c, n, true).getName(), fold));
+						for (int i = 0; i < n; i++)
+							result.put("macro-mcc#" + i + s, ev.getResult(new MacroMCC(c, n, false).getName(), fold, i));
+
+						result.put("micro-sensitivity" + s, ev.getResult(new MicroRecall(c, n).getName(), fold));
+						result.put("macro-sensitivity" + s, ev.getResult(new MacroRecall(c, n).getName(), fold));
+						for (int i = 0; i < n; i++)
+							result.put("macro-sensitivity#" + i + s,
+									ev.getResult(new MacroRecall(c, n).getName(), fold, i));
+
+						result.put("micro-specificity" + s, ev.getResult(new MicroSpecificity(c, n).getName(), fold));
+						result.put("macro-specificity" + s, ev.getResult(new MacroSpecificity(c, n).getName(), fold));
+						for (int i = 0; i < n; i++)
+							result.put("macro-specificity#" + i + s,
+									ev.getResult(new MacroSpecificity(c, n).getName(), fold, i));
+
+						result.put("macro-ppv" + s, ev.getResult(new MacroPrecision(c, n).getName(), fold));
+						for (int i = 0; i < n; i++)
+							result.put("macro-ppv#" + i + s, ev.getResult(new MacroPrecision(c, n).getName(), fold, i));
+
+						result.put("macro-npv" + s,
+								ev.getResult(new MacroNegativePredictiveValue(c, n).getName(), fold));
+						for (int i = 0; i < n; i++)
+							result.put("macro-npv#" + i + s,
+									ev.getResult(new MacroNegativePredictiveValue(c, n).getName(), fold, i));
+
+						for (int i = 0; i < n; i++)
+							for (ConfusionMatrix.Values v : ConfusionMatrix.Values.values())
+								result.put(v.toString() + "#" + i + s,
+										ev.getConfMatrixValue(v.toString(), new MacroRecall(c, n).getName(), fold, i));
+
+						//							result.put( "macro-appdomain", ev.getResult(new MacroPercentInsideAD(
+						//									 n).getName(), fold));
+						//							for (int i = 0; i < n; i++)
+						//								result.put( "macro-appdomain#" + i, ev.getResult(
+						//										new MacroPercentInsideAD(confLevel, n).getName(), fold, i));
+					}
+					results.add(result);
+				}
 				synchronized (res)
 				{
-					for (int fold = 0; fold < getNumFolds(); fold++)
+					for (Map<String, Object> result : results)
 					{
-						int resCount = res.addResult();
-						res.setResultValue(resCount, "dataset-name", datasetNameStr);
-						res.setResultValue(resCount, "endpoint-file", di.endpointFile);
-						res.setResultValue(resCount, "feature-file", di.featureFile);
-						res.setResultValue(resCount, "num-endpoints", di.numEndpoints);
-						res.setResultValue(resCount, "num-missing-allowed", di.numMissingAllowed);
-						res.setResultValue(resCount, "discretization-level", di.discretizationLevel);
-						res.setResultValue(resCount, "include-v", di.includeV);
-						res.setResultValue(resCount, "runtime", System.currentTimeMillis() - start);
-
-						res.setResultValue(resCount, "imputation", imputationString);
-						res.setResultValue(resCount, "classifier", classifierString);
-						res.setResultValue(resCount, "mlc-algorithm", mlcAlgorithmStr);
-						res.setResultValue(resCount, "mlc-algorithm-params", mlcAlgorithmParamsStr);
-
-						res.setResultValue(resCount, "app-domain", appDomainStr);
-						res.setResultValue(resCount, "app-domain-params", appDomainParamsStr);
-
-						res.setResultValue(resCount, "cv-seed", seed);
-						res.setResultValue(resCount, "num-folds", getNumFolds());
-						res.setResultValue(resCount, "fold", fold);
-
-						res.setResultValue(resCount, "num-compounds", dataset.getNumInstances());
-						res.setResultValue(resCount, "num-labels", dataset.getNumLabels());
-						for (int i = 0; i < dataset.getNumLabels(); i++)
-							res.setResultValue(resCount, "label#" + i,
-									dataset.getDataSet().attribute(dataset.getLabelIndices()[i]).name());
-
-						res.setResultValue(resCount, "cardinality", dataset.getCardinality());
-
-						res.setResultValue(resCount, "num-predictions", ev.getData(fold).getNumInstances());
-
-						int n = dataset.getNumLabels();
-						res.setResultValue(resCount, "macro-inside-ad", ev.getPctInsideAD(fold));
-						for (int i = 0; i < n; i++)
-							res.setResultValue(resCount, "macro-inside-ad#" + i, ev.getPctInsideAD(fold, i));
-
-						for (ConfidenceLevel c : ConfidenceLevelProvider.LEVELS)
-						{
-							String s = c.getShortName();
-
-							res.setResultValue(resCount, "hamming-loss" + s,
-									ev.getResult(new HammingLoss(c).getName(), fold));
-							res.setResultValue(resCount, "1-hamming-loss" + s,
-									1 - ev.getResult(new HammingLoss(c).getName(), fold));
-
-							res.setResultValue(resCount, "subset-accuracy" + s,
-									ev.getResult(new SubsetAccuracy(c).getName(), fold));
-							//res.setResultValue(resCount, "accuracy", ev.getMean(new ExampleBasedAccuracy().getName()));
-							//res.setResultValue(resCount, "precision", ev.getMean(new ExampleBasedPrecision().getName()));
-							//res.setResultValue(resCount, "recall", ev.getMean(new ExampleBasedRecall().getName()));
-
-							res.setResultValue(resCount, "macro-accuracy" + s,
-									ev.getResult(new MacroAccuracy(c, n, false).getName(), fold));
-							res.setResultValue(resCount, "weighted-macro-accuracy" + s,
-									ev.getResult(new MacroAccuracy(c, n, true).getName(), fold));
-							for (int i = 0; i < n; i++)
-								res.setResultValue(resCount, "macro-accuracy#" + i + s,
-										ev.getResult(new MacroAccuracy(c, n, false).getName(), fold, i));
-							res.setResultValue(resCount, "micro-accuracy" + s,
-									ev.getResult(new MicroAccuracy(c, n).getName(), fold));
-
-							res.setResultValue(resCount, "micro-f-measure" + s,
-									ev.getResult(new MicroFMeasure(c, n).getName(), fold));
-							res.setResultValue(resCount, "macro-f-measure" + s,
-									ev.getResult(new MacroFMeasure(c, n, false).getName(), fold));
-							res.setResultValue(resCount, "weighted-macro-f-measure" + s,
-									ev.getResult(new MacroFMeasure(c, n, true).getName(), fold));
-							for (int i = 0; i < n; i++)
-								res.setResultValue(resCount, "macro-f-measure#" + i + s,
-										ev.getResult(new MacroFMeasure(c, n, false).getName(), fold, i));
-
-							//							res.setResultValue(resCount, "micro-auc" + s,
-							//									ev.getResult(new MicroAUC(c, n).getName(), fold));
-							res.setResultValue(resCount, "macro-auc" + s,
-									ev.getResult(new MacroAUC(c, n, false).getName(), fold));
-							res.setResultValue(resCount, "weighted-macro-auc" + s,
-									ev.getResult(new MacroAUC(c, n, true).getName(), fold));
-							for (int i = 0; i < n; i++)
-								res.setResultValue(resCount, "macro-auc#" + i + s,
-										ev.getResult(new MacroAUC(c, n, false).getName(), fold, i));
-
-							res.setResultValue(resCount, "micro-mcc" + s,
-									ev.getResult(new MicroMCC(c, n).getName(), fold));
-							res.setResultValue(resCount, "macro-mcc" + s,
-									ev.getResult(new MacroMCC(c, n, false).getName(), fold));
-							res.setResultValue(resCount, "weighted-macro-mcc" + s,
-									ev.getResult(new MacroMCC(c, n, true).getName(), fold));
-							for (int i = 0; i < n; i++)
-								res.setResultValue(resCount, "macro-mcc#" + i + s,
-										ev.getResult(new MacroMCC(c, n, false).getName(), fold, i));
-
-							res.setResultValue(resCount, "micro-sensitivity" + s,
-									ev.getResult(new MicroRecall(c, n).getName(), fold));
-							res.setResultValue(resCount, "macro-sensitivity" + s,
-									ev.getResult(new MacroRecall(c, n).getName(), fold));
-							for (int i = 0; i < n; i++)
-								res.setResultValue(resCount, "macro-sensitivity#" + i + s,
-										ev.getResult(new MacroRecall(c, n).getName(), fold, i));
-
-							res.setResultValue(resCount, "micro-specificity" + s,
-									ev.getResult(new MicroSpecificity(c, n).getName(), fold));
-							res.setResultValue(resCount, "macro-specificity" + s,
-									ev.getResult(new MacroSpecificity(c, n).getName(), fold));
-							for (int i = 0; i < n; i++)
-								res.setResultValue(resCount, "macro-specificity#" + i + s,
-										ev.getResult(new MacroSpecificity(c, n).getName(), fold, i));
-
-							res.setResultValue(resCount, "macro-ppv" + s,
-									ev.getResult(new MacroPrecision(c, n).getName(), fold));
-							for (int i = 0; i < n; i++)
-								res.setResultValue(resCount, "macro-ppv#" + i + s,
-										ev.getResult(new MacroPrecision(c, n).getName(), fold, i));
-
-							res.setResultValue(resCount, "macro-npv" + s,
-									ev.getResult(new MacroNegativePredictiveValue(c, n).getName(), fold));
-							for (int i = 0; i < n; i++)
-								res.setResultValue(resCount, "macro-npv#" + i + s,
-										ev.getResult(new MacroNegativePredictiveValue(c, n).getName(), fold, i));
-
-							for (int i = 0; i < n; i++)
-								for (ConfusionMatrix.Values v : ConfusionMatrix.Values.values())
-									res.setResultValue(resCount, v.toString() + "#" + i + s, ev.getConfMatrixValue(
-											v.toString(), new MacroRecall(c, n).getName(), fold, i));
-
-							//							res.setResultValue(resCount, "macro-appdomain", ev.getResult(new MacroPercentInsideAD(
-							//									 n).getName(), fold));
-							//							for (int i = 0; i < n; i++)
-							//								res.setResultValue(resCount, "macro-appdomain#" + i, ev.getResult(
-							//										new MacroPercentInsideAD(confLevel, n).getName(), fold, i));
-						}
+						int resIndex = res.addResult();
+						for (String key : result.keySet())
+							res.setResultValue(resIndex, key, result.get(key));
 					}
 					System.out.println("\nprinting " + res.getNumResults() + " results to " + resFile);
 					//System.out.println(res.toNiceString());
