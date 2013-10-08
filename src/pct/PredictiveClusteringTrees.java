@@ -11,6 +11,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 
 import jeans.util.StringUtils;
 import jeans.util.cmdline.CMDLineArgs;
@@ -344,6 +346,8 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 		try
 		{
 			testArffPath = File.createTempFile("dataset_test", "arff").getAbsolutePath();
+			tmpArffFiles.add(testArffPath);
+
 			// necessary to write pseudo test file since test file needs to exist when calling Clus
 			//			String testArffPath = "./dataset_test.arff";
 			FileUtil.copy(trainArffPath, testArffPath);
@@ -424,9 +428,9 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 
 		try
 		{
-
 			//			String trainArffPath = "./dataset.arff";
 			trainArffPath = File.createTempFile("dataset", "arff").getAbsolutePath();
+			tmpArffFiles.add(trainArffPath);
 
 			//			System.out.println("trainArffPath: "+trainArffPath);
 
@@ -444,6 +448,15 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 		{
 			throw new Error(e);
 		}
+	}
+
+	public static Set<String> tmpArffFiles = new HashSet<String>();
+
+	public static void clear()
+	{
+		for (String f : tmpArffFiles)
+			if (!new File(f).delete())
+				System.err.println("could not delete " + f);
 	}
 
 	protected MultiLabelOutput makePredictionInternal(Instance instance)

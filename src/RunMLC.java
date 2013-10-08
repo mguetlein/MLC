@@ -381,6 +381,8 @@ public class RunMLC extends MLCOptions
 		if (parallel != null)
 			parallel.waitForAll();
 
+		PredictiveClusteringTrees.clear();
+
 		if (trackers != null)
 			for (SinglePredictionTracker tracker : trackers)
 				SinglePredictionTrackerUtil.attachToCsv(tracker);
