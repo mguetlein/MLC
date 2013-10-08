@@ -345,6 +345,8 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 	{
 		try
 		{
+			Clus clus = new Clus();
+
 			testArffPath = File.createTempFile("dataset_test", "arff").getAbsolutePath();
 			tmpArffFiles.add(testArffPath);
 
@@ -353,8 +355,7 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 			FileUtil.copy(trainArffPath, testArffPath);
 			//			writeArff(testArffPath, dataset.getDataSet());
 
-			String appName = "pct-model_t" + System.currentTimeMillis() + "_h"
-					+ PredictiveClusteringTrees.this.hashCode();
+			String appName = "pct-model_t" + System.currentTimeMillis() + "_h" + clus.hashCode();
 			String settingsFile = appName + ".s";
 			if (new File(settingsFile).exists())
 				throw new Error();
@@ -366,7 +367,6 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 			//			System.out.println(settingsFile);
 			args[0] = settingsFile;
 
-			Clus clus = new Clus();
 			Settings sett = clus.getSettings();
 
 			CMDLineArgs cargs = new CMDLineArgs(clus);
@@ -407,9 +407,12 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 			this.predsCount = clus.getPredsCounts();
 			this.nbExamples = clus.getNumExamples();
 
-			new File(settingsFile).delete();
-			new File(appName + ".out").delete();
-			new File(appName + ".model").delete();
+			if (!new File(settingsFile).delete())
+				System.err.println("could not delete " + settingsFile);
+			if (!new File(appName + ".out").delete())
+				System.err.println("could not delete " + appName + ".out");
+			if (!new File(appName + ".model").delete())
+				System.err.println("could not delete " + appName + ".model");
 
 			return clus;
 		}
