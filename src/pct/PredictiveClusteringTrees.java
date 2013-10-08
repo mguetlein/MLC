@@ -263,6 +263,8 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 	//		this.settingFile = settingFile;
 	//	}
 
+	public static int numIterations = 10;
+
 	protected void createSettingFile(String settingsFile)
 	{
 		int numAttributes = dataset.getFeatureAttributes().size();
@@ -303,7 +305,9 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 			if (ensembleMethod != EnsembleMethod.None)
 			{
 				writer.write("[Ensemble]\n");
-				writer.write("Iterations = 10\n");
+				writer.write("Iterations = " + numIterations + "\n");
+				//				System.err.println(numIterations);
+				//				numIterations += 10;
 				writer.write("EnsembleMethod = " + ensembleMethod + "\n");
 			}
 			writer.write("\n");
@@ -370,7 +374,7 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 			clus.initSettings(cargs);
 			ClusInductionAlgorithmType clss = null;
 
-			if (ensembleMethod != EnsembleMethod.None)
+			if (ensembleMethod == EnsembleMethod.RForest)
 			{
 				sett.setEnsembleMode(true);
 				clss = new ClusEnsembleClassifier(clus);
@@ -379,12 +383,22 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 			{
 				clss = new ClusDecisionTree(clus);
 			}
-			clss = new ClusDecisionTree(clus);
 			if (sett.getFTestArray().isVector())
 				clss = new CDTTuneFTest(clss, sett.getFTestArray().getDoubleVector());
 
-			clus.initialize(cargs, clss);
-			clus.singleRun(clss);
+			if (ensembleMethod == EnsembleMethod.Bagging)
+			{
+				//clus.isxval = true;
+				Settings.IS_XVAL = true;
+				clus.initialize(cargs, clss);
+				clus.baggingRun(clss);
+			}
+			else
+			{
+				clus.initialize(cargs, clss);
+				clus.singleRun(clss);
+			}
+
 			this.predsArray = clus.getPredsArrs();
 			this.predsCount = clus.getPredsCounts();
 			this.nbExamples = clus.getNumExamples();
