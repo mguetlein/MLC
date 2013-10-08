@@ -22,12 +22,12 @@ public class TestPCT
 			//			int numAttributes = dataset.getFeatureAttributes().size();
 			//			System.out.println(numLabels+", "+numAttributes);
 
-			String last = null;
+			//			String last = null;
 
 			for (int j = 0; j < 1; j++)
 			{
-				//for (EnsembleMethod m : new EnsembleMethod[] { EnsembleMethod.RForest })
-				for (EnsembleMethod m : EnsembleMethod.values())
+				for (EnsembleMethod m : new EnsembleMethod[] { EnsembleMethod.RForest })
+				//for (EnsembleMethod m : EnsembleMethod.values())
 				{
 					PruningMethod p = PruningMethod.Default;
 					//				for (PruningMethod p : PruningMethod.values())
@@ -37,6 +37,7 @@ public class TestPCT
 						{
 
 							System.out.println(h + " " + p + " " + m);
+							long time = System.currentTimeMillis();
 
 							MultiLabelLearner learner = new PredictiveClusteringTrees(h, p, m);
 
@@ -62,12 +63,14 @@ public class TestPCT
 								}
 								current += "\n";
 							}
-							System.out.println(current);
+							//							System.out.println(current);
 
-							if (last == null)
-								last = current;
-							else if (last.equals(current))
-								throw new Error("equal!");
+							//							if (last == null)
+							//								last = current;
+							//							else if (last.equals(current))
+							//								throw new Error("equal!");
+
+							System.out.println(((System.currentTimeMillis() - time) / 1000.0) + "s");
 						}
 					}
 				}

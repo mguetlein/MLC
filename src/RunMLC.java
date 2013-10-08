@@ -269,12 +269,13 @@ public class RunMLC extends MLCOptions
 			trackers = null;
 		}
 
+		final int numRepetitions = (getMaxSeedExclusive() - getMinSeed()) * getClassifiers().length
+				* getMlcAlgorithms().length * getImputations().length * getAppDomains().length;
+
 		for (final String datasetNameStr : getDatasetNames())
 		{
 			final MultiLabelInstances dataset = new MultiLabelInstances(Settings.arffFile(datasetNameStr),
 					Settings.xmlFile(datasetNameStr));
-			final int numRepetitions = (getMaxSeedExclusive() - getMinSeed()) * getClassifiers().length
-					* getMlcAlgorithms().length * getImputations().length * getAppDomains().length;
 
 			final SinglePredictionTracker tracker;
 			if (storeResults)
@@ -357,7 +358,7 @@ public class RunMLC extends MLCOptions
 											method.runMLC(datasetNameStr, dataset, di, mlcAlgorithmStr, mlcAlgorithm,
 													imputationString, classifierString, mlcAlgorithmParamsStr,
 													appDomain, appDomainStr, appDomainParamsStr, seed, res, resFile,
-													tracker, numRepetitions * getNumFolds());
+													tracker, numRepetitions * getNumFolds() * getDatasetNames().length);
 										}
 										catch (Exception e)
 										{
