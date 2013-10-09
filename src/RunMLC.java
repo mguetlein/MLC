@@ -424,7 +424,7 @@ public class RunMLC extends MLCOptions
 				//mulan.evaluation.Evaluator eval = new mulan.evaluation.Evaluator();
 				MissingCapableEvaluator eval = new MissingCapableEvaluator();
 				if (imputationString.equals("true"))
-					eval.setImputationLearner(mlcAlgorithm);
+					eval.setImputationLearner(new EnsembleOfClassifierChains(new RandomForest(), 10, false, false));
 				if (imputationString.equals("random"))
 					eval.setImputationAtRandom(new Random());
 				eval.setSinglePredictionTracker(tracker);
@@ -816,7 +816,10 @@ public class RunMLC extends MLCOptions
 			//					.split(" ");
 			//a = "multi_validation_report -e BR-AD -d dataB_noV_Ca15-20c20_PCFP -z all";
 
-			a = "validate -a PCT,PCT -p \"ensemble=RForest,default\" -i 0 -u 1 -c RandomForest -d dataB_noV_EqF_PC -e BR-BEqF -q None";
+			//a = "validate -a PCT -p \"default\" -t true -i 0 -u 1 -d dataB_noV_EqF_PC -e BR-BEqF -q None";
+			a = "validate -a PCT -p \"default\" -t true -i 0 -u 1 -d dataB_noV_EqF_PC -e BR-BEqF -q None";
+			//a = "validate -x 18 -d dataC_noV_Ca15-20c20_PC,dataC_noV_Ca15-20c20_FP1,dataC_noV_Ca15-20c20_PCFP1 -i 0 -u 5 -f 10 -a PCT -p \"ensemble=RForest\" -t false -c RandomForest -e FeatPCT -q None -w \"default\"";
+
 			//a = "endpoint_table -o RepdoseNeustoff";
 
 			//a = "validate -a BR -i 0 -u 2 -c RandomForest -d dataR_noV_Cl68_PC -e BR-R -q Centroid -w continous=false -o Repdose";

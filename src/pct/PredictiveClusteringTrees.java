@@ -471,7 +471,10 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 		{
 			Instances testInstances = new Instances(dataset.getDataSet(), -1);
 			testInstances.add(instance);
-
+			testInstances = new Instances(testInstances);
+			for (int l = 0; l < dataset.getNumLabels(); l++)
+				//hack: set all test values to "0" because missing ("?") could cause errors when no missing in dataset
+				testInstances.get(0).setValue(labelIndices[l], "0");
 			//			testArffPath = "./dataset_test.arff";
 
 			writeArff(testArffPath, testInstances);
