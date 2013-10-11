@@ -30,16 +30,16 @@ public class TestPCT
 			//			int numAttributes = dataset.getFeatureAttributes().size();
 			//			System.out.println(numLabels+", "+numAttributes);
 
-			String last = null;
+			//			String last = null;
 
-			for (int j = 0; j < 2; j++)
+			for (int j = 0; j < 1; j++)
 			{
-				for (EnsembleMethod m : new EnsembleMethod[] { EnsembleMethod.None })
+				EnsembleMethod m = EnsembleMethod.RForest;
 				//for (EnsembleMethod m : EnsembleMethod.values())
 				{
-					PruningMethod p = PruningMethod.None;
-					//					for (PruningMethod p : PruningMethod.values())
-					//					for (PruningMethod p : new PruningMethod[] { PruningMethod.None, PruningMethod.C4_5 })
+					//PruningMethod p = PruningMethod.None;
+					PruningMethod p = PruningMethod.C4_5;
+					//for (PruningMethod p : new PruningMethod[] { PruningMethod.None, PruningMethod.C4_5 })
 					{
 						//					for (Heuristic h : Heuristic.values())
 						Heuristic h = Heuristic.VarianceReduction;
@@ -83,10 +83,10 @@ public class TestPCT
 							}
 							System.out.println(current);
 
-							if (last == null)
-								last = current;
-							else if (last.equals(current))
-								throw new Error("equal!");
+							//							if (last == null)
+							//								last = current;
+							//							else if (last.equals(current))
+							//								throw new Error("equal!");
 
 							System.out.println(((System.currentTimeMillis() - time) / 1000.0) + "s");
 						}
