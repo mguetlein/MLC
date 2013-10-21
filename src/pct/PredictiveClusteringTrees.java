@@ -320,7 +320,7 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 
 			writer.close();
 
-			System.out.println("created settings file: " + settingsFile);
+			//			System.out.println("created settings file: " + settingsFile);
 
 		}
 		catch (Exception e)
