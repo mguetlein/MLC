@@ -108,7 +108,7 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 	public enum Heuristic
 	{
 		Default, ReducedError, Gain, GainRatio, VarianceReduction, MEstimate, Morishita, DispersionAdt, DispersionMlt,
-		RDispersionAdt, RDispersionMlt
+		RDispersionAdt, RDispersionMlt, VarianceReductionMissing
 	}
 
 	public enum PruningMethod

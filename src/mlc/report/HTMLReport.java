@@ -471,7 +471,7 @@ public class HTMLReport extends AbstractReport
 				else if (val instanceof Renderable)
 					html.render((Renderable) val);
 				else if (val instanceof Double)
-					html.write(StringUtil.formatDouble((Double) val, 2));
+					html.write(StringUtil.formatDouble((Double) val, 3));
 				else if (val instanceof String)
 					html.render(new TextWithLinks((String) val));
 				else

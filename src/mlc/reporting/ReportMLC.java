@@ -395,7 +395,8 @@ public class ReportMLC
 	void addBoxPlots(ResultSet results, String compareProp, String titleSuffix, String fileSuffix,
 			PerformanceMeasures measures) throws IOException, DocumentException
 	{
-		addBoxPlots(results, compareProp, titleSuffix, fileSuffix, measures, true);
+		addBoxPlots(results, compareProp, titleSuffix, fileSuffix, measures, results.getResultValues("endpoint-file")
+				.size() == 1);
 	}
 
 	void addBoxPlots(ResultSet results, String compareProp, String titleSuffix, String fileSuffix,

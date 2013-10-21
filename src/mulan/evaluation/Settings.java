@@ -100,14 +100,16 @@ public class Settings
 
 	public static String filledCsvFile(String datasetName, String experimentName, boolean confidence)
 	{
-		return PWD + "filled/" + datasetName + "_" + experimentName + "_filled" + (confidence ? "Confidence" : "Class")
-				+ ".csv";
+		//		return PWD + "filled/" + datasetName + "_" + experimentName + "_filled" + (confidence ? "Confidence" : "Class")
+		//				+ ".csv";
+		return PWD + "filled/" + datasetName + "_filled" + (confidence ? "Confidence" : "Class") + ".csv";
 	}
 
 	public static String filledArffFile(String datasetName, String experimentName, boolean confidence)
 	{
-		return PWD + "filled/" + datasetName + "_" + experimentName + "_filled" + (confidence ? "Confidence" : "Class")
-				+ ".arff";
+		//		return PWD + "filled/" + datasetName + "_" + experimentName + "_filled" + (confidence ? "Confidence" : "Class")
+		//				+ ".arff";
+		return PWD + "filled/" + datasetName + "_filled" + (confidence ? "Confidence" : "Class") + ".arff";
 	}
 
 	public static String resultFile(String experimentName, String... datasetNames)
