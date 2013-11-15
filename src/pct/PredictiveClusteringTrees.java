@@ -99,6 +99,8 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 	private Heuristic heuristic;
 	private PruningMethod pruningMethod;
 	private EnsembleMethod ensembleMethod;
+	private Integer minimalNumberExamples;
+	private Double fTest;
 
 	public enum EnsembleMethod
 	{
@@ -135,14 +137,17 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 
 	public PredictiveClusteringTrees()
 	{
-		this(Heuristic.Default, PruningMethod.Default, EnsembleMethod.None);
+		this(Heuristic.Default, PruningMethod.Default, EnsembleMethod.None, null, null);
 	}
 
-	public PredictiveClusteringTrees(Heuristic heuristic, PruningMethod pruningMethod, EnsembleMethod ensembleMethod)
+	public PredictiveClusteringTrees(Heuristic heuristic, PruningMethod pruningMethod, EnsembleMethod ensembleMethod,
+			Integer minimalNumberExamples, Double fTest)
 	{
 		this.heuristic = heuristic;
 		this.pruningMethod = pruningMethod;
 		this.ensembleMethod = ensembleMethod;
+		this.minimalNumberExamples = minimalNumberExamples;
+		this.fTest = fTest;
 	}
 
 	public String toString(Attribute attribute)
@@ -303,6 +308,8 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 			writer.write("[Tree]\n");
 			writer.write("Heuristic = " + heuristic + "\n");
 			writer.write("PruningMethod = " + pruningMethod + "\n");
+			if (fTest != null)
+				writer.write("FTest = " + fTest + "\n");
 			writer.write("\n");
 			if (ensembleMethod != EnsembleMethod.None)
 			{
@@ -311,13 +318,18 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 				//				System.err.println(numIterations);
 				//				numIterations += 10;
 				writer.write("EnsembleMethod = " + ensembleMethod + "\n");
+				writer.write("\n");
 			}
-			writer.write("\n");
 			writer.write("[Data]\n");
 			writer.write("File = " + trainArffPath + "\n");
 			writer.write("TestSet = " + testArffPath + "\n");
+			if (minimalNumberExamples != null)
+			{
+				writer.write("\n");
+				writer.write("[Model]\n");
+				writer.write("MinimalNumberExamples = " + minimalNumberExamples + "\n");
+			}
 			writer.flush();
-
 			writer.close();
 
 			//			System.out.println("created settings file: " + settingsFile);

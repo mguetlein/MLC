@@ -15,7 +15,6 @@ import mlc.report.DiscMethod;
 import mlc.reporting.ReportMLC;
 import mulan.data.InvalidDataFormatException;
 import util.ArrayUtil;
-import util.CorrelationMatrix;
 import util.CountedSet;
 import util.DoubleArraySummary;
 import util.FileUtil;
@@ -348,11 +347,11 @@ public class ClusterEndpoint extends DiscMethod
 		//			MLCDataInfo di = MLCDataInfo.get(ReportMLC.getData("dataB-PC"));
 		//			di.plotCorrelationMatrix(false, null, false);
 
-		Boolean create = false;
+		Boolean create = true;
 		boolean addVToHighValues = false;
 
 		//String dat = "dataA";
-		String dat = "dataC";
+		String dat = "dataE";
 		//int numEndpoints = 22;
 		int numEndpoints = 40;
 		//String feat = "PCFP";
@@ -363,18 +362,18 @@ public class ClusterEndpoint extends DiscMethod
 		else
 			data = dat + "_noV";
 		//String feat_file = "dataF2";
-		String feat_file = "dataC";
+		String feat_file = "dataE";
 
-		final MLCDataInfo diBase = MLCDataInfo.get(ReportMLC.getData(data + (addVToHighValues ? "_RvsV_" : "_EqF_")
-				+ feat));
-		CorrelationMatrix<Double> realMatrix = diBase.getRealValueCorrelationMatrix();
-		CorrelationMatrix<Boolean> classMatrix = diBase.getClassCorrelationMatrix();
-		System.out.println(diBase.getClassRatio(true));
-		System.out.println(realMatrix.rmse(classMatrix));
-		//		SwingUtil.showInFrame(new JScrollPane(di.plotCorrelationMatrix(false)), "real");
-		//		SwingUtil.showInFrame(new JScrollPane(di.plotCorrelationMatrix(true)), "class-eqf");
-
-		//			for (double minLow : new double[] { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7 })
+		//		final MLCDataInfo diBase = MLCDataInfo.get(ReportMLC.getData(data + (addVToHighValues ? "_RvsV_" : "_EqF_")
+		//				+ feat));
+		//		CorrelationMatrix<Double> realMatrix = diBase.getRealValueCorrelationMatrix();
+		//		CorrelationMatrix<Boolean> classMatrix = diBase.getClassCorrelationMatrix();
+		//		System.out.println(diBase.getClassRatio(true));
+		//		System.out.println(realMatrix.rmse(classMatrix));
+		//		//		SwingUtil.showInFrame(new JScrollPane(di.plotCorrelationMatrix(false)), "real");
+		//		//		SwingUtil.showInFrame(new JScrollPane(di.plotCorrelationMatrix(true)), "class-eqf");
+		//
+		//		//			for (double minLow : new double[] { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7 })
 
 		HashMap<double[], Method> runs = new LinkedHashMap<double[], Method>();
 		//		runs.put(new double[] { 0.5, 1.5 }, Method.absolute);
@@ -424,9 +423,9 @@ public class ClusterEndpoint extends DiscMethod
 				}
 
 				MLCDataInfo di = MLCDataInfo.get(ReportMLC.getData("" + data + "_" + name + "_" + feat));
-				classMatrix = di.getClassCorrelationMatrix();
+				//				classMatrix = di.getClassCorrelationMatrix();
 				System.out.println(di.getClassRatio(true));
-				System.out.println(realMatrix.rmse(classMatrix));
+				//				System.out.println(realMatrix.rmse(classMatrix));
 				//				SwingUtil.showInFrame(new JScrollPane(di.plotCorrelationMatrix(true)), "class-" + name, true);
 
 			}

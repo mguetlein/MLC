@@ -225,6 +225,9 @@ public class RunMLC extends MLCOptions
 			PredictiveClusteringTrees.Heuristic heuristic = PredictiveClusteringTrees.Heuristic.VarianceReduction;
 			PredictiveClusteringTrees.PruningMethod pruningMethod = PredictiveClusteringTrees.PruningMethod.C4_5;
 			PredictiveClusteringTrees.EnsembleMethod ensembleMethod = PredictiveClusteringTrees.EnsembleMethod.None;
+			Integer minimalNumberExamples = null;
+			Double fTest = null;
+
 			if (mlcParamHash.size() > 0)
 			{
 				for (String keys : mlcParamHash.keySet())
@@ -235,11 +238,15 @@ public class RunMLC extends MLCOptions
 						pruningMethod = PredictiveClusteringTrees.PruningMethod.valOf(mlcParamHash.get(keys));
 					else if (keys.equals("ensemble"))
 						ensembleMethod = PredictiveClusteringTrees.EnsembleMethod.valueOf(mlcParamHash.get(keys));
+					else if (keys.equals("min-num"))
+						minimalNumberExamples = Integer.parseInt(mlcParamHash.get(keys));
+					else if (keys.equals("ftest"))
+						fTest = Double.parseDouble(mlcParamHash.get(keys));
 					else
 						throw new IllegalArgumentException("illegal param for PCT: '" + keys + "'");
 				}
 			}
-			return new PredictiveClusteringTrees(heuristic, pruningMethod, ensembleMethod);
+			return new PredictiveClusteringTrees(heuristic, pruningMethod, ensembleMethod, minimalNumberExamples, fTest);
 		}
 		else
 			throw new Error("unknown mlc algorithm: " + mlcAlgorithmStr);
@@ -816,8 +823,8 @@ public class RunMLC extends MLCOptions
 			//					.split(" ");
 			//a = "multi_validation_report -e BR-AD -d dataB_noV_Ca15-20c20_PCFP -z all";
 
-			//a = "validate -a PCT -p \"default\" -t true -i 0 -u 1 -d dataB_noV_EqF_PC -e BR-BEqF -q None";
-			a = "validate -a PCT -p \"default\" -t true -i 0 -u 1 -d dataB_noV_EqF_PC -e BR-BEqF -q None";
+			a = "validate -a PCT -p heuristic=VarianceReduction;min-num=3;ftest=0.1 -t false -i 0 -u 1 -d dataB_noV_EqF_PC -e BR-BEqF -q None";
+			//a = "validate -f 2 -a PCT -p \"ensemble=RForest;pruning=C4.5\" -t true -i 0 -u 1 -d dataB_noV_EqF_PC -e BR-BEqF -q None";
 			//a = "validate -x 18 -d dataC_noV_Ca15-20c20_PC,dataC_noV_Ca15-20c20_FP1,dataC_noV_Ca15-20c20_PCFP1 -i 0 -u 5 -f 10 -a PCT -p \"ensemble=RForest\" -t false -c RandomForest -e FeatPCT -q None -w \"default\"";
 
 			//a = "endpoint_table -o RepdoseNeustoff";
@@ -874,6 +881,12 @@ public class RunMLC extends MLCOptions
 			//a = "multi_validation_report -e PC12-Y -d dataY_PC1,dataY_PC2 -z all";
 			//			a = "dataset_report -d dataC_noV_Ca15-20c20_dummy";
 			//a = "endpoint_table -d dataC_noV_Ca15-20c20_dummy";
+			//a = "multi_validation_report -e BR -d dataA_noV_Ca15-20c20_PCFP1,dataB_noV_Ca15-20c20_PCFP1,dataC_noV_Ca15-20c20_PCFP1,dataD_noV_Ca15-20c20_PCFP1,dataE_noV_Ca15-20c20_PCFP1 -z all";
+			//a = "multi_validation_report -e FeatECC -d dataE_noV_Ca15-20c20_PC,dataE_noV_Ca15-20c20_PCX,dataE_noV_Ca15-20c20_FP1,dataE_noV_Ca15-20c20_PCFP1,dataE_noV_Ca15-20c20_PCXFP1 -z all";
+
+			//			a = "validate -x 18 -d dataE_noV_Ca15-20c20_PC,dataE_noV_Ca15-20c20_PCX,dataE_noV_Ca15-20c20_FP1,dataE_noV_Ca15-20c20_PCFP1,dataE_noV_Ca15-20c20_PCXFP1 -i 0 -u 1 -f 10 -a PCT -p \"ensemble=RForest\" -t false -c RandomForest -e FeatPCT -q None -w \"default\"";
+
+			//a = "fill_missing -m class -x 1 -d dataE_noV_Ca15-20c20_FP1 -i 0 -u 1 -f 10 -a ECC -p \"num-chains=15;confidences=true;replacement=false\" -t false -c RandomForest -e ECC-FP1 -q None -w \"default\"";
 
 			args = a.split(" ");
 		}
