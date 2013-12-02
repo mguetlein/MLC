@@ -47,7 +47,7 @@ public class ValidationReport
 
 		rep.report.newSection("General information");
 
-		rep.report.addParagraph("The model was validated with a " + results.getResultValues("cv-seed").size()
+		rep.report.addParagraph("The model was validated with a " + results.getResultValues("cv-seed").getNumValues()
 				+ "-times repeated " + ((Double) results.getUniqueValue("num-folds")).intValue()
 				+ "-fold cross-validation.");
 

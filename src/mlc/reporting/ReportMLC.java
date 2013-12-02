@@ -396,7 +396,7 @@ public class ReportMLC
 			PerformanceMeasures measures) throws IOException, DocumentException
 	{
 		addBoxPlots(results, compareProp, titleSuffix, fileSuffix, measures, results.getResultValues("endpoint-file")
-				.size() == 1);
+				.getNumValues() == 1);
 	}
 
 	void addBoxPlots(ResultSet results, String compareProp, String titleSuffix, String fileSuffix,
@@ -404,11 +404,11 @@ public class ReportMLC
 	{
 		String numCompounds = CollectionUtil.toString(results.getResultValues("num-compounds").values());
 		String numLabels = CollectionUtil.toString(results.getResultValues("num-labels").values());
-		int numCVSeeds = results.getResultValues("cv-seed").size();
+		int numCVSeeds = results.getResultValues("cv-seed").getNumValues();
 		Double numCVFolds = Double.parseDouble(results.getUniqueValue("num-folds") + "");
 		String title;
 		String[] subtitle;
-		if (results.getResultValues(compareProp).size() == 1)
+		if (results.getResultValues(compareProp).getNumValues() == 1)
 		{
 			title = "Performance measures" + titleSuffix;
 			subtitle = new String[0];
@@ -438,7 +438,7 @@ public class ReportMLC
 			xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
 			extraHeight += 75;
 		}
-		if (results.getResultValues(compareProp).size() == 1)
+		if (results.getResultValues(compareProp).getNumValues() == 1)
 			extraHeight -= 100;
 
 		//		{
@@ -451,10 +451,10 @@ public class ReportMLC
 
 		ResultSet rs = results.join(ArrayUtil.toList(new String[] { compareProp }), null, catProps);
 		List<String> tableProps = new ArrayList<String>();
-		if (results.getResultValues(compareProp).size() > 1)
+		if (results.getResultValues(compareProp).getNumValues() > 1)
 			tableProps.add(compareProp);
 		tableProps.addAll(ArrayUtil.toList(getProps(measures)));
-		if (results.getResultValues(compareProp).size() > 1)
+		if (results.getResultValues(compareProp).getNumValues() > 1)
 			tableProps.add("runtime");
 		rs.excludeProperties(tableProps);
 		for (String p : tableProps)

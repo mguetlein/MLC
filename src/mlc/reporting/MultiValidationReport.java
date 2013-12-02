@@ -112,7 +112,7 @@ public class MultiValidationReport
 		for (String p : compareProps)
 		{
 			CountedSet<Object> set = results.getResultValues(p);
-			if (set.size() > 1)
+			if (set.getNumValues() > 1)
 			{
 				if (cmp1 == null)
 				{

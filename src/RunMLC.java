@@ -303,7 +303,9 @@ public class RunMLC extends MLCOptions
 			for (final String classifierString : getClassifiers())
 			{
 				final Classifier classifier;
-				if (classifierString.equals("SMO"))
+				if (classifierString.equals("None"))
+					classifier = null;
+				else if (classifierString.equals("SMO"))
 					classifier = new SMO();
 				else if (classifierString.equals("RandomForest"))
 					classifier = new RandomForest();
@@ -354,9 +356,10 @@ public class RunMLC extends MLCOptions
 									@Override
 									public void run()
 									{
+										String classifierName = classifier == null ? "None" : classifier.getClass()
+												.getSimpleName();
 										System.out.println(datasetNameStr + " seed:" + seed + " imputation:"
-												+ imputationString + " wekaAlg:"
-												+ classifier.getClass().getSimpleName() + " mlcAlg:"
+												+ imputationString + " wekaAlg:" + classifierName + " mlcAlg:"
 												+ mlcAlgorithm.getClass().getSimpleName() + " mlcAlgParams:"
 												+ mlcAlgorithmParamsStr + " appDomain:" + appDomainStr
 												+ " appDomainParams:" + appDomainParamsStr);
@@ -604,14 +607,18 @@ public class RunMLC extends MLCOptions
 				rs.setResultValue(r, "#endpoints", di.numEndpoints);
 				rs.setResultValue(r, "#training dataset compounds", dataset.getNumInstances());
 				rs.setResultValue(r, Settings.text("mlc-algorithm"), Settings.text("mlc-algorithm." + mlcAlgorithmStr));
+				String neighborStr = mlcAlgorithmStr.equals("PCT") ? "PCT" : "None";
+				rs.setResultValue(r, Settings.text("neighbors"), Settings.text("neighbors." + neighborStr));
+				rs.setResultValue(r, Settings.text("mlc-algorithm"), Settings.text("mlc-algorithm." + mlcAlgorithmStr));
 				rs.setResultValue(r, Settings.text("classifier"), Settings.text("classifier." + classifierString));
 				rs.setResultValue(r, Settings.text("applicability-domain"),
 						Settings.text("applicability-domain." + appDomainStr));
 				rs.setResultValue(r, Settings.text("imputation"), Settings.text("imputation." + imputationString));
 				rep.report.addTable(rs, true);
 
-				String[][] info = { { "mlc-algorithm", mlcAlgorithmStr }, { "classifier", classifierString },
-						{ "applicability-domain", appDomainStr }, { "imputation", imputationString } };
+				String[][] info = { { "mlc-algorithm", mlcAlgorithmStr }, { "neighbors", neighborStr },
+						{ "classifier", classifierString }, { "applicability-domain", appDomainStr },
+						{ "imputation", imputationString } };
 				for (String[] inf : info)
 				{
 					String concept = inf[0];
@@ -642,6 +649,8 @@ public class RunMLC extends MLCOptions
 
 				mlcAlgorithm.build(dataset);
 				System.out.println("writing mlc model to file: " + Settings.modelFile(modelName));
+				if (mlcAlgorithm instanceof PredictiveClusteringTrees)
+					((PredictiveClusteringTrees) mlcAlgorithm).prepareSerialize();
 				SerializationHelper.write(Settings.modelFile(modelName), mlcAlgorithm);
 
 				ModelInfo.writeModelProps(modelName, datasetNameStr,
@@ -823,7 +832,7 @@ public class RunMLC extends MLCOptions
 			//					.split(" ");
 			//a = "multi_validation_report -e BR-AD -d dataB_noV_Ca15-20c20_PCFP -z all";
 
-			a = "validate -a PCT -p heuristic=VarianceReduction;min-num=3;ftest=0.1 -t false -i 0 -u 1 -d dataB_noV_EqF_PC -e BR-BEqF -q None";
+			//			a = "validate -a PCT -p heuristic=VarianceReduction;min-num=3;ftest=0.1 -t false -i 0 -u 1 -d dataB_noV_EqF_PC -e BR-BEqF -q None";
 			//a = "validate -f 2 -a PCT -p \"ensemble=RForest;pruning=C4.5\" -t true -i 0 -u 1 -d dataB_noV_EqF_PC -e BR-BEqF -q None";
 			//a = "validate -x 18 -d dataC_noV_Ca15-20c20_PC,dataC_noV_Ca15-20c20_FP1,dataC_noV_Ca15-20c20_PCFP1 -i 0 -u 5 -f 10 -a PCT -p \"ensemble=RForest\" -t false -c RandomForest -e FeatPCT -q None -w \"default\"";
 
@@ -859,7 +868,8 @@ public class RunMLC extends MLCOptions
 			//args = "predict_compounds -o only-repdose-model -v ea656a858ee3a71d9ad91d7377ec5b3b".split(" ");
 			//args = "predict_compounds -o only-repdose-model -v 7129b181d3b77e51e8dcc2b999ed0ded".split(" ");
 			//args = "predict_compounds -o only-repdose-model -v 9b6fd19cd0245838059df5b99a3d58d1".split(" ");
-			//args = "predict_compounds -o cpdbas -v ee4712455d4830701a6b998d87a6d9bb".split(" ");
+			a = "validate -x 1 -i 0 -u 1 -o pct -y PCFP1 -d dataE_noV_Ca15-20c20_PCFP1 -a PCT -t false -c None -e PCT -q None";
+			//a = "predict_compounds -o pct -v 41fcba09f2bdcdf315ba4119dc7978dd";
 			//			args = "predict_appdomain -o only-repdose-model -v 9b6fd19cd0245838059df5b99a3d58d1 -b 0 -s liver"
 			//					.split(" ");
 

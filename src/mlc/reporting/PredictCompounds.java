@@ -9,6 +9,7 @@ import mlc.MLCDataInfo;
 import mlc.ModelInfo;
 import mulan.classifier.MultiLabelLearner;
 import mulan.classifier.MultiLabelOutput;
+import mulan.classifier.NeighborMultiLabelOutput;
 import mulan.data.MultiLabelInstances;
 import mulan.evaluation.Settings;
 import mulan.evaluation.measure.ConfidenceLevelProvider;
@@ -218,6 +219,7 @@ public class PredictCompounds
 			try
 			{
 				prediction = mlcAlgorithm.makePrediction(inst);
+
 			}
 			catch (Exception e)
 			{
@@ -325,6 +327,13 @@ public class PredictCompounds
 
 			System.out.println(ListUtil.toString(res.getProperties()));
 			rep.report.addTable(res);
+
+			if (prediction instanceof NeighborMultiLabelOutput)
+			{
+				int neighbors[] = ((NeighborMultiLabelOutput) prediction).getNeighborInstances();
+				rep.report.addParagraph("The prediction was performed according to " + neighbors.length
+						+ " neigbor compounds.");
+			}
 		}
 		rep.close();
 		if (!new File(out + ".tmp.html").exists())

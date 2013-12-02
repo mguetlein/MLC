@@ -8,18 +8,22 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import jeans.util.StringUtils;
 import jeans.util.cmdline.CMDLineArgs;
 import mulan.classifier.MultiLabelLearner;
-import mulan.classifier.MultiLabelOutput;
+import mulan.classifier.NeighborMultiLabelOutput;
 import mulan.classifier.transformation.TransformationBasedMultiLabelLearner;
 import mulan.data.MultiLabelInstances;
+import util.ArrayUtil;
+import util.DoubleArraySummary;
 import util.FileUtil;
 import weka.core.Attribute;
 import weka.core.Instance;
@@ -28,12 +32,16 @@ import weka.core.Utils;
 import clus.Clus;
 import clus.algo.ClusInductionAlgorithmType;
 import clus.algo.tdidt.ClusDecisionTree;
+import clus.algo.tdidt.ClusNode;
 import clus.algo.tdidt.tune.CDTTuneFTest;
+import clus.data.rows.RowData;
 import clus.ext.ensembles.ClusEnsembleClassifier;
 import clus.main.Settings;
+import clus.model.ClusModel;
+import clus.statistic.StatisticPrintInfo;
 import clus.util.ClusException;
 
-public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLearner
+public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLearner implements Serializable
 {
 	//	static
 	//	{
@@ -341,6 +349,11 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 		}
 	}
 
+	public void prepareSerialize()
+	{
+		clus = null;
+	}
+
 	@Override
 	public MultiLabelLearner makeCopy() throws Exception
 	{
@@ -358,6 +371,12 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 		try
 		{
 			Clus clus = new Clus();
+
+			//			String trainArffPath = "./dataset.arff";
+			trainArffPath = File.createTempFile("dataset", "arff").getAbsolutePath();
+			tmpArffFiles.add(trainArffPath);
+			//			System.out.println("trainArffPath: "+trainArffPath);
+			writeArff(trainArffPath, dataset.getDataSet());
 
 			testArffPath = File.createTempFile("dataset_test", "arff").getAbsolutePath();
 			tmpArffFiles.add(testArffPath);
@@ -443,13 +462,6 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 
 		try
 		{
-			//			String trainArffPath = "./dataset.arff";
-			trainArffPath = File.createTempFile("dataset", "arff").getAbsolutePath();
-			tmpArffFiles.add(trainArffPath);
-
-			//			System.out.println("trainArffPath: "+trainArffPath);
-
-			writeArff(trainArffPath, instances.getDataSet());
 
 			//			ClusOutput.printHeader();
 
@@ -465,6 +477,187 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 		}
 	}
 
+	public String toString()
+	{
+		String s = "";
+		int count = 0;
+		for (String m : new String[] { "default", "original", "pruned" })
+		{
+			try
+			{
+				ClusModel root = clus.getClusRun().getModel(count++);
+				RowData pex = (RowData) clus.getClusRun().getTrainingSet();
+				StatisticPrintInfo info = clus.getSettings().getStatisticPrintInfo();
+				List<Integer> numCompoundsInLeafs = numLeafs(root, info, pex);
+				if (numCompoundsInLeafs.size() > 0)
+				{
+					DoubleArraySummary summary = DoubleArraySummary.create(ArrayUtil.toDoubleArray(ArrayUtil
+							.toArray(numCompoundsInLeafs)));
+					s += m + ": numLeafs:" + summary.getNum() + ", range:" + (int) summary.getMin() + "-"
+							+ (int) summary.getMax() + " median:" + summary.toString() + "\n";
+					//				System.out.println(ListUtil.toString(numCompoundsInLeafs));
+				}
+			}
+			catch (NullPointerException e)
+			{
+				s += m + ": -\n";
+			}
+		}
+		return s;
+	}
+
+	public static int YES = 0;
+	public static int NO = 1;
+	public static int UNK = 2;
+
+	public List<Integer> numLeafs(ClusModel root, StatisticPrintInfo info, RowData examples)
+	{
+		return numLeafs(new ArrayList<Integer>(), root, info, examples);
+	}
+
+	public List<Integer> numLeafs(List<Integer> leafs, ClusModel root, StatisticPrintInfo info, RowData examples)
+	{
+		ClusNode rootNode = (ClusNode) root;
+		int arity = rootNode.getNbChildren();
+
+		if (arity > 0)
+		{
+
+			int delta = rootNode.hasUnknownBranch() ? 1 : 0;
+			if (arity - delta == 2)
+			{
+
+				RowData examples0 = null;
+				RowData examples1 = null;
+				if (examples != null)
+				{
+					if ((rootNode.getAlternatives() != null) || (rootNode.getOppositeAlternatives() != null))
+					{
+						// in the case of alternative tests, the classification is done based on how many of the total tests predict left or right branch
+						examples0 = examples.applyAllAlternativeTests(rootNode.getTest(), rootNode.getAlternatives(),
+								rootNode.getOppositeAlternatives(), 0);
+						examples1 = examples.applyAllAlternativeTests(rootNode.getTest(), rootNode.getAlternatives(),
+								rootNode.getOppositeAlternatives(), 1);
+					}
+					else
+					{
+						examples0 = examples.apply(rootNode.getTest(), 0);
+						examples1 = examples.apply(rootNode.getTest(), 1);
+					}
+				}
+
+				numLeafs(leafs, (ClusNode) rootNode.getChild(YES), info, examples0);
+				if (rootNode.hasUnknownBranch())
+				{
+					numLeafs(leafs, (ClusNode) rootNode.getChild(NO), info, examples1);
+					numLeafs(leafs, (ClusNode) rootNode.getChild(UNK), info, examples0);
+				}
+				else
+					numLeafs(leafs, (ClusNode) rootNode.getChild(NO), info, examples1);
+			}
+			else
+			{
+				for (int i = 0; i < arity; i++)
+				{
+					ClusNode child = (ClusNode) rootNode.getChild(i);
+					RowData examplesi = null;
+					if (examples != null)
+					{
+						examples.apply(rootNode.getTest(), i);
+					}
+					if (i != arity - 1)
+					{
+						numLeafs(leafs, child, info, examplesi);
+					}
+					else
+					{
+						numLeafs(leafs, child, info, examplesi);
+					}
+				}
+			}
+		}
+		else
+		{//on the leaves
+			//			System.out.println(examples.getNbRows());
+			leafs.add(examples.getNbRows());
+		}
+		return leafs;
+	}
+
+	public void printModel(ClusModel root, StatisticPrintInfo info, RowData examples)
+	{
+
+		ClusNode rootNode = (ClusNode) root;
+		int arity = rootNode.getNbChildren();
+
+		if (arity > 0)
+		{
+
+			int delta = rootNode.hasUnknownBranch() ? 1 : 0;
+			if (arity - delta == 2)
+			{
+
+				RowData examples0 = null;
+				RowData examples1 = null;
+				if (examples != null)
+				{
+					if ((rootNode.getAlternatives() != null) || (rootNode.getOppositeAlternatives() != null))
+					{
+						// in the case of alternative tests, the classification is done based on how many of the total tests predict left or right branch
+						examples0 = examples.applyAllAlternativeTests(rootNode.getTest(), rootNode.getAlternatives(),
+								rootNode.getOppositeAlternatives(), 0);
+						examples1 = examples.applyAllAlternativeTests(rootNode.getTest(), rootNode.getAlternatives(),
+								rootNode.getOppositeAlternatives(), 1);
+					}
+					else
+					{
+						examples0 = examples.apply(rootNode.getTest(), 0);
+						examples1 = examples.apply(rootNode.getTest(), 1);
+					}
+				}
+
+				printModel((ClusNode) rootNode.getChild(YES), info, examples0);
+
+				if (rootNode.hasUnknownBranch())
+				{
+
+					printModel((ClusNode) rootNode.getChild(NO), info, examples1);
+
+					printModel((ClusNode) rootNode.getChild(UNK), info, examples0);
+
+				}
+				else
+				{
+					printModel((ClusNode) rootNode.getChild(NO), info, examples1);
+				}
+			}
+			else
+			{
+				for (int i = 0; i < arity; i++)
+				{
+					ClusNode child = (ClusNode) rootNode.getChild(i);
+					RowData examplesi = null;
+					if (examples != null)
+					{
+						examples.apply(rootNode.getTest(), i);
+					}
+					if (i != arity - 1)
+					{
+						printModel(child, info, examplesi);
+					}
+					else
+					{
+						printModel(child, info, examplesi);
+					}
+				}
+			}
+		}
+		else
+		{//on the leaves
+			System.out.println(examples.getNbRows());
+		}
+	}
+
 	public static Set<String> tmpArffFiles = new HashSet<String>();
 
 	public static void clear()
@@ -474,9 +667,12 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 				System.err.println("could not delete " + f);
 	}
 
-	protected MultiLabelOutput makePredictionInternal(Instance instance)
+	protected NeighborMultiLabelOutput makePredictionInternal(Instance instance)
 	{
-		MultiLabelOutput output = null;
+		if (clus == null)
+			clus = initClus();
+
+		NeighborMultiLabelOutput output = null;
 		//		String testArffPath = null;
 
 		try
@@ -503,7 +699,9 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 					predArBool[i] = false;
 			}
 			double[] predCount = clus.getPredCount();
-			output = new MultiLabelOutput(predArBool, predCount);
+
+			int neigbors[] = new int[] { 0, 1, 2 };
+			output = new NeighborMultiLabelOutput(predArBool, predCount, neigbors);
 
 			//			if (Debug.debug == 1)
 			//				ClusStat.show();
