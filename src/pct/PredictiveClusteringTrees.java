@@ -12,8 +12,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import jeans.util.StringUtils;
@@ -25,6 +27,7 @@ import mulan.data.MultiLabelInstances;
 import util.ArrayUtil;
 import util.DoubleArraySummary;
 import util.FileUtil;
+import util.StringUtil;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -34,12 +37,15 @@ import clus.algo.ClusInductionAlgorithmType;
 import clus.algo.tdidt.ClusDecisionTree;
 import clus.algo.tdidt.ClusNode;
 import clus.algo.tdidt.tune.CDTTuneFTest;
+import clus.data.rows.DataTuple;
 import clus.data.rows.RowData;
+import clus.data.rows.TupleIterator;
 import clus.ext.ensembles.ClusEnsembleClassifier;
 import clus.main.Settings;
 import clus.model.ClusModel;
 import clus.statistic.StatisticPrintInfo;
 import clus.util.ClusException;
+import datamining.ResultSet;
 
 public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLearner implements Serializable
 {
@@ -109,6 +115,19 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 	private EnsembleMethod ensembleMethod;
 	private Integer minimalNumberExamples;
 	private Double fTest;
+
+	private boolean computeNeighbors = false;
+
+	Map<Integer, Integer> levelCluId = new HashMap<Integer, Integer>();
+	Map<Integer, Integer> levelCluIdTest = new HashMap<Integer, Integer>();
+	int leafId = 1;
+	int leafIdTest = 1;
+	HashMap<String, ArrayList<Integer>> levels = new HashMap<String, ArrayList<Integer>>();
+	HashMap<String, Integer> leafs = new HashMap<String, Integer>();
+	HashMap<String, Integer> leafsTest = new HashMap<String, Integer>();
+	HashMap<String, Integer> mapIndexExample = new HashMap<String, Integer>();
+	HashMap<String, Integer> mapIndexExampleTest = new HashMap<String, Integer>();
+	HashMap<Integer, ArrayList<String>> leavesExamples = new HashMap<Integer, ArrayList<String>>();
 
 	public enum EnsembleMethod
 	{
@@ -477,14 +496,24 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 		}
 	}
 
+	public static ResultSet modelProps = new ResultSet();
+
 	public String toString()
 	{
+		int res = modelProps.addResult();
+		modelProps.setResultValue(res, "heuristic", heuristic);
+		modelProps.setResultValue(res, "pruningMethod", pruningMethod);
+		modelProps.setResultValue(res, "ensembleMethod", ensembleMethod);
+		modelProps.setResultValue(res, "minimalNumberExamples", minimalNumberExamples);
+		modelProps.setResultValue(res, "fTest", fTest);
+
 		String s = "";
 		int count = 0;
 		for (String m : new String[] { "default", "original", "pruned" })
 		{
 			try
 			{
+
 				ClusModel root = clus.getClusRun().getModel(count++);
 				RowData pex = (RowData) clus.getClusRun().getTrainingSet();
 				StatisticPrintInfo info = clus.getSettings().getStatisticPrintInfo();
@@ -493,6 +522,17 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 				{
 					DoubleArraySummary summary = DoubleArraySummary.create(ArrayUtil.toDoubleArray(ArrayUtil
 							.toArray(numCompoundsInLeafs)));
+
+					if (m.equals("original"))
+					{
+						modelProps.setResultValue(res, "numLeafs", summary.getNum());
+						modelProps.setResultValue(res, "min", summary.getMin());
+						modelProps.setResultValue(res, "max", summary.getMax());
+						modelProps.setResultValue(res, "mean", summary.getMean());
+						modelProps.setResultValue(res, "median", summary.getMedian());
+						modelProps.setResultValue(res, "stdev", summary.getStdev());
+					}
+
 					s += m + ": numLeafs:" + summary.getNum() + ", range:" + (int) summary.getMin() + "-"
 							+ (int) summary.getMax() + " median:" + summary.toString() + "\n";
 					//				System.out.println(ListUtil.toString(numCompoundsInLeafs));
@@ -667,6 +707,432 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 				System.err.println("could not delete " + f);
 	}
 
+	public void printModel(ClusModel root, StatisticPrintInfo info, RowData examples, int level)
+	{
+		int cluId = 1;
+
+		ClusNode rootNode = (ClusNode) root;
+		int arity = rootNode.getNbChildren();
+
+		if (arity > 0)
+		{
+			if (!levelCluId.containsKey(level))
+			{
+				levelCluId.put(level, 1);
+			}
+			else
+			{
+				//actual cluId
+				cluId = levelCluId.get(level);
+				cluId = cluId + 1;
+				levelCluId.put(level, cluId);
+			}
+			int nextLevel = level + 1;
+
+			int delta = rootNode.hasUnknownBranch() ? 1 : 0;
+			if (arity - delta == 2)
+			{
+				RowData examples0 = null;
+				RowData examples1 = null;
+				if (examples != null)
+				{
+					if ((rootNode.getAlternatives() != null) || (rootNode.getOppositeAlternatives() != null))
+					{
+						examples0 = examples.applyAllAlternativeTests(rootNode.getTest(), rootNode.getAlternatives(),
+								rootNode.getOppositeAlternatives(), 0);
+						examples1 = examples.applyAllAlternativeTests(rootNode.getTest(), rootNode.getAlternatives(),
+								rootNode.getOppositeAlternatives(), 1);
+					}
+					else
+					{
+						examples0 = examples.apply(rootNode.getTest(), 0);
+						examples1 = examples.apply(rootNode.getTest(), 1);
+					}
+				}
+
+				ArrayList<String> molsInCluster = new ArrayList<String>();
+				for (int i = 0; i < examples0.getNbRows(); i++)
+				{
+					if (molsInCluster.contains(examples0.getTuple(i).toString()))
+					{
+
+					}
+
+					if (!levels.containsKey(examples0.getTuple(i).toString()))
+					{
+						ArrayList<Integer> cluIds = new ArrayList<Integer>();
+						cluIds.add(levelCluId.get(level));
+						levels.put(examples0.getTuple(i).toString(), cluIds);
+
+						ArrayList<String> featsArr = new ArrayList<String>();
+
+					}
+					else
+					{
+						if (!molsInCluster.contains(examples0.getTuple(i).toString()))
+						{
+							levels.get(examples0.getTuple(i).toString()).add(levelCluId.get(level));
+						}
+					}
+
+					molsInCluster.add(examples0.getTuple(i).toString());
+				}
+
+				cluId = levelCluId.get(level) + 1;
+				levelCluId.put(level, cluId);
+
+				printModel((ClusNode) rootNode.getChild(YES), info, examples0, nextLevel);
+
+				if (rootNode.hasUnknownBranch())
+				{
+					printModel((ClusNode) rootNode.getChild(NO), info, examples1, nextLevel);
+					printModel((ClusNode) rootNode.getChild(UNK), info, examples0, nextLevel);
+
+				}
+				else
+				{
+					molsInCluster = new ArrayList<String>();
+
+					for (int i = 0; i < examples1.getNbRows(); i++)
+					{
+
+						if (!levels.containsKey(examples1.getTuple(i).toString()))
+						{
+							ArrayList<Integer> cluIds = new ArrayList<Integer>();
+							cluIds.add(levelCluId.get(level));
+							levels.put(examples1.getTuple(i).toString(), cluIds);
+						}
+						else
+						{
+
+							if (!molsInCluster.contains(examples1.getTuple(i).toString()))
+							{
+								levels.get(examples1.getTuple(i).toString()).add(levelCluId.get(level));
+							}
+						}
+						molsInCluster.add(examples1.getTuple(i).toString());
+
+					}
+
+					printModel((ClusNode) rootNode.getChild(NO), info, examples1, nextLevel);
+
+				}
+			}
+			else
+			{
+				for (int i = 0; i < arity; i++)
+				{
+					ClusNode child = (ClusNode) rootNode.getChild(i);
+					String branchlabel = rootNode.getTest().getBranchLabel(i);
+					RowData examplesi = null;
+					if (examples != null)
+					{
+						examples.apply(rootNode.getTest(), i);
+					}
+					String suffix = StringUtils.makeString(' ', branchlabel.length() + 4);
+					if (i != arity - 1)
+					{
+						for (int j = 0; j < examplesi.getNbRows(); j++)
+						{
+							if (!levels.containsKey(examplesi.getTuple(j).toString()))
+							{
+								ArrayList<Integer> cluIds = new ArrayList<Integer>();
+								cluIds.add(levelCluId.get(level));
+								levels.put(examplesi.getTuple(j).toString(), cluIds);
+							}
+							else
+							{
+								levels.get(examplesi.getTuple(j).toString()).add(levelCluId.get(level));
+							}
+						}
+
+						printModel(child, info, examplesi, nextLevel);
+					}
+					else
+					{
+						for (int j = 0; j < examplesi.getNbRows(); j++)
+						{
+							if (!levels.containsKey(examplesi.getTuple(j).toString()))
+							{
+								ArrayList<Integer> cluIds = new ArrayList<Integer>();
+								cluIds.add(levelCluId.get(level));
+								levels.put(examplesi.getTuple(j).toString(), cluIds);
+							}
+							else
+							{
+								levels.get(examplesi.getTuple(j).toString()).add(levelCluId.get(level));
+							}
+						}
+						printModel(child, info, examplesi, nextLevel);
+					}
+				}
+			}
+		}
+		else
+		{//on the leaves
+			if (rootNode.getID() != 0 && info.SHOW_INDEX)
+				System.out.println(" (" + rootNode.getID() + ")");
+			if (examples != null && examples.getNbRows() > 0)
+			{
+				for (int i = 0; i < examples.getNbRows(); i++)
+				{
+
+					if (!leafs.containsKey(examples.getTuple(i).toString()))
+					{
+						leafs.put(examples.getTuple(i).toString(), leafId);
+						if (!leavesExamples.containsKey(leafId))
+						{
+							ArrayList<String> examplesInLeaf = new ArrayList<String>();
+							examplesInLeaf.add(examples.getTuple(i).toString());
+							leavesExamples.put(leafId, examplesInLeaf);
+						}
+						else
+						{
+							leavesExamples.get(leafId).add(examples.getTuple(i).toString());
+						}
+					}
+				}
+				leafId++;
+
+			}
+		}
+	}
+
+	public void printModelTest(ClusModel root, StatisticPrintInfo info, RowData examples, int level)
+	{
+		int cluId = 1;
+
+		ClusNode rootNode = (ClusNode) root;
+		int arity = rootNode.getNbChildren();
+
+		if (arity > 0)
+		{
+			if (!levelCluIdTest.containsKey(level))
+			{
+				levelCluIdTest.put(level, 1);
+			}
+			else
+			{
+				//actual cluId
+				cluId = levelCluIdTest.get(level);
+				cluId = cluId + 1;
+				levelCluIdTest.put(level, cluId);
+			}
+			int nextLevel = level + 1;
+
+			int delta = rootNode.hasUnknownBranch() ? 1 : 0;
+			if (arity - delta == 2)
+			{
+				RowData examples0 = null;
+				RowData examples1 = null;
+				if (examples != null)
+				{
+					if ((rootNode.getAlternatives() != null) || (rootNode.getOppositeAlternatives() != null))
+					{
+						// in the case of alternative tests, the classification is done based on how many of the total tests predict left or right branch
+						examples0 = examples.applyAllAlternativeTests(rootNode.getTest(), rootNode.getAlternatives(),
+								rootNode.getOppositeAlternatives(), 0);
+						examples1 = examples.applyAllAlternativeTests(rootNode.getTest(), rootNode.getAlternatives(),
+								rootNode.getOppositeAlternatives(), 1);
+					}
+					else
+					{
+						examples0 = examples.apply(rootNode.getTest(), 0);
+						examples1 = examples.apply(rootNode.getTest(), 1);
+					}
+				}
+
+				ArrayList<String> molsInCluster = new ArrayList<String>();
+				for (int i = 0; i < examples0.getNbRows(); i++)
+				{
+					if (molsInCluster.contains(examples0.getTuple(i).toString()))
+					{
+
+					}
+					molsInCluster.add(examples0.getTuple(i).toString());
+				}
+
+				cluId = levelCluIdTest.get(level) + 1;
+				levelCluIdTest.put(level, cluId);
+
+				printModelTest((ClusNode) rootNode.getChild(YES), info, examples0, nextLevel);
+
+				if (rootNode.hasUnknownBranch())
+				{
+					printModelTest((ClusNode) rootNode.getChild(NO), info, examples1, nextLevel);
+					printModelTest((ClusNode) rootNode.getChild(UNK), info, examples0, nextLevel);
+
+				}
+				else
+				{
+					printModelTest((ClusNode) rootNode.getChild(NO), info, examples1, nextLevel);
+
+				}
+			}
+			else
+			{
+				for (int i = 0; i < arity; i++)
+				{
+					ClusNode child = (ClusNode) rootNode.getChild(i);
+					RowData examplesi = null;
+					if (examples != null)
+					{
+						examples.apply(rootNode.getTest(), i);
+					}
+					if (i != arity - 1)
+					{
+						printModelTest(child, info, examplesi, nextLevel);
+					}
+					else
+					{
+						printModelTest(child, info, examplesi, nextLevel);
+					}
+				}
+			}
+		}
+		else
+		{//on the leaves
+			if (rootNode.getID() != 0 && info.SHOW_INDEX)
+				System.out.println(" (" + rootNode.getID() + ")");
+			if (examples != null && examples.getNbRows() > 0)
+			{
+				for (int i = 0; i < examples.getNbRows(); i++)
+				{
+
+					if (!leafsTest.containsKey(examples.getTuple(i).toString()))
+					{
+						leafsTest.put(examples.getTuple(i).toString(), leafIdTest);
+					}
+
+				}
+				leafIdTest++;
+
+			}
+		}
+	}
+
+	/**
+	 * returns neighbors for each test instance
+	 **/
+
+	public int[] getNeighbors()
+	{
+		int neigbors[] = null;
+		try
+		{
+
+			int meth = 1;
+			int pruning = clus.getSettings().getPruningMethod();
+			if (pruning == Settings.PRUNING_METHOD_NONE)
+				meth = 1;
+			else
+				meth = 2;
+
+			for (int k = 1; k < 3; k++)
+			{
+				if (k == meth || (clus.getClusRun().getNbModels() == 2) && k == 1)
+				{
+					levelCluId = new HashMap<Integer, Integer>();
+					this.leafId = 1;
+					this.leafIdTest = 1;
+					levels = new HashMap<String, ArrayList<Integer>>();
+					leafs = new HashMap<String, Integer>();
+					leavesExamples = new HashMap<Integer, ArrayList<String>>();
+					levelCluId = new HashMap<Integer, Integer>();
+					leafsTest = new HashMap<String, Integer>();
+
+					ClusModel root = clus.getClusRun().getModel(k);
+
+					RowData pex = (RowData) clus.getClusRun().getTrainingSet();
+					StatisticPrintInfo info = clus.getSettings().getStatisticPrintInfo();
+
+					printModel(root, info, pex, 1);
+
+					//add test data to tree
+					pex.add((RowData) clus.getClusRun().getTestSet());
+
+					levelCluIdTest = new HashMap<Integer, Integer>();
+					leafsTest = new HashMap<String, Integer>();
+
+					printModelTest(root, info, pex, 1);
+
+					//create mapping row content - row index for training data
+					mapIndexExample = new HashMap<String, Integer>();
+					TupleIterator triter = clus.getClusRun().getTrainIter();
+					DataTuple tuple = triter.readTuple();
+					while (tuple != null)
+					{
+						mapIndexExample.put(tuple.toString(), tuple.getIndex());
+						tuple = triter.readTuple();
+
+					}
+
+					//create mapping row content - row index for test data
+					RowData testset = (RowData) clus.getClusRun().getTestSet();
+					TupleIterator tsiter = testset.getIterator();
+					mapIndexExampleTest = new HashMap<String, Integer>();
+					tuple = tsiter.readTuple();
+					while (tuple != null)
+					{
+						mapIndexExampleTest.put(tuple.toString(), tuple.getIndex());
+						tuple = tsiter.readTuple();
+
+					}
+
+					testset = (RowData) clus.getClusRun().getTestSet();
+					tsiter = testset.getIterator();
+					tuple = tsiter.readTuple();
+					while (tuple != null)
+					{
+						//get leaf id of leaf the test instance is assigned to
+						int leafId = leafsTest.get(tuple.toString());
+						//get neighbors of test instance
+						ArrayList<String> neighbors = leavesExamples.get(leafId);
+						neigbors = new int[neighbors.size()];
+						for (int i = 0; i < neighbors.size(); i++)
+						{
+							int neighborId = mapIndexExample.get(neighbors.get(i));
+							neigbors[i] = neighborId;
+						}
+						tuple = tsiter.readTuple();
+
+					}
+				}
+			}
+
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+
+		return neigbors;
+	}
+
+	public Categories listCategories()
+	{
+		setComputeNeighbors(true);
+
+		Categories categories = new Categories();
+		int sum = 0;
+		for (int i = 0; i < dataset.getNumInstances(); i++)
+		{
+			Instance inst = dataset.getDataSet().get(i);
+
+			if (!categories.includes(i))
+			{
+				int n[] = makePredictionInternal(inst).getNeighborInstances();
+				categories.add(n);
+				sum += n.length;
+				System.out.println(StringUtil.formatDouble(sum / (double) dataset.getNumInstances()) + " "
+						+ ArrayUtil.toString(n));
+				if (categories.numCategories() > 4)
+					break;
+			}
+		}
+		return categories;
+	}
+
 	protected NeighborMultiLabelOutput makePredictionInternal(Instance instance)
 	{
 		if (clus == null)
@@ -700,7 +1166,12 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 			}
 			double[] predCount = clus.getPredCount();
 
-			int neigbors[] = new int[] { 0, 1, 2 };
+			int neigbors[] = null;
+			if (computeNeighbors)
+				neigbors = getNeighbors();
+
+			//			neigbors = new int[] { 0, 1, 2 };
+
 			output = new NeighborMultiLabelOutput(predArBool, predCount, neigbors);
 
 			//			if (Debug.debug == 1)
@@ -731,4 +1202,8 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 		return output;
 	}
 
+	public void setComputeNeighbors(boolean computeNeighbors)
+	{
+		this.computeNeighbors = computeNeighbors;
+	}
 }

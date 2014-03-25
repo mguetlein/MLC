@@ -13,6 +13,8 @@ import mulan.classifier.NeighborMultiLabelOutput;
 import mulan.data.MultiLabelInstances;
 import mulan.evaluation.Settings;
 import mulan.evaluation.measure.ConfidenceLevelProvider;
+import pct.Category;
+import pct.PredictiveClusteringTrees;
 import util.ArrayUtil;
 import util.FileUtil;
 import util.ListUtil;
@@ -218,6 +220,8 @@ public class PredictCompounds
 			MultiLabelOutput prediction = null;
 			try
 			{
+				if (mlcAlgorithm instanceof PredictiveClusteringTrees)
+					((PredictiveClusteringTrees) mlcAlgorithm).setComputeNeighbors(true);
 				prediction = mlcAlgorithm.makePrediction(inst);
 
 			}
@@ -225,6 +229,31 @@ public class PredictCompounds
 			{
 				throw new Error(e);
 			}
+
+			if (prediction instanceof NeighborMultiLabelOutput)
+			{
+				Category cat = new Category(((NeighborMultiLabelOutput) prediction).getNeighborInstances());
+				//				String s = "The prediction was performed according to " + neighbors.length + " "
+				//						+ rep.report.encodeLink(linkToModel() + "/description#neighbors", "neighbor compounds") + ":";
+
+				System.out.println("should be included in .categories-file:\n" + cat.toCSV());
+				String s = "The prediction was performed according to " + cat.getNumInstances() + " "
+						+ rep.report.encodeLink(linkToModel() + "/categories/" + cat.getKey(), "neighbor compounds")
+						+ ".";
+				rep.report.addParagraph(s);
+
+				//				s = "";
+				//				for (int j = 0; j < neighbors.length; j++)
+				//				{
+				//					String idx = (neighbors[j] + 1) + "";
+				//					s += rep.report.encodeLink(linkToModel() + "/compounds#" + idx, "#" + idx);
+				//					if (j + 1 < neighbors.length)
+				//						s += (", ");
+				//				}
+				//				rep.report.addParagraph(s);
+				rep.report.addGap();
+			}
+
 			ResultSet res = new ResultSet();
 			for (int l = 0; l < trainingDataset.getNumLabels(); l++)
 			{
@@ -328,12 +357,6 @@ public class PredictCompounds
 			System.out.println(ListUtil.toString(res.getProperties()));
 			rep.report.addTable(res);
 
-			if (prediction instanceof NeighborMultiLabelOutput)
-			{
-				int neighbors[] = ((NeighborMultiLabelOutput) prediction).getNeighborInstances();
-				rep.report.addParagraph("The prediction was performed according to " + neighbors.length
-						+ " neigbor compounds.");
-			}
 		}
 		rep.close();
 		if (!new File(out + ".tmp.html").exists())
@@ -342,5 +365,4 @@ public class PredictCompounds
 			throw new Error("could not rename file");
 		System.out.println("report created: " + out + ".html");
 	}
-
 }

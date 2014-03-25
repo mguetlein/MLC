@@ -1,3 +1,5 @@
+import imputation.Imputation;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -358,17 +360,20 @@ public class RunMLC extends MLCOptions
 									{
 										String classifierName = classifier == null ? "None" : classifier.getClass()
 												.getSimpleName();
-										System.out.println(datasetNameStr + " seed:" + seed + " imputation:"
+										String info = datasetNameStr + " seed:" + seed + " imputation:"
 												+ imputationString + " wekaAlg:" + classifierName + " mlcAlg:"
 												+ mlcAlgorithm.getClass().getSimpleName() + " mlcAlgParams:"
 												+ mlcAlgorithmParamsStr + " appDomain:" + appDomainStr
-												+ " appDomainParams:" + appDomainParamsStr);
+												+ " appDomainParams:" + appDomainParamsStr;
+										System.out.println(info);
+
 										try
 										{
 											method.runMLC(datasetNameStr, dataset, di, mlcAlgorithmStr, mlcAlgorithm,
 													imputationString, classifierString, mlcAlgorithmParamsStr,
 													appDomain, appDomainStr, appDomainParamsStr, seed, res, resFile,
-													tracker, numRepetitions * getNumFolds() * getDatasetNames().length);
+													tracker, numRepetitions * getNumFolds() * getDatasetNames().length,
+													info);
 										}
 										catch (Exception e)
 										{
@@ -404,7 +409,7 @@ public class RunMLC extends MLCOptions
 				MultiLabelLearner mlcAlgorithm, String imputationString, String classifierString,
 				String mlcAlgorithmParamsStr, ApplicabilityDomain appDomain, String appDomainStr,
 				String appDomainParamsStr, int seed, ResultSet res, File resFile, SinglePredictionTracker tracker,
-				int numExperimentFolds) throws Exception;
+				int numExperimentFolds, String info) throws Exception;
 	}
 
 	public void validate() throws Exception
@@ -419,7 +424,7 @@ public class RunMLC extends MLCOptions
 					String mlcAlgorithmStr, MultiLabelLearner mlcAlgorithm, String imputationString,
 					String classifierString, String mlcAlgorithmParamsStr, ApplicabilityDomain appDomain,
 					String appDomainStr, String appDomainParamsStr, int seed, ResultSet res, File resFile,
-					SinglePredictionTracker tracker, int numExperimentFolds)
+					SinglePredictionTracker tracker, int numExperimentFolds, String info)
 			{
 				long start = System.currentTimeMillis();
 
@@ -434,7 +439,7 @@ public class RunMLC extends MLCOptions
 				//mulan.evaluation.Evaluator eval = new mulan.evaluation.Evaluator();
 				MissingCapableEvaluator eval = new MissingCapableEvaluator();
 				if (imputationString.equals("true"))
-					eval.setImputationLearner(new EnsembleOfClassifierChains(new RandomForest(), 10, false, false));
+					eval.setImputationLearner(new EnsembleOfClassifierChains(new RandomForest(), 15, true, false));
 				if (imputationString.equals("random"))
 					eval.setImputationAtRandom(new Random());
 				eval.setSinglePredictionTracker(tracker);
@@ -443,8 +448,14 @@ public class RunMLC extends MLCOptions
 				if (appDomain != null)
 					eval.setApplicabilityDomain(new DefaultMLCApplicabilityDomain(
 							(DistanceBasedApplicabilityDomain) appDomain));
+				eval.setInfo(info);
 
+				if (DEBUG)
+					System.out.println("starting evalution ...");
 				MultipleEvaluation ev = eval.crossValidate(mlcAlgorithm, data, getNumFolds());
+				if (DEBUG)
+					System.out.println("... evalution done");
+
 				//				ev.calculateStatistics();
 
 				List<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
@@ -592,53 +603,91 @@ public class RunMLC extends MLCOptions
 					String mlcAlgorithmStr, MultiLabelLearner mlcAlgorithm, String imputationString,
 					String classifierString, String mlcAlgorithmParamsStr, ApplicabilityDomain appDomain,
 					String appDomainStr, String appDomainParamsStr, int seed, ResultSet res, File resFile,
-					SinglePredictionTracker tracker, int numExperimentFolds) throws Exception
+					SinglePredictionTracker tracker, int numExperimentFolds, String info) throws Exception
 			{
-				Settings.createModelDirectory(modelName);
+				System.out.println("\nbuild model: " + modelName + "\n");
 
-				ReportMLC rep = new ReportMLC(Settings.modelDescriptionReport(modelName),
-						"Technical model description", false);
-				rep.report.addParagraph("This is a technical description of model "
-						+ rep.report.encodeLink(".", modelName) + ".");
-				rep.report.newSection("General");
-				ResultSet rs = new ResultSet();
-				int r = rs.addResult();
-				rs.setResultValue(r, "name", modelName);
-				rs.setResultValue(r, "#endpoints", di.numEndpoints);
-				rs.setResultValue(r, "#training dataset compounds", dataset.getNumInstances());
-				rs.setResultValue(r, Settings.text("mlc-algorithm"), Settings.text("mlc-algorithm." + mlcAlgorithmStr));
-				String neighborStr = mlcAlgorithmStr.equals("PCT") ? "PCT" : "None";
-				rs.setResultValue(r, Settings.text("neighbors"), Settings.text("neighbors." + neighborStr));
-				rs.setResultValue(r, Settings.text("mlc-algorithm"), Settings.text("mlc-algorithm." + mlcAlgorithmStr));
-				rs.setResultValue(r, Settings.text("classifier"), Settings.text("classifier." + classifierString));
-				rs.setResultValue(r, Settings.text("applicability-domain"),
-						Settings.text("applicability-domain." + appDomainStr));
-				rs.setResultValue(r, Settings.text("imputation"), Settings.text("imputation." + imputationString));
-				rep.report.addTable(rs, true);
-
-				String[][] info = { { "mlc-algorithm", mlcAlgorithmStr }, { "neighbors", neighborStr },
-						{ "classifier", classifierString }, { "applicability-domain", appDomainStr },
-						{ "imputation", imputationString } };
-				for (String[] inf : info)
+				if (!isPureModelBuilding())
 				{
-					String concept = inf[0];
-					String method = inf[1];
-					rep.report.newSection(Settings.text(concept));
-					rep.report.addParagraph(Settings.text(concept + ".description"));
-					if (method != null)
-					{
-						rep.report.addParagraph("The method used for this model is:");
-						rep.report.newSubsection(Settings.text(concept + "." + method));
-						rep.report.addParagraph(Settings.text(concept + "." + method + ".description"));
-					}
-				}
-				rep.report.newSection(Settings.text("model-confidence"));
-				rep.report.addParagraph(Settings.text("model-confidence.description",
-						ConfidenceLevelProvider.CONFIDENCE_LEVEL_HIGH.getNiceName(),
-						ConfidenceLevelProvider.CONFIDENCE_LEVEL_LOW.getNiceName()));
-				rep.close();
 
-				if (appDomain != null)
+					Settings.createModelDirectory(modelName);
+
+					ReportMLC rep = new ReportMLC(Settings.modelDescriptionReport(modelName),
+							"Technical model description", false);
+					rep.report.addParagraph("This is a technical description of model "
+							+ rep.report.encodeLink(".", modelName) + ".");
+					rep.report.newSection("General");
+					ResultSet rs = new ResultSet();
+					int r = rs.addResult();
+					rs.setResultValue(r, "name", modelName);
+					rs.setResultValue(r, "#endpoints", di.numEndpoints);
+					rs.setResultValue(r, "#training dataset compounds", dataset.getNumInstances());
+					rs.setResultValue(r, Settings.text("mlc-algorithm"),
+							Settings.text("mlc-algorithm." + mlcAlgorithmStr));
+					rs.setResultValue(r, Settings.text("mlc-algorithm"),
+							Settings.text("mlc-algorithm." + mlcAlgorithmStr));
+					if (mlcAlgorithmStr.equals("PCT"))
+						classifierString = "n/a";
+					else
+						rs.setResultValue(r, Settings.text("classifier"),
+								Settings.text("classifier." + classifierString));
+					rs.setResultValue(r, Settings.text("applicability-domain"),
+							Settings.text("applicability-domain." + appDomainStr));
+					rs.setResultValue(r, Settings.text("imputation"), Settings.text("imputation." + imputationString));
+					rep.report.addTable(rs, true);
+
+					String categoriesStr = mlcAlgorithmStr.equals("PCT") ? "PCT" : "None";
+					String[][] information = { { "mlc-algorithm", mlcAlgorithmStr },
+							{ "classifier", classifierString }, { "applicability-domain", appDomainStr },
+							{ "imputation", imputationString } };
+					for (String[] inf : information)
+					{
+						String concept = inf[0];
+						String method = inf[1];
+						if (Settings.contains(concept + "." + method))
+						{
+							rep.report.newSection(Settings.text(concept));
+							rep.report.addParagraph(Settings.text(concept + ".description"));
+							if (method != null)
+							{
+								rep.report.addGap();
+								rep.report.addParagraph("The method used for this model is:");
+								rep.report.newSubsection(Settings.text(concept + "." + method));
+								rep.report.addParagraph(Settings.text(concept + "." + method + ".description"));
+
+								if (concept.equals("mlc-algorithm") && mlcAlgorithmStr.equals("PCT"))
+								{
+									rep.report.newSubsection(Settings.text("categories"));
+									rep.report.addParagraph(Settings.text("categories.description"));
+								}
+							}
+						}
+					}
+
+					rep.report.newSection(Settings.text("model-confidence"));
+					rep.report.addParagraph(Settings.text("model-confidence.description",
+							ConfidenceLevelProvider.CONFIDENCE_LEVEL_HIGH.getNiceName(),
+							ConfidenceLevelProvider.CONFIDENCE_LEVEL_LOW.getNiceName()));
+					rep.close();
+
+					System.exit(1);
+				}
+
+				if (!imputationString.equals("false"))
+				{
+					dataset = dataset.clone();
+					if (imputationString.equals("true"))
+					{
+						Imputation.apply(new EnsembleOfClassifierChains(new RandomForest(), 15, true, false), null,
+								dataset);
+						//						Imputation.apply(new EnsembleOfClassifierChains(new RandomForest(), 10, false, false), null,
+						//								dataset);
+					}
+					else if (imputationString.equals("random"))
+						Imputation.apply(null, new Random(seed), dataset);
+				}
+
+				if (!isPureModelBuilding() && appDomain != null)
 				{
 					DefaultMLCApplicabilityDomain ad = new DefaultMLCApplicabilityDomain(
 							(DistanceBasedApplicabilityDomain) appDomain);
@@ -648,13 +697,21 @@ public class RunMLC extends MLCOptions
 				}
 
 				mlcAlgorithm.build(dataset);
-				System.out.println("writing mlc model to file: " + Settings.modelFile(modelName));
-				if (mlcAlgorithm instanceof PredictiveClusteringTrees)
-					((PredictiveClusteringTrees) mlcAlgorithm).prepareSerialize();
-				SerializationHelper.write(Settings.modelFile(modelName), mlcAlgorithm);
+				System.out.println(mlcAlgorithm.toString());
 
-				ModelInfo.writeModelProps(modelName, datasetNameStr,
-						Settings.getFeaturesFromDatabaseName(datasetNameStr), getExperimentName());
+				if (!isPureModelBuilding())
+				{
+					if (mlcAlgorithm instanceof PredictiveClusteringTrees)
+						((PredictiveClusteringTrees) mlcAlgorithm).listCategories().writeToFile(modelName);
+					System.out.println("writing mlc model to file: " + Settings.modelFile(modelName));
+					if (mlcAlgorithm instanceof PredictiveClusteringTrees)
+						((PredictiveClusteringTrees) mlcAlgorithm).prepareSerialize();
+					SerializationHelper.write(Settings.modelFile(modelName), mlcAlgorithm);
+
+					ModelInfo.writeModelProps(modelName, datasetNameStr,
+							Settings.getFeaturesFromDatabaseName(datasetNameStr), getExperimentName());
+				}
+
 				//					MultiLabelLearner mlcAlgorithm2 = (MultiLabelLearner) SerializationHelper.read("/tmp/test.model");
 			}
 		});
@@ -669,7 +726,7 @@ public class RunMLC extends MLCOptions
 					String mlcAlgorithmStr, MultiLabelLearner mlcAlgorithm, String imputationString,
 					String classifierString, String mlcAlgorithmParamsStr, ApplicabilityDomain appDomain,
 					String appDomainStr, String appDomainParamsStr, int seed, ResultSet res, File resFile,
-					SinglePredictionTracker tracker, int numExperimentFolds) throws Exception
+					SinglePredictionTracker tracker, int numExperimentFolds, String info) throws Exception
 			{
 				if (getFillMissings().length == 0)
 					throw new IllegalArgumentException(
@@ -797,10 +854,17 @@ public class RunMLC extends MLCOptions
 					System.out
 							.println("writing filled csv " + (confidence ? "Confidence" : "Class") + " to " + outfile);
 					FileUtil.writeCSV(outfile, csv, false);
-					String arffFile = Settings.filledArffFile(datasetNameStr, getExperimentName(), confidence);
-					System.out.println("writing filled arff " + (confidence ? "Confidence" : "Class") + " to "
-							+ arffFile);
-					ArffWriter.writeToArffFile(new File(arffFile), new FilledArffWritable(csv));
+					for (Boolean addID : new Boolean[] { true, false })
+					{
+						String arffFile = Settings.filledArffFile(datasetNameStr, getExperimentName(), confidence,
+								addID);
+						System.out.println("writing filled arff " + (confidence ? "Confidence" : "Class") + " to "
+								+ arffFile);
+						String xmlFile = null;
+						if (!addID)
+							xmlFile = Settings.filledXmlFile(datasetNameStr, getExperimentName(), confidence);
+						ArffWriter.writeToArffFile(new File(arffFile), new FilledArffWritable(csv, addID, xmlFile));
+					}
 					//									MultipleEvaluation ev = eval.crossValidate(mlcAlgorithm, data, numFolds);
 				}
 			}
@@ -810,7 +874,8 @@ public class RunMLC extends MLCOptions
 	enum Function
 	{
 		predict_compounds, predict_appdomain, validate, multi_validation_report, validation_report, model_report,
-		dataset_report, predict, fill_missing, cluster, filter_missclassified, compound_table, endpoint_table;
+		dataset_report, predict, fill_missing, cluster, filter_missclassified, compound_table, endpoint_table,
+		category_table;
 	}
 
 	public static void main(String args[]) throws Exception
@@ -856,7 +921,16 @@ public class RunMLC extends MLCOptions
 			//			a = "endpoint_table -o " + model;
 			//			//a = "compound_table -o RepdoseNeustoff-" + cl;
 
-			//a = "validate -a ECC -i 0 -u 3 -c RandomForest -d dataY_PCFP -e ECC-Y -q Centroid -w continous=false -o CPDBAS";
+			//a = "validate -a BR -i 0 -u 1 -c RandomForest -d dataZ_PC,dataZ_FP,dataZ_PCFP -e hamster";
+			//a = "endpoint_table -o pct";
+
+			//a = "validate -x 1 -i 0 -u 1 -o pct-ftest -y FP1 -d dataEAgg_noV_Ca15-20c20_FP1 -a PCT -p \"pruning=None;ftest=0.125\" -t false -c RandomForest -e PCT-Ftest -q None -w \"default\"";
+			//a = "validate -x 1 -i 0 -u 1 -o pct-ftest-imputation-num3 -y FP1 -d dataEAgg_noV_Ca15-20c20_FP1 -a PCT -p \"pruning=None;ftest=0.125;min-num=3\" -t true -c RandomForest -e PCT-Ftest-Impu-Num3 -q None -w \"default\"";
+			//a = "predict_compounds -o pct-ftest -v 75a9bfd8e5fbc442cbc9b811364d8d2b";
+			//a = "filter_missclassified -d dataY_PCFP -e BR-Y -s activityoutcome-cpdbas-hamster";
+			//a = "category_table -o pct-ftest -c1 cb11f87e838a8d5c45bb830f750c556b -c2 8,10,62,210,510,550,598,678,729";
+			//a = "category_table -o pct-ftest -c1 b6a140be7cfc68c351c10b285aa11ca6 -c2 0,116,140,175,184,271,278,281,363,364,417,460,495,498,501,567,731,782,827,834,867";
+
 			//args = "validation_report -d dataY_OB -e BRY -z all -o cpdbas".split(" ");
 			//a = "compound_table -d dataY_OB -o cpdbas";
 			//args = "endpoint_table -d dataY_OB -o cpdbas".split(" ");
@@ -868,7 +942,15 @@ public class RunMLC extends MLCOptions
 			//args = "predict_compounds -o only-repdose-model -v ea656a858ee3a71d9ad91d7377ec5b3b".split(" ");
 			//args = "predict_compounds -o only-repdose-model -v 7129b181d3b77e51e8dcc2b999ed0ded".split(" ");
 			//args = "predict_compounds -o only-repdose-model -v 9b6fd19cd0245838059df5b99a3d58d1".split(" ");
-			a = "validate -x 1 -i 0 -u 1 -o pct -y PCFP1 -d dataE_noV_Ca15-20c20_PCFP1 -a PCT -t false -c None -e PCT -q None";
+
+			//a = "validate -x 1 -i 0 -u 1 -o test-model-abc -y FP1 -d dataE_noV_Ca15-20c20_FP1 -a BR -t false -c None -e BR -q None";
+			//a = "validation_report -o pct -z all";
+			//a = "compound_table -o pct-ftest";
+			//a = "endpoint_table -o pct";
+			//a = "endpoint_table -o 01-br-model";
+
+			//a = "validate -x 3 -d dataEAgg_noV_Ca15-20c20_FP1 -i 0 -u 1 -f 10 -a PCT,PCT -p \"pruning=None;ftest=0.125,pruning=None;ftest=0.125\" -t true,false -c RandomForest -e PCT-Cmp -q None -w \"default\"";
+
 			//a = "predict_compounds -o pct -v 41fcba09f2bdcdf315ba4119dc7978dd";
 			//			args = "predict_appdomain -o only-repdose-model -v 9b6fd19cd0245838059df5b99a3d58d1 -b 0 -s liver"
 			//					.split(" ");
@@ -897,7 +979,12 @@ public class RunMLC extends MLCOptions
 			//			a = "validate -x 18 -d dataE_noV_Ca15-20c20_PC,dataE_noV_Ca15-20c20_PCX,dataE_noV_Ca15-20c20_FP1,dataE_noV_Ca15-20c20_PCFP1,dataE_noV_Ca15-20c20_PCXFP1 -i 0 -u 1 -f 10 -a PCT -p \"ensemble=RForest\" -t false -c RandomForest -e FeatPCT -q None -w \"default\"";
 
 			//a = "fill_missing -m class -x 1 -d dataE_noV_Ca15-20c20_FP1 -i 0 -u 1 -f 10 -a ECC -p \"num-chains=15;confidences=true;replacement=false\" -t false -c RandomForest -e ECC-FP1 -q None -w \"default\"";
+			//a = "fill_missing -m class -x 1 -d dataEAgg_noV_Ca15-20c20_MAN2 -i 0 -u 1 -f 10 -a ECC -p \"num-chains=15;confidences=true;replacement=false\" -t false -c RandomForest -e ECC-MAN2 -q None -w \"default\"";
+			//a = "validate -x 1 -i 0 -u 1 -o 03-br-model -y PCFP1 -d dataEAgg_noV_Ca15-20c20_PCFP1 -a BR -p \"default\" -t false -c RandomForest -e BR -q None -w \"default\"";
+			//a = "validate -x 1 -i 0 -u 1 -o 04-br-model -y PCFP1 -d dataEAgg_noV_Ca15-20c20_PCFP1 -a ECC -p \"num-chains=15;confidences=true;replacement=false\" -t false -c RandomForest -e ECC -q None -w \"default\"";
+			//a = "dataset_report -d dataE_noV_Ca15-20c20_PC";
 
+			a = "validate -x 1 -d dataE_noV_Ca15-20c20_PCFP1 -i 0 -u 1 -f 3 -a PCT -p \"pruning=None;ensemble=RForest;heuristic=VarianceReduction\" -t true -c RandomForest -e ImpuPCT -q None -w \"default\"";
 			args = a.split(" ");
 		}
 
@@ -939,6 +1026,8 @@ public class RunMLC extends MLCOptions
 		options.addOption("q", "app-domain", true, "AppDomain algortihm");
 		options.addOption("w", "app-domain-params", true, "AppDomain algortihm params");
 		options.addOption("b", "index", true, "an index");
+		options.addOption("c1", "category-key", true, "key for model category");
+		options.addOption("c2", "category-inidces", true, "compound-indices for model category");
 
 		CommandLineParser parser = new BasicParser();
 		CommandLine cmd = parser.parse(options, args);
@@ -1018,6 +1107,9 @@ public class RunMLC extends MLCOptions
 				break;
 			case model_report:
 				ReportMLC.modelReport();
+				break;
+			case category_table:
+				ReportMLC.categoryTable(cmd.getOptionValue("o"), cmd.getOptionValue("c1"), cmd.getOptionValue("c2"));
 				break;
 			case cluster:
 				ClusterEndpoint.apply(cmd.getOptionValue("1"), ClusterEndpoint.Method.valueOf(cmd.getOptionValue("2")),

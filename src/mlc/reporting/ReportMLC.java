@@ -30,6 +30,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
 import mlc.MLCDataInfo;
+import mlc.MLCDataInfo.RealMatrixType;
 import mlc.MLCDataInfo.StudyDuration;
 import mlc.ModelInfo;
 import mlc.report.HTMLReport;
@@ -49,6 +50,7 @@ import org.jfree.chart.plot.CategoryPlot;
 import util.ArrayUtil;
 import util.CollectionUtil;
 import util.FileUtil;
+import util.FileUtil.CSVFile;
 import util.StringUtil;
 import util.SwingUtil;
 import weka.core.Attribute;
@@ -553,11 +555,13 @@ public class ReportMLC
 		addImage(datasetName + "_correlationHistogramm", di.plotCorrelationHistogramm(), new Dimension(1200, 600));
 
 		if (di.hasRealData())
-			addImage(datasetName + "correlationMatrixReal", di.plotCorrelationMatrix(false), new Dimension(1200, 1150));
+			for (RealMatrixType t : RealMatrixType.values())
+				addImage(datasetName + "correlationMatrixReal" + t, di.plotCorrelationMatrix(false, t), new Dimension(
+						1200, 1150));
+		addImage(datasetName + "_correlationMatrixClass", di.plotCorrelationMatrix(true, null), new Dimension(1200,
+				1150));
 
-		addImage(datasetName + "_correlationMatrixClass", di.plotCorrelationMatrix(true), new Dimension(1200, 1150));
-
-		//		di.plotCorrelationMatrix(true, csv, true);
+		//		//di.plotCorrelationMatrix(true, csv, true);
 
 		//		List<String> smallImages = new ArrayList<String>();
 		//		if (!di.includeV && di.hasRealData())
@@ -728,6 +732,16 @@ public class ReportMLC
 		MultiLabelInstances data = getData(datasetName);
 		MLCDataInfo di = MLCDataInfo.get(data);
 
+		File f = new File(Settings.endpointInfo(datasetName));
+		HashMap<String, String> endpointInfo = null;
+		if (f.exists())
+		{
+			endpointInfo = new HashMap<String, String>();
+			CSVFile csv = FileUtil.readCSV(f.getAbsolutePath());
+			for (String[] s : csv.content)
+				endpointInfo.put(s[0].replaceAll(" ", "-").replaceAll("_", "-").toLowerCase(), s[1]);
+		}
+
 		ReportMLC rep = new ReportMLC(reportFile, "Predicted endpoints", di.hasRealData() && di.hasCompoundInfoData());
 		String info;
 		if (modelName != null)
@@ -744,6 +758,13 @@ public class ReportMLC
 			String labelName = a.name();
 			int r = res.addResult();
 			res.setResultValue(r, "endpoint", labelName);
+			if (endpointInfo != null)
+			{
+				if (!endpointInfo.containsKey(labelName))
+					throw new IllegalStateException("not found " + labelName + " in "
+							+ CollectionUtil.toString(endpointInfo.keySet()));
+				res.setResultValue(r, "description", endpointInfo.get(labelName));
+			}
 			res.setResultValue(r, "#active", di.ones_per_label[l]);
 			res.setResultValue(r, "#inactive", di.zeros_per_label[l]);
 			res.setResultValue(r, "#missing", di.missings_per_label[l]);
@@ -768,6 +789,15 @@ public class ReportMLC
 					res.setResultValue(r, "#sub-" + StudyDuration.accute, acc.size());// + " " + DoubleArraySummary.create(acc));
 					List<Double> chr = di.getStudyDurationValues(l, StudyDuration.chronic);
 					res.setResultValue(r, "#sub-" + StudyDuration.chronic, chr.size());// + " " + DoubleArraySummary.create(chr));
+
+					String uriA = rep.createImage(datasetName + "_realValueAccuteHistogrammZoom_" + l,
+							di.plotRealValueHistogram(l, true, StudyDuration.accute), new Dimension(600, 300));
+					res.setResultValue(r, "histogram-accute", rep.report.getImage(uriA, 300, 150));
+
+					String uriB = rep.createImage(datasetName + "_realValueChronicHistogrammZoom_" + l,
+							di.plotRealValueHistogram(l, true, StudyDuration.chronic), new Dimension(600, 300));
+					res.setResultValue(r, "histogram-chronic", rep.report.getImage(uriB, 300, 150));
+
 					String uri2 = rep.createImage(datasetName + "_realValueStudyDurationHistogrammZoom_" + l,
 							di.plotRealValueStudyDurationHistogram(l, true), new Dimension(600, 300));
 					res.setResultValue(r, "histogram-study", rep.report.getImage(uri2, 300, 150));
@@ -787,24 +817,24 @@ public class ReportMLC
 		rep.close();
 	}
 
-	public static void compoundTable(String modelName) throws Exception
+	private static void addCompoundTableSet(ReportMLC rep, ModelInfo mi, String rootPath, int compoundIndices[])
 	{
-		ModelInfo mi = ModelInfo.get(modelName);
-		ReportMLC rep = new ReportMLC(Settings.compoundTableFile(modelName), "Training dataset compounds");
-		rep.report.addParagraph("This is the training dataset compound table for model "
-				+ rep.report.encodeLink(".", modelName) + ".");
-		rep.report.addGap();
-
 		ResultSet res = new ResultSet();
 		MultiLabelInstances data = getData(mi.getDataset());
 		MLCDataInfo di = MLCDataInfo.get(data);
-
 		for (int i = 0; i < data.getNumInstances(); i++)
 		{
+			if (compoundIndices != null && ArrayUtil.indexOf(compoundIndices, i) == -1)
+				continue;
+
 			Instance instance = data.getDataSet().get(i);
 			int r = res.addResult();
 			res.setResultValue(r, "Index", i + 1);
-
+			res.setResultValue(
+					r,
+					"Image",
+					(di.getSmiles(i) != null && di.getSmiles(i).length() > 0 ? rep.report.getImage(rootPath
+							+ Settings.compoundPicture(di.getSmiles(i))) : null));
 			res.setResultValue(r, "SMILES", di.getSmiles(i));
 			res.setResultValue(r, "InChI", di.getInchi(i));
 
@@ -833,6 +863,62 @@ public class ReportMLC
 				res.setResultValue(r, labelName, val);
 			}
 		}
+		rep.report.addTable(res, false);
+	}
+
+	public static void categoryTable(String modelName, String categoryKey, String compoundIndices) throws Exception
+	{
+		ModelInfo mi = ModelInfo.get(modelName);
+
+		int idx[] = ArrayUtil
+				.toPrimitiveIntArray(ArrayUtil.parseIntegers(StringUtil.splitString(compoundIndices, ",")));
+
+		String name = "";
+		String description = null;
+		if (new File(Settings.categoryInfoFile(modelName)).exists())
+		{
+			CSVFile f = FileUtil.readCSV(Settings.categoryInfoFile(modelName));
+			for (String[] s : f.content)
+			{
+				if (s[0].equals(compoundIndices))
+				{
+					name = " " + s[1];
+					description = s[2];
+					break;
+				}
+			}
+		}
+
+		ReportMLC rep = new ReportMLC(Settings.categoryTableFile(modelName, categoryKey), "Category" + name);
+		rep.report.addParagraph("This is a category compound table for model "
+				+ rep.report.encodeLink("../", modelName) + ".");
+		if (description != null)
+		{
+			rep.report.addGap();
+			rep.report.addParagraph(description);
+		}
+		rep.report.addGap();
+
+		addCompoundTableSet(rep, mi, "../../../", idx);
+
+		FileUtil.createParentFolders(Settings.categoryTableFile(modelName, categoryKey));
+		rep.close();
+	}
+
+	public static void compoundTable(String modelName) throws Exception
+	{
+		ModelInfo mi = ModelInfo.get(modelName);
+		ReportMLC rep = new ReportMLC(Settings.compoundTableFile(modelName), "Training dataset compounds");
+		rep.report.addParagraph("This is the training dataset compound table for model "
+				+ rep.report.encodeLink(".", modelName) + ".");
+		rep.report.addGap();
+
+		ResultSet res = new ResultSet();
+		MultiLabelInstances data = getData(mi.getDataset());
+		MLCDataInfo di = MLCDataInfo.get(data);
+
+		addCompoundTableSet(rep, mi, "../../", null);
+
 		rep.report.addTable(res);
 
 		rep.close();

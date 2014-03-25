@@ -3,6 +3,7 @@ package weka;
 import java.util.ArrayList;
 import java.util.List;
 
+import util.FileUtil;
 import util.FileUtil.CSVFile;
 import util.FileUtil.ColumnExclude;
 
@@ -11,8 +12,9 @@ public class FilledArffWritable implements ArffWritable
 
 	CSVFile csv;
 	boolean isEndpoint[];
+	boolean addID;
 
-	public FilledArffWritable(CSVFile csv)
+	public FilledArffWritable(CSVFile csv, boolean addID, String xmlFile)
 	{
 		csv = csv.exclude(new ColumnExclude()
 		{
@@ -23,6 +25,7 @@ public class FilledArffWritable implements ArffWritable
 			}
 		});
 		this.csv = csv;
+		this.addID = addID;
 
 		isEndpoint = new boolean[csv.getHeader().length];
 		for (int i = 0; i < isEndpoint.length; i++)
@@ -32,6 +35,16 @@ public class FilledArffWritable implements ArffWritable
 					.getHeader()[i].startsWith("OB-MACCS"));
 			if (isEndpoint[i])
 				System.err.println("is endpoint " + csv.getHeader()[i]);
+		}
+
+		if (xmlFile != null)
+		{
+			String s = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<labels xmlns=\"http://mulan.sourceforge.net/labels\">\n";
+			for (int i = 0; i < isEndpoint.length; i++)
+				if (isEndpoint[i])
+					s += "<label name=\"" + csv.getHeader()[i] + "\"></label>\n";
+			s += "</labels>\n";
+			FileUtil.writeStringToFile(xmlFile, s);
 		}
 	}
 
@@ -46,21 +59,21 @@ public class FilledArffWritable implements ArffWritable
 	@Override
 	public int getNumAttributes()
 	{
-		return csv.getHeader().length;
+		return csv.getHeader().length - (addID ? 0 : 1);
 	}
 
 	@Override
 	public String getAttributeName(int attribute)
 	{
-		return csv.getHeader()[attribute];
+		return csv.getHeader()[attribute + (addID ? 0 : 1)];
 	}
 
 	@Override
 	public String getAttributeValueSpace(int attribute)
 	{
-		if (attribute == 0)
+		if (addID && attribute == 0)
 			return "STRING";
-		else if (isEndpoint[attribute])
+		else if (isEndpoint[attribute + (addID ? 0 : 1)])
 			return "{0,1}";
 		else
 			return "NUMERIC";
@@ -75,7 +88,7 @@ public class FilledArffWritable implements ArffWritable
 	@Override
 	public String getAttributeValue(int instance, int attribute)
 	{
-		return csv.content.get(instance + 1)[attribute];
+		return csv.content.get(instance + 1)[attribute + (addID ? 0 : 1)];
 	}
 
 	@Override

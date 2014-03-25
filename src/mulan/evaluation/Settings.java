@@ -32,6 +32,11 @@ public class Settings
 		return bundle().getString(key);
 	}
 
+	public static boolean contains(String key)
+	{
+		return bundle().containsKey(key);
+	}
+
 	public static String text(String key, String param1)
 	{
 		return MessageFormat.format(bundle().getString(key), param1);
@@ -63,6 +68,11 @@ public class Settings
 			return PWD + "data/" + datasetName.split("_")[0] + "_compoundInfo.csv";
 		else
 			return PWD + "arff/" + datasetName + "_compoundInfo.csv";
+	}
+
+	public static String endpointInfo(String datasetName)
+	{
+		return PWD + "info/" + datasetName.split("_")[0] + ".endpoint-info.csv";
 	}
 
 	public static String getFeaturesFromDatabaseName(String datasetName)
@@ -105,11 +115,17 @@ public class Settings
 		return PWD + "filled/" + datasetName + "_filled" + (confidence ? "Confidence" : "Class") + ".csv";
 	}
 
-	public static String filledArffFile(String datasetName, String experimentName, boolean confidence)
+	public static String filledXmlFile(String datasetName, String experimentName, boolean confidence)
+	{
+		return PWD + "filled/" + datasetName + "_filled" + (confidence ? "Confidence" : "Class") + ".xml";
+	}
+
+	public static String filledArffFile(String datasetName, String experimentName, boolean confidence, boolean addId)
 	{
 		//		return PWD + "filled/" + datasetName + "_" + experimentName + "_filled" + (confidence ? "Confidence" : "Class")
 		//				+ ".arff";
-		return PWD + "filled/" + datasetName + "_filled" + (confidence ? "Confidence" : "Class") + ".arff";
+		return PWD + "filled/" + datasetName + "_filled" + (confidence ? "Confidence" : "Class") + (addId ? ".id" : "")
+				+ ".arff";
 	}
 
 	public static String resultFile(String experimentName, String... datasetNames)
@@ -131,6 +147,11 @@ public class Settings
 	{
 		return PWD + "reports/report_" + experimentName + "_" + ArrayUtil.toString(datasetNames, "_", "", "", "") + "_"
 				+ measures;
+	}
+
+	public static String categoryInfoFile(String model)
+	{
+		return PWD + "models/" + model + "/" + model + ".categories.info.csv";
 	}
 
 	public static String compoundTableFile(String model)
@@ -170,6 +191,11 @@ public class Settings
 		return PWD + "models/" + modelName + "/" + modelName + ".settings";
 	}
 
+	public static String modelCategoriesFile(String modelName)
+	{
+		return PWD + "models/" + modelName + "/" + modelName + ".categories";
+	}
+
 	public static String modelADFile(String modelName)
 	{
 		return PWD + "models/" + modelName + "/" + modelName + ".ad";
@@ -202,7 +228,7 @@ public class Settings
 
 	public static String compoundPicture(String smiles)
 	{
-		return PWD + "predictions/" + StringUtil.getMD5(smiles) + ".png";
+		return PWD + "compounds/" + StringUtil.getMD5(smiles) + ".png";
 	}
 
 	//	public static String imageFile(String identifier)
@@ -218,6 +244,11 @@ public class Settings
 	public static String predictionReport(String modelName, String compoundsName)
 	{
 		return PWD + "models/" + modelName + "/predictions/" + compoundsName;
+	}
+
+	public static String categoryTableFile(String modelName, String categoryKey)
+	{
+		return PWD + "models/" + modelName + "/categories/" + categoryKey;
 	}
 
 	public static String appDomainImageFile(String modelName, String compoundsName, int compoundIndex, String endpoint)

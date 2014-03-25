@@ -33,8 +33,10 @@ import org.jfree.chart.title.Title;
 
 import util.ArrayUtil;
 import util.CorrelationMatrix;
+import util.CorrelationMatrix.DoubleCorrelationMatrix;
 import util.CorrelationMatrix.PearsonBooleanCorrelationMatrix;
 import util.CorrelationMatrix.PearsonDoubleCorrelationMatrix;
+import util.CorrelationMatrix.SpearmanDoubleCorrelationMatrix;
 import util.DoubleArraySummary;
 import util.FileUtil;
 import util.FileUtil.CSVFile;
@@ -349,19 +351,34 @@ public class MLCDataInfo
 
 	public ChartPanel plotRealValueHistogram(int j, boolean zoom)
 	{
+		return plotRealValueHistogram(j, zoom, null);
+	}
+
+	public ChartPanel plotRealValueHistogram(int j, boolean zoom, StudyDuration dur)
+	{
 		Attribute labelAttr = dataset.getDataSet().attribute(dataset.getLabelIndices()[j]);
 
-		System.out.println("create clazz histogram for " + labelAttr.name());
+		System.out.println("create clazz histogram for " + labelAttr.name() + " study-duration: " + dur);
 
-		double[] all = getRealValues(labelAttr.name());
-		double[] active = getRealValues(labelAttr.name(), "1");
+		double[] all;
+		double[] active;
+		if (dur == null)
+		{
+			all = getRealValues(labelAttr.name());
+			active = getRealValues(labelAttr.name(), "1");
+		}
+		else
+		{
+			all = ArrayUtil.toPrimitiveDoubleArray(getStudyDurationValues(j, dur));
+			active = ArrayUtil.toPrimitiveDoubleArray(getStudyDurationValues(j, dur, "1"));
+		}
 
 		List<String> clazz = ArrayUtil.toList(new String[] { INACTIVE, ACTIVE });
 
-		if (zeros_per_label[j] + ones_per_label[j] != all.length)
+		if (dur == null && zeros_per_label[j] + ones_per_label[j] != all.length)
 			throw new IllegalStateException("should contain both " + (zeros_per_label[j] + ones_per_label[j]) + " != "
 					+ all.length);
-		if (ones_per_label[j] != active.length)
+		if (dur == null && ones_per_label[j] != active.length)
 			throw new IllegalStateException("should contain only ones " + ones_per_label[j] + " != " + active.length);
 
 		List<String> subtitles = ArrayUtil.toList(new String[] { zeros_per_label[j] + " / " + ones_per_label[j]
@@ -377,8 +394,11 @@ public class MLCDataInfo
 		List<double[]> vals = new ArrayList<double[]>();
 		vals.add(all);
 		vals.add(active);
-		HistogramPanel h = new HistogramPanel("Real values for " + labelAttr.name() + (zoom ? " (zoom)" : ""),
-				subtitles, "value", "num compounds", clazz, vals, 50);
+		String prefix = "";
+		if (dur != null)
+			prefix = dur.toString() + " ";
+		HistogramPanel h = new HistogramPanel(prefix + "Real values for " + labelAttr.name() + (zoom ? " (zoom)" : ""),
+				subtitles, "LOEL (mmol)", "num compounds", clazz, vals, 50);
 		h.setIntegerTickUnits();
 
 		return h.getChartPanel();
@@ -419,7 +439,7 @@ public class MLCDataInfo
 		vals.add(all);
 		vals.add(subset);
 		HistogramPanel h = new HistogramPanel("Real values for " + labelAttr.name() + (zoom ? " (zoom)" : ""),
-				subtitles, "value", "num compounds", clazz, vals, 50);
+				subtitles, "LOEL (mmol)", "num compounds", clazz, vals, 50);
 		h.setIntegerTickUnits();
 
 		return h.getChartPanel();
@@ -666,7 +686,12 @@ public class MLCDataInfo
 		return m;
 	}
 
-	public CorrelationMatrix<Double> getRealValueCorrelationMatrix()
+	public static enum RealMatrixType
+	{
+		Pearson, PearsonLog, Spearman
+	}
+
+	public CorrelationMatrix<Double> getRealValueCorrelationMatrix(RealMatrixType type)
 	{
 		List<Double[]> matrixValues = new ArrayList<Double[]>();
 		for (int j = 0; j < dataset.getNumLabels(); j++)
@@ -676,16 +701,21 @@ public class MLCDataInfo
 			Double d[] = new Double[s.length];
 			for (int i = 0; i < d.length; i++)
 				if (s[i] != null && !s[i].equals("V"))
+				{
 					d[i] = Double.parseDouble(s[i]);
+					if (type == RealMatrixType.PearsonLog)
+						d[i] = Math.log(d[i]);
+				}
 			matrixValues.add(d);
 		}
-		PearsonDoubleCorrelationMatrix m = new PearsonDoubleCorrelationMatrix();
+		DoubleCorrelationMatrix m = (type == RealMatrixType.Spearman) ? new SpearmanDoubleCorrelationMatrix()
+				: new PearsonDoubleCorrelationMatrix();
 		m.setMinNumValues(10);
 		m.computeMatrix(matrixValues);
 		return m;
 	}
 
-	public MatrixPanel plotCorrelationMatrix(boolean clazz)
+	public MatrixPanel plotCorrelationMatrix(boolean clazz, RealMatrixType type)
 	{
 		MatrixPanel p = new MatrixPanel();
 		p.setMinNumValues(10);
@@ -694,7 +724,12 @@ public class MLCDataInfo
 		//		if (numEndpoints > 25)
 		//			p.setFont(p.getFont().deriveFont(10.0F));
 
-		p.setTitleString("Pearson Correlation Matrix for " + (clazz ? "class" : "real") + " values from dataset "
+		String typeStr = "";
+		if (clazz)
+			typeStr = "Pearson";
+		else
+			typeStr = type.toString();
+		p.setTitleString(typeStr + " Correlation Matrix for " + (clazz ? "class" : "real") + " values from dataset "
 				+ datasetName);
 		if (clazz)
 			p.setSubtitleString("1 := high correlation, 0 := no correlation, -1 := inverse correlation, the small numbers below correspond to the number of class values of "
@@ -708,7 +743,8 @@ public class MLCDataInfo
 			Attribute labelAttr = dataset.getDataSet().attribute(dataset.getLabelIndices()[j]);
 			attributeNames.add(labelAttr.name());
 		}
-		p.fill(clazz ? getClassCorrelationMatrix() : getRealValueCorrelationMatrix(), ArrayUtil.toArray(attributeNames));
+		p.fill(clazz ? getClassCorrelationMatrix() : getRealValueCorrelationMatrix(type),
+				ArrayUtil.toArray(attributeNames));
 
 		//		if (numEndpoints > 25)
 		//			p.setPreferredSize(new Dimension(1500, 1450));
@@ -795,6 +831,24 @@ public class MLCDataInfo
 	public static enum Route
 	{
 		inhalation, oral
+	}
+
+	public boolean includesStudyDuration()
+	{
+		return includesStudyDuration(datasetName);
+	}
+
+	public static boolean includesStudyDuration(String datasetName)
+	{
+		try
+		{
+			getCompoundInfoValue(datasetName, 0, "study-duration");
+			return true;
+		}
+		catch (IllegalArgumentException e)
+		{
+			return false;
+		}
 	}
 
 	public StudyDuration getStudyDuration(int compoundIndex)
@@ -927,6 +981,9 @@ public class MLCDataInfo
 		{
 			Attribute labelAttr = dataset.getDataSet().attribute(dataset.getLabelIndices()[0]);
 			realData = (getCSV().getColumnIndex(labelAttr.name() + "_real") != -1);
+			if (realData)
+				if (!includesStudyDuration())
+					realData = false;
 		}
 		return realData;
 	}
@@ -991,7 +1048,7 @@ public class MLCDataInfo
 		CSVFile compoundInfo = getCSVCompoundInfo(datasetName);
 		int colIndex = compoundInfo.getColumnIndex(f);
 		if (colIndex == -1)
-			throw new IllegalStateException("column " + f + " not found in compound info");
+			throw new IllegalArgumentException("column " + f + " not found in compound info");
 		return compoundInfo.content.get(compoundIndex + 1)[colIndex];
 	}
 

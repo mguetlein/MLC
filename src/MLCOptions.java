@@ -13,6 +13,7 @@ public class MLCOptions
 	private String fillMissing = null;
 	private String appDomain = "None";
 	private String appDomainParams;
+	private boolean pureModelBuilding = false;
 
 	private static String[] split(String s)
 	{
@@ -152,4 +153,13 @@ public class MLCOptions
 		return split(appDomainParams);
 	}
 
+	public boolean isPureModelBuilding()
+	{
+		return pureModelBuilding;
+	}
+
+	public void setPureModelBuilding(boolean pureModelBuilding)
+	{
+		this.pureModelBuilding = pureModelBuilding;
+	}
 }

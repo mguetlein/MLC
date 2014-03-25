@@ -40,7 +40,12 @@ public class SinglePredictionTrackerUtil
 			}
 		});
 		for (String e : endpoints)
-			csv = csv.exclude(e, e + "_real", e + "_classified", e + "_missclassified");
+		{
+			String exc[] = new String[] { e, e + "_classified", e + "_missclassified", e + "_real" };
+			if (ArrayUtil.indexOf(csv.getHeader(), e + "_real") == -1)
+				exc = ArrayUtil.removeAt(String.class, exc, 3);
+			csv = csv.exclude(exc);
+		}
 		String outfile = Settings.missclassifiedFile(datasetName, experimentName, endpoint);
 		System.out.println("writing missclassifications for label " + endpoint + " to " + outfile);
 		FileUtil.writeCSV(outfile, csv, false);
