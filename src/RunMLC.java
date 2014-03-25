@@ -360,11 +360,11 @@ public class RunMLC extends MLCOptions
 									{
 										String classifierName = classifier == null ? "None" : classifier.getClass()
 												.getSimpleName();
-										String info = datasetNameStr + " seed:" + seed + " imputation:"
-												+ imputationString + " wekaAlg:" + classifierName + " mlcAlg:"
-												+ mlcAlgorithm.getClass().getSimpleName() + " mlcAlgParams:"
-												+ mlcAlgorithmParamsStr + " appDomain:" + appDomainStr
-												+ " appDomainParams:" + appDomainParamsStr;
+										String info = datasetNameStr + " sd:" + seed + " impt:" + imputationString
+												+ " weka:" + classifierName + " mlc:"
+												+ mlcAlgorithm.getClass().getSimpleName() + " mlcP:"
+												+ mlcAlgorithmParamsStr + " ad:" + appDomainStr + " adP:"
+												+ appDomainParamsStr;
 										System.out.println(info);
 
 										try
