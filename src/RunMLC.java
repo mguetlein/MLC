@@ -54,6 +54,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Options;
 
+import pct.Categories;
 import pct.PredictiveClusteringTrees;
 import util.ArrayUtil;
 import util.FileUtil;
@@ -494,12 +495,15 @@ public class RunMLC extends MLCOptions
 
 					int n = dataset.getNumLabels();
 					result.put("macro-inside-ad", ev.getPctInsideAD(fold));
-					for (int i = 0; i < n; i++)
-						result.put("macro-inside-ad#" + i, ev.getPctInsideAD(fold, i));
+					//					for (int i = 0; i < n; i++)
+					//						result.put("macro-inside-ad#" + i, ev.getPctInsideAD(fold, i));
 
 					for (ConfidenceLevel c : ConfidenceLevelProvider.LEVELS)
 					{
 						String s = c.getShortName();
+
+						for (int i = 0; i < n; i++)
+							result.put("macro-inside-ad#" + i + s, ev.getPctInsideAD(fold, i, c));
 
 						result.put("hamming-loss" + s, ev.getResult(new HammingLoss(c).getName(), fold));
 						result.put("1-hamming-loss" + s, 1 - ev.getResult(new HammingLoss(c).getName(), fold));
@@ -588,13 +592,23 @@ public class RunMLC extends MLCOptions
 						System.out.println("\nprinting " + res.getNumResults() + " results to " + resFile);
 						//System.out.println(res.toNiceString());
 						ResultSetIO.printToFile(resFile, res, true);
+
+						if (Settings.LIST_PCT_CATEGORIES)
+						{
+							System.out.println("printing categories to file /tmp/categories.txt");
+							String s = "";
+							for (Categories c : PredictiveClusteringTrees.collectedCategories)
+								s += c.getCompactString() + "\n";
+							FileUtil.writeStringToFile("/tmp/categories.txt", s);
+						}
 					}
 				}
 			}
 		});
 	}
 
-	public void buildModel(final String modelName) throws Exception
+	public void buildModel(final String modelName, final String modelAlias, final boolean exitWithoutBuilding)
+			throws Exception
 	{
 		iterate(false, new MLCMethod()
 		{
@@ -613,15 +627,17 @@ public class RunMLC extends MLCOptions
 					Settings.createModelDirectory(modelName);
 
 					ReportMLC rep = new ReportMLC(Settings.modelDescriptionReport(modelName),
-							"Technical model description", false);
+							"Technical model description", false, "../../");
 					rep.report.addParagraph("This is a technical description of model "
-							+ rep.report.encodeLink(".", modelName) + ".");
+							+ rep.report.encodeLink(".", modelAlias) + ".");
 					rep.report.newSection("General");
 					ResultSet rs = new ResultSet();
 					int r = rs.addResult();
-					rs.setResultValue(r, "name", modelName);
+					rs.setResultValue(r, "name", modelAlias);
 					rs.setResultValue(r, "#endpoints", di.numEndpoints);
 					rs.setResultValue(r, "#training dataset compounds", dataset.getNumInstances());
+					rs.setResultValue(r, "#descriptors", dataset.getDataSet().numAttributes() - dataset.getNumLabels());
+
 					rs.setResultValue(r, Settings.text("mlc-algorithm"),
 							Settings.text("mlc-algorithm." + mlcAlgorithmStr));
 					rs.setResultValue(r, Settings.text("mlc-algorithm"),
@@ -631,6 +647,8 @@ public class RunMLC extends MLCOptions
 					else
 						rs.setResultValue(r, Settings.text("classifier"),
 								Settings.text("classifier." + classifierString));
+					rs.setResultValue(r, Settings.text("descriptors"),
+							Settings.text("descriptors." + Settings.getFeaturesFromDatabaseName(datasetNameStr)));
 					rs.setResultValue(r, Settings.text("applicability-domain"),
 							Settings.text("applicability-domain." + appDomainStr));
 					rs.setResultValue(r, Settings.text("imputation"), Settings.text("imputation." + imputationString));
@@ -638,8 +656,9 @@ public class RunMLC extends MLCOptions
 
 					String categoriesStr = mlcAlgorithmStr.equals("PCT") ? "PCT" : "None";
 					String[][] information = { { "mlc-algorithm", mlcAlgorithmStr },
-							{ "classifier", classifierString }, { "applicability-domain", appDomainStr },
-							{ "imputation", imputationString } };
+							{ "classifier", classifierString },
+							{ "descriptors", Settings.getFeaturesFromDatabaseName(datasetNameStr) },
+							{ "applicability-domain", appDomainStr }, { "imputation", imputationString } };
 					for (String[] inf : information)
 					{
 						String concept = inf[0];
@@ -669,8 +688,15 @@ public class RunMLC extends MLCOptions
 							ConfidenceLevelProvider.CONFIDENCE_LEVEL_HIGH.getNiceName(),
 							ConfidenceLevelProvider.CONFIDENCE_LEVEL_LOW.getNiceName()));
 					rep.close();
+				}
 
-					System.exit(1);
+				if (!isPureModelBuilding() && appDomain != null)
+				{
+					DefaultMLCApplicabilityDomain ad = new DefaultMLCApplicabilityDomain(
+							(DistanceBasedApplicabilityDomain) appDomain);
+					ad.init(dataset);
+					System.out.println("writing app domain model to file: " + Settings.modelADFile(modelName));
+					SerializationHelper.write(Settings.modelADFile(modelName), ad);
 				}
 
 				if (!imputationString.equals("false"))
@@ -687,31 +713,32 @@ public class RunMLC extends MLCOptions
 						Imputation.apply(null, new Random(seed), dataset);
 				}
 
-				if (!isPureModelBuilding() && appDomain != null)
+				if (!exitWithoutBuilding)
 				{
-					DefaultMLCApplicabilityDomain ad = new DefaultMLCApplicabilityDomain(
-							(DistanceBasedApplicabilityDomain) appDomain);
-					ad.init(dataset);
-					System.out.println("writing app domain model to file: " + Settings.modelADFile(modelName));
-					SerializationHelper.write(Settings.modelADFile(modelName), ad);
+					mlcAlgorithm.build(dataset);
+					System.out.println(mlcAlgorithm.toString());
 				}
-
-				mlcAlgorithm.build(dataset);
-				System.out.println(mlcAlgorithm.toString());
 
 				if (!isPureModelBuilding())
 				{
-					if (mlcAlgorithm instanceof PredictiveClusteringTrees)
-						((PredictiveClusteringTrees) mlcAlgorithm).listCategories().writeToFile(modelName);
-					System.out.println("writing mlc model to file: " + Settings.modelFile(modelName));
-					if (mlcAlgorithm instanceof PredictiveClusteringTrees)
-						((PredictiveClusteringTrees) mlcAlgorithm).prepareSerialize();
-					SerializationHelper.write(Settings.modelFile(modelName), mlcAlgorithm);
-
-					ModelInfo.writeModelProps(modelName, datasetNameStr,
+					if (!exitWithoutBuilding)
+					{
+						if (mlcAlgorithm instanceof PredictiveClusteringTrees)
+							((PredictiveClusteringTrees) mlcAlgorithm).listCategories().writeToFile(modelName);
+						System.out.println("writing mlc model to file: " + Settings.modelFile(modelName));
+						if (mlcAlgorithm instanceof PredictiveClusteringTrees)
+							((PredictiveClusteringTrees) mlcAlgorithm).prepareSerialize();
+						SerializationHelper.write(Settings.modelFile(modelName), mlcAlgorithm);
+					}
+					ModelInfo.writeModelProps(modelName, modelAlias, datasetNameStr,
 							Settings.getFeaturesFromDatabaseName(datasetNameStr), getExperimentName());
 				}
 
+				if (exitWithoutBuilding)
+				{
+					System.err.println("HANDLE WITH CARE: quitting after model building; skipping validation");
+					System.exit(0);
+				}
 				//					MultiLabelLearner mlcAlgorithm2 = (MultiLabelLearner) SerializationHelper.read("/tmp/test.model");
 			}
 		});
@@ -884,48 +911,40 @@ public class RunMLC extends MLCOptions
 
 		if (args != null && args.length == 1 && args[0].equals("debug"))
 		{
+			//launch
 			DEBUG = true;
 			String a;
 
+			//String model = "pct-test-333";
+			//a = "endpoint_table -o " + model;
+
+			//a = "validate -x 1 -i 0 -u 1 -o pct-ftest-imputation-3 -y FP1 -d dataEAgg_noV_Ca15-20c20_FP1 -a PCT -p \"pruning=None;ftest=0.125;min-num=3\" -t true -c RandomForest -e PCT-Ftest-Impu -q None -w \"default\"";
+			a = "validate -x 2 -i 0 -u 1 -f 2 -lc -y FP1 -d dataEAgg_noV_Ca15-20c20_FP1 -a PCT -p \"pruning=None;ftest=0.125;min-num=3\" -t true -c RandomForest -e PCT-Ftest-Impu -q None -w \"default\"";
+			//			a = "validate -x 1 -i 0 -u 1 -o br-man2 -y MAN2 -d dataE_noV_Ca15-20c20_MAN2 -a BR -p \"default\" -t false -c RandomForest -e BR-MAN2 -q None -w \"default\"";
+			//a = "validate -x 2 -i 0 -u 1 -o br-ad-123 -ox -y PCFP1 -d dataE_noV_Ca15-20c20_PCFP1 -a BR -p \"default\" -t false -c RandomForest -e BR-AD2 -q Centroid -w \"confidence=false;distance=2.0\"";
+			//a = "multi_validation_report -e ParamsECC-Y -d dataY_PCFP -z all";
+			//a = "predict_compounds -o 03-br-model -v 975f4ba64117f4dc65044299552ee698";
+			//a = "predict_compounds -o pct-ftest-imputation -v da560e1f985a1e4f38d482c499c5fda4";
+			//a = "validation_report -o br-ad-123 -z all_ad";
+			//a = "model_report -o br-ad-123";
+
 			//			Settings.PWD = "/home/martin/workspace/BMBF-MLC/";
 			//args = "dataset_report -d dataY_OB".split(" "); //,dataR_noV_EqF_PCFP,dataR_noV_Cl68_PCFP
-			//			args = "validate -a BR -c RandomForest -d dataB_noV_Cl68_PC -e ADtest -q None,Centroid -w default,continous=false"
-			//					.split(" ");
-			//args = "validate -a BR -c RandomForest -d dataB_noV_Cl68_PC -e ADtest -q None -w default".split(" ");
-
-			//			args = ("validate -a BR -i 0 -u 1 -c RandomForest -d dataR_noV_Cl68_PC -e BRAD -q Neighbor " + "-w default")
-			//					.split(" ");
 			//a = "multi_validation_report -e BR-AD -d dataB_noV_Ca15-20c20_PCFP -z all";
 
-			//			a = "validate -a PCT -p heuristic=VarianceReduction;min-num=3;ftest=0.1 -t false -i 0 -u 1 -d dataB_noV_EqF_PC -e BR-BEqF -q None";
-			//a = "validate -f 2 -a PCT -p \"ensemble=RForest;pruning=C4.5\" -t true -i 0 -u 1 -d dataB_noV_EqF_PC -e BR-BEqF -q None";
-			//a = "validate -x 18 -d dataC_noV_Ca15-20c20_PC,dataC_noV_Ca15-20c20_FP1,dataC_noV_Ca15-20c20_PCFP1 -i 0 -u 5 -f 10 -a PCT -p \"ensemble=RForest\" -t false -c RandomForest -e FeatPCT -q None -w \"default\"";
-
-			//a = "endpoint_table -o RepdoseNeustoff";
-
-			//a = "validate -a BR -i 0 -u 2 -c RandomForest -d dataR_noV_Cl68_PC -e BR-R -q Centroid -w continous=false -o Repdose";
 			//a = "validation_report -o CPDBAS -z all";
 			//a = "validation_report -o RepdoseNeustoff-EqF -z all";
-			//a = "endpoint_table -o Repdose";
+
 			//a = "compound_table -o Repdose";
 			//a = "predict_compounds -o Repdose -v 8746894c3510f705bb330497272a4602";
-
-			//a = "validate -x 1 -d dataY_PC -i 0 -u 1 -f 10 -a BR -t false -c IBk -e FeatWekaY -q None";
 
 			//			String cl = "Ca15-20c20";
 			//			String data = "dataA";
 			//			String model = "RepdoseNeustoff-old-" + cl;
-			//			//			a = "validate -a BR -i 0 -u 1 -c RandomForest -d " + data + "_noV_" + cl + "_PC -e BR-B-" + cl
-			//			//					+ " -q None -o " + model;
 			//			//a = "validation_report -o RepdoseNeustoff-" + cl + " -z all";
-			//			a = "endpoint_table -o " + model;
+			//			
 			//			//a = "compound_table -o RepdoseNeustoff-" + cl;
 
-			//a = "validate -a BR -i 0 -u 1 -c RandomForest -d dataZ_PC,dataZ_FP,dataZ_PCFP -e hamster";
-			//a = "endpoint_table -o pct";
-
-			//a = "validate -x 1 -i 0 -u 1 -o pct-ftest -y FP1 -d dataEAgg_noV_Ca15-20c20_FP1 -a PCT -p \"pruning=None;ftest=0.125\" -t false -c RandomForest -e PCT-Ftest -q None -w \"default\"";
-			//a = "validate -x 1 -i 0 -u 1 -o pct-ftest-imputation-num3 -y FP1 -d dataEAgg_noV_Ca15-20c20_FP1 -a PCT -p \"pruning=None;ftest=0.125;min-num=3\" -t true -c RandomForest -e PCT-Ftest-Impu-Num3 -q None -w \"default\"";
 			//a = "predict_compounds -o pct-ftest -v 75a9bfd8e5fbc442cbc9b811364d8d2b";
 			//a = "filter_missclassified -d dataY_PCFP -e BR-Y -s activityoutcome-cpdbas-hamster";
 			//a = "category_table -o pct-ftest -c1 cb11f87e838a8d5c45bb830f750c556b -c2 8,10,62,210,510,550,598,678,729";
@@ -933,7 +952,6 @@ public class RunMLC extends MLCOptions
 
 			//args = "validation_report -d dataY_OB -e BRY -z all -o cpdbas".split(" ");
 			//a = "compound_table -d dataY_OB -o cpdbas";
-			//args = "endpoint_table -d dataY_OB -o cpdbas".split(" ");
 
 			//args = "predict_compounds -o MLC_model_v0.0.1 -v f9451e3ab767e8317afb8a939af279fe".split(" ");
 			//args = "predict_compounds -o MLC_model_v0.0.1 -v c29c3a4367a8d417c99addd3e1e2ebfc".split(" ");
@@ -943,21 +961,14 @@ public class RunMLC extends MLCOptions
 			//args = "predict_compounds -o only-repdose-model -v 7129b181d3b77e51e8dcc2b999ed0ded".split(" ");
 			//args = "predict_compounds -o only-repdose-model -v 9b6fd19cd0245838059df5b99a3d58d1".split(" ");
 
-			//a = "validate -x 1 -i 0 -u 1 -o test-model-abc -y FP1 -d dataE_noV_Ca15-20c20_FP1 -a BR -t false -c None -e BR -q None";
 			//a = "validation_report -o pct -z all";
 			//a = "compound_table -o pct-ftest";
-			//a = "endpoint_table -o pct";
-			//a = "endpoint_table -o 01-br-model";
-
-			//a = "validate -x 3 -d dataEAgg_noV_Ca15-20c20_FP1 -i 0 -u 1 -f 10 -a PCT,PCT -p \"pruning=None;ftest=0.125,pruning=None;ftest=0.125\" -t true,false -c RandomForest -e PCT-Cmp -q None -w \"default\"";
 
 			//a = "predict_compounds -o pct -v 41fcba09f2bdcdf315ba4119dc7978dd";
 			//			args = "predict_appdomain -o only-repdose-model -v 9b6fd19cd0245838059df5b99a3d58d1 -b 0 -s liver"
 			//					.split(" ");
 
 			//args = "dataset_report -d dataR_withV_RvsV_PCFP".split(" ");
-			//
-			//args = "endpoint_table -d dataR_noV_Cl68_PC -o cpdbas".split(" ");
 			//
 			//a = "fill_missing -a BR -c RandomForest -d dataB_noV_Cl68_PC -m class -q None -e test";
 
@@ -967,25 +978,24 @@ public class RunMLC extends MLCOptions
 			//a = "multi_validation_report -e BR -d dataB_noV_Ca15-20c20_PCFP -z all";
 
 			//a = "multi_validation_report -e ParamsPCT -d dataA_noV_Ca15-20c20_PCFP -z all";
-			//a = "validate -x 1 -d dataA_noV_Ca15-20c20_PCFP -i 0 -u 1 -f 10 -a PCT,PCT,PCT,PCT -p \"heuristic=VarianceReduction;pruning=C4.5,heuristic=GainRatio;pruning=C4.5,heuristic=VarianceReduction;pruning=None,heuristic=GainRatio;pruning=None\" -t false -c RandomForest -e ParamsPCT -q None -w \"default\"";
-
 			//a = "cluster -1 data/dataC_withV.csv -2 absolute -3 1.5 -4 2.0 -5 2.0";
 			//a = "multi_validation_report -e PC12-Y -d dataY_PC1,dataY_PC2 -z all";
 			//			a = "dataset_report -d dataC_noV_Ca15-20c20_dummy";
-			//a = "endpoint_table -d dataC_noV_Ca15-20c20_dummy";
 			//a = "multi_validation_report -e BR -d dataA_noV_Ca15-20c20_PCFP1,dataB_noV_Ca15-20c20_PCFP1,dataC_noV_Ca15-20c20_PCFP1,dataD_noV_Ca15-20c20_PCFP1,dataE_noV_Ca15-20c20_PCFP1 -z all";
 			//a = "multi_validation_report -e FeatECC -d dataE_noV_Ca15-20c20_PC,dataE_noV_Ca15-20c20_PCX,dataE_noV_Ca15-20c20_FP1,dataE_noV_Ca15-20c20_PCFP1,dataE_noV_Ca15-20c20_PCXFP1 -z all";
 
-			//			a = "validate -x 18 -d dataE_noV_Ca15-20c20_PC,dataE_noV_Ca15-20c20_PCX,dataE_noV_Ca15-20c20_FP1,dataE_noV_Ca15-20c20_PCFP1,dataE_noV_Ca15-20c20_PCXFP1 -i 0 -u 1 -f 10 -a PCT -p \"ensemble=RForest\" -t false -c RandomForest -e FeatPCT -q None -w \"default\"";
-
 			//a = "fill_missing -m class -x 1 -d dataE_noV_Ca15-20c20_FP1 -i 0 -u 1 -f 10 -a ECC -p \"num-chains=15;confidences=true;replacement=false\" -t false -c RandomForest -e ECC-FP1 -q None -w \"default\"";
 			//a = "fill_missing -m class -x 1 -d dataEAgg_noV_Ca15-20c20_MAN2 -i 0 -u 1 -f 10 -a ECC -p \"num-chains=15;confidences=true;replacement=false\" -t false -c RandomForest -e ECC-MAN2 -q None -w \"default\"";
-			//a = "validate -x 1 -i 0 -u 1 -o 03-br-model -y PCFP1 -d dataEAgg_noV_Ca15-20c20_PCFP1 -a BR -p \"default\" -t false -c RandomForest -e BR -q None -w \"default\"";
-			//a = "validate -x 1 -i 0 -u 1 -o 04-br-model -y PCFP1 -d dataEAgg_noV_Ca15-20c20_PCFP1 -a ECC -p \"num-chains=15;confidences=true;replacement=false\" -t false -c RandomForest -e ECC -q None -w \"default\"";
 			//a = "dataset_report -d dataE_noV_Ca15-20c20_PC";
 
-			a = "validate -x 1 -d dataE_noV_Ca15-20c20_PCFP1 -i 0 -u 1 -f 3 -a PCT -p \"pruning=None;ensemble=RForest;heuristic=VarianceReduction\" -t true -c RandomForest -e ImpuPCT -q None -w \"default\"";
+			//a = "multi_validation_report -e ImpuPCT -d dataE_noV_Ca15-20c20_PCFP1 -z auc_only";
+
+			//a = "multi_validation_report -e BR-MLCs-2-Impu -d dataE_noV_Ca15-20c20_PCFP1 -z all";
+
 			args = a.split(" ");
+
+			//			ReportMLC.poster_pics();
+			//			System.exit(1);
 		}
 
 		Function func = null;
@@ -1022,12 +1032,15 @@ public class RunMLC extends MLCOptions
 		options.addOption("4", "cluster-high-threshold", true, "max threshold for discretization point");
 		options.addOption("5", "cluster-adjust-chronic", true, "adjust chronic values (optional)");
 		options.addOption("o", "model-name", true, "Model name (builds this model when validating)");
+		options.addOption("oa", "model-alias", true, "Nice model name (builds this model when validating)");
+		options.addOption("ox", false, "Quit after building the model (skip validation)");
 		options.addOption("v", "compound-arff-file", true, "compound arff file name for prediction");
 		options.addOption("q", "app-domain", true, "AppDomain algortihm");
 		options.addOption("w", "app-domain-params", true, "AppDomain algortihm params");
 		options.addOption("b", "index", true, "an index");
 		options.addOption("c1", "category-key", true, "key for model category");
 		options.addOption("c2", "category-inidces", true, "compound-indices for model category");
+		options.addOption("lc", false, "list-categories when validating pcts");
 
 		CommandLineParser parser = new BasicParser();
 		CommandLine cmd = parser.parse(options, args);
@@ -1076,10 +1089,14 @@ public class RunMLC extends MLCOptions
 					int max = mlc.getMaxSeedExclusive();
 					mlc.setMinSeed(0);
 					mlc.setMaxSeedExclusive(1);
-					mlc.buildModel(cmd.getOptionValue("o"));
+					mlc.buildModel(cmd.getOptionValue("o"),
+							cmd.hasOption("oa") ? cmd.getOptionValue("oa") : cmd.getOptionValue("o"),
+							cmd.hasOption("ox"));
 					mlc.setMinSeed(min);
 					mlc.setMaxSeedExclusive(max);
 				}
+				if (cmd.hasOption("lc"))
+					Settings.LIST_PCT_CATEGORIES = true;
 				mlc.validate();
 				break;
 			case validation_report:

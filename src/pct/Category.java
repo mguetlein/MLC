@@ -35,4 +35,9 @@ public class Category
 	{
 		return key + ",\"" + name + "\"";
 	}
+
+	public String toString()
+	{
+		return toCSV();
+	}
 }

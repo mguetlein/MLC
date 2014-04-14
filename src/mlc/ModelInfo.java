@@ -1,14 +1,15 @@
 package mlc;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
-
 
 import mlc.reporting.ReportMLC;
 import mulan.evaluation.Settings;
 import mulan.evaluation.measure.ConfidenceLevel;
 import util.ArrayUtil;
 import util.FileUtil;
+import util.FileUtil.CSVFile;
 import util.ListUtil;
 import datamining.ResultSet;
 import datamining.ResultSetIO;
@@ -26,25 +27,33 @@ public class ModelInfo
 		if (!new File(Settings.modelFile(modelName)).exists())
 			throw new Error("model not found");
 
-		String s = FileUtil.readStringFromFile(Settings.modelPropsFile(modelName));
-		for (String ss : s.split(","))
-		{
-			String sss[] = ss.split("=");
-			if (sss.length != 2)
-				throw new Error("cannot read props");
-			props.put(sss[0], sss[1]);
-		}
+		CSVFile csv = FileUtil.readCSV(Settings.modelPropsFile(modelName));
+		if (csv.content.size() != 2)
+			throw new Error("cannot read props");
+		for (int i = 0; i < csv.content.get(0).length; i++)
+			props.put(csv.content.get(0)[i], csv.content.get(1)[i]);
+
+		//		String s = FileUtil.readStringFromFile(Settings.modelPropsFile(modelName));
+		//		for (String ss : s.split(","))
+		//		{
+		//			String sss[] = ss.split("=");
+		//			if (sss.length != 2)
+		//				throw new Error("cannot read props");
+		//			props.put(sss[0], sss[1]);
+		//		}
 	}
 
-	public static void writeModelProps(String modelName, String datasetName, String features, String experimentName)
+	public static void writeModelProps(String modelName, String modelAlias, String datasetName, String features,
+			String experimentName)
 	{
 		if (!datasetName.matches(".*" + features + ".*"))
 			throw new IllegalStateException("dataset name '" + datasetName + "' does not contain features '" + features
 					+ "'");
-		String settings = "dataset=" + datasetName + ",features=" + features + ",validation-experiment="
-				+ experimentName;
+		String headers[] = { "dataset", "features", "validation-experiment", "alias" };
+		String vals[] = { datasetName, features, experimentName, modelAlias };
 		System.out.println("writing mlc model settings to file: " + Settings.modelPropsFile(modelName));
-		FileUtil.writeStringToFile(Settings.modelPropsFile(modelName), settings);
+		FileUtil.writeStringToFile(Settings.modelPropsFile(modelName), ArrayUtil.toCSVString(headers) + "\n"
+				+ ArrayUtil.toCSVString(vals));
 	}
 
 	public String getFeatures()
@@ -104,6 +113,11 @@ public class ModelInfo
 		if (!instances.containsKey(modelName))
 			instances.put(modelName, new ModelInfo(modelName));
 		return instances.get(modelName);
+	}
+
+	public String getAlias()
+	{
+		return props.get("alias");
 	}
 
 }

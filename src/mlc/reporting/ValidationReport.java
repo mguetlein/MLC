@@ -10,6 +10,7 @@ import mulan.data.MultiLabelInstances;
 import mulan.evaluation.Settings;
 import mulan.evaluation.measure.ConfidenceLevel;
 import mulan.evaluation.measure.ConfidenceLevelProvider;
+import util.StringUtil;
 import datamining.Result;
 import datamining.ResultSet;
 import datamining.ResultSetIO;
@@ -24,6 +25,18 @@ public class ValidationReport
 		System.out.println("reading results:");
 		ResultSet results = ResultSetIO
 				.parseFromFile(new File(Settings.resultFile(mi.getExperiment(), mi.getDataset())));
+
+		//		{
+		//			List<String> remProp = new ArrayList<String>();
+		//			for (String prop : results.getProperties())
+		//				if (prop.contains("#") && !prop.contains("#0"))
+		//					remProp.add(prop);
+		//			for (String p : remProp)
+		//				results.removePropery(p);
+		//			System.out.println(results.toNiceString());
+		//			System.exit(0);
+		//		}
+
 		ReportMLC.PerformanceMeasures measures = ReportMLC.PerformanceMeasures.accuracy;
 		measures = ReportMLC.PerformanceMeasures.valueOf(performanceMeasure);
 		String outfile = Settings.validationReportFile(modelName);
@@ -41,8 +54,9 @@ public class ValidationReport
 		MultiLabelInstances data = ReportMLC.getData(datasetName);
 		MLCDataInfo di = MLCDataInfo.get(data);
 
-		ReportMLC rep = new ReportMLC(outfile, "Validation results", false);
-		rep.report.addParagraph("This is a validation report for model " + rep.report.encodeLink(".", model) + ".");
+		ReportMLC rep = new ReportMLC(outfile, "Validation results", false, "../../");
+		rep.report.addParagraph("This is a validation report for model "
+				+ rep.report.encodeLink(".", ModelInfo.get(model).getAlias()) + ".");
 		rep.report.addGap();
 
 		rep.report.newSection("General information");
@@ -103,12 +117,12 @@ public class ValidationReport
 				numResults.put(level, sum);
 			}
 			s += "In each cross-validation ";
-			s += numResults.get(ConfidenceLevelProvider.CONFIDENCE_LEVEL_HIGH) + " (of all "
+			s += StringUtil.formatDouble(numResults.get(ConfidenceLevelProvider.CONFIDENCE_LEVEL_HIGH)) + " (of all "
 					+ (di.ones_per_label[l] + di.zeros_per_label[l]) + " non-missing compounds) were predicted with "
 					+ ConfidenceLevelProvider.CONFIDENCE_LEVEL_HIGH.getNiceName() + ", ";
-			s += numResults.get(ConfidenceLevelProvider.CONFIDENCE_LEVEL_MEDIUM) + " with "
+			s += StringUtil.formatDouble(numResults.get(ConfidenceLevelProvider.CONFIDENCE_LEVEL_MEDIUM)) + " with "
 					+ ConfidenceLevelProvider.CONFIDENCE_LEVEL_MEDIUM.getNiceName() + " and ";
-			s += numResults.get(ConfidenceLevelProvider.CONFIDENCE_LEVEL_LOW) + " with "
+			s += StringUtil.formatDouble(numResults.get(ConfidenceLevelProvider.CONFIDENCE_LEVEL_LOW)) + " with "
 					+ ConfidenceLevelProvider.CONFIDENCE_LEVEL_LOW.getNiceName() + ".";
 			rep.report.addParagraph(s);
 			rep.report.addGap();

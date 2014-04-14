@@ -22,6 +22,20 @@ public class MultiValidationReport
 		System.out.println("create result report for " + Settings.resultFile(experimentName, datasetNames));
 		System.out.println("reading results:");
 		ResultSet results = ResultSetIO.parseFromFile(new File(Settings.resultFile(experimentName, datasetNames)));
+
+		//		{
+		//			results = results.filter(new ResultSetFilter()
+		//			{
+		//				@Override
+		//				public boolean accept(Result result)
+		//				{
+		//					return result.getValue("mlc-algorithm-params").toString().contains("confidences=true")
+		//							&& result.getValue("mlc-algorithm-params").toString().contains("replacement=true")
+		//							&& !result.getValue("mlc-algorithm-params").toString().contains("num-chains=15");
+		//				}
+		//			});
+		//		}
+
 		ReportMLC.PerformanceMeasures measures = ReportMLC.PerformanceMeasures.accuracy;
 		measures = ReportMLC.PerformanceMeasures.valueOf(performanceMeasure);
 		String outfile = Settings.reportFile(experimentName, datasetNames, measures.toString());
@@ -67,7 +81,7 @@ public class MultiValidationReport
 		//				}
 		//			}
 
-		ReportMLC rep = new ReportMLC(outfile, "Multi-Label-Classification (MLC) Results");
+		ReportMLC rep = new ReportMLC(outfile, "Multi-Label-Classification (MLC) Results", "../");
 
 		rep.addDatasetOverviewTable(datasetNames);
 
@@ -89,9 +103,10 @@ public class MultiValidationReport
 
 		//			System.out.println(results.toNiceString());
 
+		final String singleStr = "Single endpoint prediction";
 		for (int i = 0; i < results.getNumResults(); i++)
 			if (results.getResultValue(i, "mlc-algorithm").toString().equals("BR"))
-				results.setResultValue(i, "mlc-algorithm", "Single endpoint prediction");
+				results.setResultValue(i, "mlc-algorithm", singleStr);
 			else if (results.getResultValue(i, "mlc-algorithm").toString().equals("ECC"))
 				results.setResultValue(i, "mlc-algorithm", "Ensemble of classfier chains");
 
@@ -99,7 +114,8 @@ public class MultiValidationReport
 				"imputation", "app-domain", "app-domain-params" };
 
 		results.sortProperties(compareProps);
-		for (String p : compareProps)
+		for (String p : new String[] { "dataset-name", "mlc-algorithm-params", "classifier", "mlc-algorithm",
+				"imputation", "app-domain", "app-domain-params" })
 			results.sortResults(p);
 		for (String p : ReportMLC.getProps(measures))
 			results.movePropertyBack(p);

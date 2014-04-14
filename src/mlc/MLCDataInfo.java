@@ -381,8 +381,11 @@ public class MLCDataInfo
 		if (dur == null && ones_per_label[j] != active.length)
 			throw new IllegalStateException("should contain only ones " + ones_per_label[j] + " != " + active.length);
 
-		List<String> subtitles = ArrayUtil.toList(new String[] { zeros_per_label[j] + " / " + ones_per_label[j]
-				+ " missing: " + missings_per_label[j] });
+		String missingStr = "";
+		if (dur == null)
+			missingStr = " missing: " + missings_per_label[j];
+		List<String> subtitles = ArrayUtil.toList(new String[] { "#active: " + active.length + " / " + all.length
+				+ missingStr });
 		if (zoom)
 		{
 			int cut = (int) Math.floor(all.length * 9.0 / 10.0);
@@ -394,11 +397,12 @@ public class MLCDataInfo
 		List<double[]> vals = new ArrayList<double[]>();
 		vals.add(all);
 		vals.add(active);
-		String prefix = "";
+		String details = "";
 		if (dur != null)
-			prefix = dur.toString() + " ";
-		HistogramPanel h = new HistogramPanel(prefix + "Real values for " + labelAttr.name() + (zoom ? " (zoom)" : ""),
-				subtitles, "LOEL (mmol)", "num compounds", clazz, vals, 50);
+			details = " (duration: sub-" + dur.toString() + ")";
+
+		HistogramPanel h = new HistogramPanel(labelAttr.name() + details, subtitles, "LOEL (mmol)", "num compounds",
+				clazz, vals, 50);
 		h.setIntegerTickUnits();
 
 		return h.getChartPanel();

@@ -33,8 +33,38 @@ public class Categories
 		return false;
 	}
 
+	public String toString()
+	{
+		StringBuffer b = new StringBuffer();
+		for (Category c : categories)
+		{
+			b.append(c.toString());
+			b.append("\n");
+		}
+		return b.toString();
+	}
+
+	public String getCompactString()
+	{
+		StringBuffer b = new StringBuffer();
+		int idx = 0;
+		for (Category c : categories)
+		{
+			b.append("\"");
+			b.append(c.getName());
+			b.append("\"");
+			if (++idx < categories.size())
+				b.append(",");
+		}
+		return b.toString();
+	}
+
 	public void add(int[] n)
 	{
+		for (int i : n)
+			if (includes(i))
+				throw new Error("index '" + i + "' already included, cannot add '" + ArrayUtil.toString(n) + "'\n"
+						+ this);
 		categories.add(new Category(n));
 	}
 

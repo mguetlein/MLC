@@ -16,6 +16,8 @@ public class Settings
 	//		Locale.setDefault(Locale.US);
 	//	}
 
+	public static boolean LIST_PCT_CATEGORIES = false;
+
 	private static String PWD = "";
 
 	private static ResourceBundle bundle;
@@ -78,7 +80,7 @@ public class Settings
 	public static String getFeaturesFromDatabaseName(String datasetName)
 	{
 		String features = ArrayUtil.last(datasetName.split("_"));
-		if (ArrayUtil.indexOf(new String[] { "PC", "PCFP", "FP", "OB", "PCFP1", "FP1", "PC1FP1" }, features) == -1)
+		if (ArrayUtil.indexOf(new String[] { "PC", "PCFP", "FP", "OB", "PCFP1", "FP1", "PC1FP1", "MAN2" }, features) == -1)
 			throw new IllegalStateException("unknown feature : " + features);
 		return features;
 	}

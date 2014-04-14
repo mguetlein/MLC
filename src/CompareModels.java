@@ -28,7 +28,7 @@ public class CompareModels
 
 				mlc.setPureModelBuilding(true);
 
-				mlc.buildModel(null);
+				mlc.buildModel(null, null, false);
 				PredictiveClusteringTrees.modelProps.setResultValue(
 						PredictiveClusteringTrees.modelProps.getNumResults() - 1, "imputation", impu);
 			}

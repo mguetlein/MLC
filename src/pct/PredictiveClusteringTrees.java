@@ -125,7 +125,7 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 	HashMap<String, ArrayList<Integer>> levels = new HashMap<String, ArrayList<Integer>>();
 	HashMap<String, Integer> leafs = new HashMap<String, Integer>();
 	HashMap<String, Integer> leafsTest = new HashMap<String, Integer>();
-	HashMap<String, Integer> mapIndexExample = new HashMap<String, Integer>();
+	HashMap<Integer, String> mapIndexExample = null;//new HashMap<Integer, String>();
 	HashMap<String, Integer> mapIndexExampleTest = new HashMap<String, Integer>();
 	HashMap<Integer, ArrayList<String>> leavesExamples = new HashMap<Integer, ArrayList<String>>();
 
@@ -475,6 +475,8 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 	String trainArffPath;
 	String testArffPath;
 
+	public static List<Categories> collectedCategories = new ArrayList<Categories>();
+
 	protected void buildInternal(MultiLabelInstances instances)
 	{
 		this.dataset = instances;
@@ -489,6 +491,9 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 			//			if (Debug.debug == 1)
 			//				ClusStat.show();
 			//			DebugFile.close();
+
+			if (mulan.evaluation.Settings.LIST_PCT_CATEGORIES)
+				collectedCategories.add(listCategories());
 		}
 		catch (Exception e)
 		{
@@ -1018,8 +1023,21 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 	public int[] getNeighbors()
 	{
 		int neigbors[] = null;
+
 		try
 		{
+			if (mapIndexExample == null)
+			{
+				//create mapping row content - row index for training data
+				mapIndexExample = new HashMap<Integer, String>();
+				TupleIterator triter = clus.getClusRun().getTrainIter();
+				DataTuple tuple = triter.readTuple();
+				while (tuple != null)
+				{
+					mapIndexExample.put(tuple.getIndex(), tuple.toString());
+					tuple = triter.readTuple();
+				}
+			}
 
 			int meth = 1;
 			int pruning = clus.getSettings().getPruningMethod();
@@ -1032,6 +1050,7 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 			{
 				if (k == meth || (clus.getClusRun().getNbModels() == 2) && k == 1)
 				{
+
 					levelCluId = new HashMap<Integer, Integer>();
 					this.leafId = 1;
 					this.leafIdTest = 1;
@@ -1056,22 +1075,25 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 
 					printModelTest(root, info, pex, 1);
 
-					//create mapping row content - row index for training data
-					mapIndexExample = new HashMap<String, Integer>();
-					TupleIterator triter = clus.getClusRun().getTrainIter();
-					DataTuple tuple = triter.readTuple();
-					while (tuple != null)
-					{
-						mapIndexExample.put(tuple.toString(), tuple.getIndex());
-						tuple = triter.readTuple();
-
-					}
+					//					//create mapping row content - row index for training data
+					//					mapIndexExample = new HashMap<Integer, String>();
+					//					TupleIterator triter = clus.getClusRun().getTrainIter();
+					//					DataTuple tuple = triter.readTuple();
+					//					int idx = 0;
+					//					while (tuple != null)
+					//					{
+					//
+					//						//					mapIndexExample.put(idx+","+tuple.toString(),tuple.getIndex());
+					//						mapIndexExample.put(tuple.getIndex(), tuple.toString());
+					//						tuple = triter.readTuple();
+					//
+					//					}
 
 					//create mapping row content - row index for test data
 					RowData testset = (RowData) clus.getClusRun().getTestSet();
 					TupleIterator tsiter = testset.getIterator();
 					mapIndexExampleTest = new HashMap<String, Integer>();
-					tuple = tsiter.readTuple();
+					DataTuple tuple = tsiter.readTuple();
 					while (tuple != null)
 					{
 						mapIndexExampleTest.put(tuple.toString(), tuple.getIndex());
@@ -1085,14 +1107,29 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 					while (tuple != null)
 					{
 						//get leaf id of leaf the test instance is assigned to
+						//						System.out.println(tuple.toString());
 						int leafId = leafsTest.get(tuple.toString());
 						//get neighbors of test instance
+
 						ArrayList<String> neighbors = leavesExamples.get(leafId);
-						neigbors = new int[neighbors.size()];
+						ArrayList<Integer> neighborsTmp = new ArrayList<Integer>();
 						for (int i = 0; i < neighbors.size(); i++)
 						{
-							int neighborId = mapIndexExample.get(neighbors.get(i));
-							neigbors[i] = neighborId;
+							for (Map.Entry<Integer, String> entry : mapIndexExample.entrySet())
+							{
+								if (neighbors.get(i).equals(entry.getValue()))
+								{
+									neighborsTmp.add(entry.getKey());
+									//							    	i++;
+								}
+							}
+							//						int neighborId = mapIndexExample.get(neighbors.get(i));
+							//						neigbors[i]=neighborId;
+						}
+						neigbors = new int[neighborsTmp.size()];
+						for (int i = 0; i < neighborsTmp.size(); i++)
+						{
+							neigbors[i] = neighborsTmp.get(i);
 						}
 						tuple = tsiter.readTuple();
 
@@ -1111,6 +1148,7 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 
 	public Categories listCategories()
 	{
+		boolean cmpNeigbs = computeNeighbors;
 		setComputeNeighbors(true);
 
 		Categories categories = new Categories();
@@ -1122,14 +1160,20 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 			if (!categories.includes(i))
 			{
 				int n[] = makePredictionInternal(inst).getNeighborInstances();
+				if (ArrayUtil.indexOf(n, i) == -1)
+					throw new Error("index " + i + " not included in neighbors: " + ArrayUtil.toString(n));
+
 				categories.add(n);
 				sum += n.length;
 				System.out.println(StringUtil.formatDouble(sum / (double) dataset.getNumInstances()) + " "
 						+ ArrayUtil.toString(n));
-				if (categories.numCategories() > 4)
-					break;
+				//				if (categories.numCategories() > 4)
+				//					break;
 			}
 		}
+		if (!cmpNeigbs)
+			setComputeNeighbors(false);
+
 		return categories;
 	}
 

@@ -92,10 +92,10 @@ public class TestPCT
 							//							for (Integer minNum : new Integer[] { null, 0, 1, 2, 3 })
 							{
 								//								Double fTest = null;
-								//Double fTest = 0.125;
+								Double fTest = 0.125;
 								//for (Double fTest : new Double[] { null, 0.0, 1.0 })
-								for (Double fTest : new Double[] { 0.0, 0.001, 0.005, 0.01, 0.025, 0.05, 0.075, 0.1,
-										0.125, 0.15, 0.175, 0.2, 0.25, 0.3, 0.4, 0.5, 1.0 })
+								//								for (Double fTest : new Double[] { 0.0, 0.001, 0.005, 0.01, 0.025, 0.05, 0.075, 0.1,
+								//										0.125, 0.15, 0.175, 0.2, 0.25, 0.3, 0.4, 0.5, 1.0 })
 								//for (Double fTest : new Double[] { 0.025, 0.05, 0.075, 0.1, 0.125, 0.15, 0.175 })
 								{
 
@@ -107,6 +107,8 @@ public class TestPCT
 									//									learner = learner.makeCopy();
 
 									learner.build(trainingDataset);
+
+									learner.listCategories();
 
 									//									learner = learner.makeCopy();
 									//									if (learner instanceof PredictiveClusteringTrees)

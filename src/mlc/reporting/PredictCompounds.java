@@ -144,14 +144,12 @@ public class PredictCompounds
 	private void buildReport()
 	{
 		String out = Settings.predictionReport(modelName, compoundsName);
-		String loc = "";
-		for (int i = 0; i < StringUtil.numOccurences(out, "/"); i++)
-			loc += "../";
 		//		HTMLReport report = new HTMLReport(out + ".locked", "Prediction Report", false);
 
-		ReportMLC rep = new ReportMLC(out + ".tmp", "Compound prediction", false);
+		ReportMLC rep = new ReportMLC(out + ".tmp", "Compound prediction", false, "../../../");
 
-		rep.report.addParagraph("Prediction with model " + rep.report.encodeLink(linkToModel(), modelName));
+		rep.report.addParagraph("Prediction with model "
+				+ rep.report.encodeLink(linkToModel(), ModelInfo.get(modelName).getAlias()));
 
 		// for each test instance
 		for (int i = 0; i < testData.numInstances(); i++)
@@ -167,7 +165,8 @@ public class PredictCompounds
 
 			ResultSet rs = new ResultSet();
 			int r = rs.addResult();
-			rs.setResultValue(r, "2D-depiction", rep.report.getImage(loc + Settings.compoundPicture(testDataSmiles[i])));
+			rs.setResultValue(r, "2D-depiction",
+					rep.report.getImage("../../../" + Settings.compoundPicture(testDataSmiles[i])));
 			if (i == 0)
 				rs.setResultValue(
 						r,
@@ -237,9 +236,11 @@ public class PredictCompounds
 				//						+ rep.report.encodeLink(linkToModel() + "/description#neighbors", "neighbor compounds") + ":";
 
 				System.out.println("should be included in .categories-file:\n" + cat.toCSV());
-				String s = "The prediction was performed according to " + cat.getNumInstances() + " "
-						+ rep.report.encodeLink(linkToModel() + "/categories/" + cat.getKey(), "neighbor compounds")
-						+ ".";
+				String s = "The compound was assigned to a "
+						+ rep.report.encodeLink(linkToModel() + "/description#categories", "category")
+						+ " of "
+						+ rep.report.encodeLink(linkToModel() + "/categories/" + cat.getKey(), cat.getNumInstances()
+								+ " compounds") + ".";
 				rep.report.addParagraph(s);
 
 				//				s = "";

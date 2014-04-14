@@ -46,6 +46,8 @@ import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.block.BlockBorder;
 import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.title.Title;
 
 import util.ArrayUtil;
 import util.CollectionUtil;
@@ -58,7 +60,9 @@ import weka.core.Instance;
 
 import com.itextpdf.text.DocumentException;
 
+import datamining.Result;
 import datamining.ResultSet;
+import datamining.ResultSetFilter;
 import datamining.ResultSetIO;
 import freechart.FreeChartUtil;
 
@@ -77,20 +81,23 @@ public class ReportMLC
 
 	String file;
 	boolean wide;
+	String linkPrefix;
 
-	public ReportMLC(String outfile, String title)
+	public ReportMLC(String outfile, String title, String linkPrefix)
 	{
-		this(outfile, title, true);
+		this(outfile, title, true, linkPrefix);
 	}
 
-	public ReportMLC(String outfile, String title, boolean wide)
+	public ReportMLC(String outfile, String title, boolean wide, String linkPrefix)
 	{
 		try
 		{
 			file = outfile + ".html";
 			this.wide = wide;
+			this.linkPrefix = linkPrefix;
+
 			//report = new PDFReport(outfile+".pdf", "Dataset Report");
-			report = new HTMLReport(file, Settings.text("title"), Settings.text("header"), title, wide);
+			report = new HTMLReport(file, Settings.text("title"), Settings.text("header", linkPrefix), title, wide);
 		}
 		catch (Exception e)
 		{
@@ -110,7 +117,7 @@ public class ReportMLC
 
 	public void close()
 	{
-		report.close(Settings.text("footer"));
+		report.close(Settings.text("footer", linkPrefix));
 		System.out.println("created report: " + file);
 	}
 
@@ -147,7 +154,7 @@ public class ReportMLC
 
 	public static enum PerformanceMeasures
 	{
-		accuracy, fmeasure, auc, appdomain, all, all_ad, accuracy_confidence
+		accuracy, fmeasure, auc, appdomain, all, all_ad, accuracy_confidence, auc_only, sensitivity_only, ppv_only
 	}
 
 	public static String[] getSingleMacroPropNames(PerformanceMeasures measures)
@@ -162,6 +169,12 @@ public class ReportMLC
 				return new String[] { "accuracy", "auc", "inside-ad" };
 			case auc:
 				return new String[] { "auc" };
+			case auc_only:
+				return new String[] { "auc" };
+			case sensitivity_only:
+				return new String[] { "sensitivity" };
+			case ppv_only:
+				return new String[] { "ppv" };
 			case all:
 				return new String[] { "accuracy", "auc", "sensitivity", "specificity", "ppv", "npv" };
 			case all_ad:
@@ -185,16 +198,22 @@ public class ReportMLC
 				return new String[] { "macro-accuracy", "weighted-macro-accuracy", "macro-auc", "weighted-macro-auc",
 						"subset-accuracy", "macro-appdomain" }; //"micro-accuracy", "1-hamming-loss"
 			case auc:
-				return new String[] { "macro-auc", "weighted-macro-auc", "subset-accuracy" };
+				return new String[] { "macro-auc", "subset-accuracy" }; //"weighted-macro-auc", 
+			case auc_only:
+				return new String[] { "macro-auc" }; //"weighted-macro-auc",
+			case sensitivity_only:
+				return new String[] { "macro-sensitivity" };
+			case ppv_only:
+				return new String[] { "macro-ppv" };
 			case fmeasure:
 				return new String[] { "micro-f-measure", "macro-f-measure", "weighted-macro-f-measure",
 						"subset-accuracy" };
 			case all:
 				return new String[] { "macro-accuracy", "macro-auc", "macro-sensitivity", "macro-specificity",
-						"macro-ppv", "macro-npv", "subset-accuracy", "macro-inside-ad" };//"weighted-macro-auc","weighted-macro-accuracy","weighted-macro-auc",
+						"macro-ppv", "macro-npv", "subset-accuracy" };//"weighted-macro-auc","weighted-macro-accuracy","weighted-macro-auc",
 			case all_ad:
 				return new String[] { "macro-accuracy", "macro-auc", "macro-sensitivity", "macro-specificity",
-						"macro-ppv", "macro-npv", "subset-accuracy" };//"weighted-macro-auc","weighted-macro-accuracy","weighted-macro-auc",
+						"macro-ppv", "macro-npv", "subset-accuracy", "macro-inside-ad" };//"weighted-macro-auc","weighted-macro-accuracy","weighted-macro-auc",
 
 				//				return new String[] { "micro-accuracy", "macro-accuracy", "weighted-macro-accuracy", "1-hamming-loss",
 				//						"micro-auc", "macro-auc", "weighted-macro-auc", "micro-mcc", "macro-mcc", "weighted-macro-mcc",
@@ -374,7 +393,7 @@ public class ReportMLC
 	//		}
 	//	}
 
-	private void formatPlot(ChartPanel p)
+	public static void formatPlot(ChartPanel p)
 	{
 		StandardChartTheme chartTheme = (StandardChartTheme) StandardChartTheme.createJFreeTheme();
 		Font extraLargeFont = new Font("Trebuchet MS", Font.PLAIN, chartTheme.getExtraLargeFont().getSize());
@@ -385,10 +404,11 @@ public class ReportMLC
 		chartTheme.setLargeFont(largeFont);
 		chartTheme.setRegularFont(regularFont);
 		chartTheme.setSmallFont(smallFont);
+		chartTheme.apply(p.getChart());
+
 		chartTheme.setChartBackgroundPaint(Color.WHITE);
 		chartTheme.setPlotBackgroundPaint(Color.decode("#eeeeee"));
 		chartTheme.setRangeGridlinePaint(Color.decode("#eeeeee").darker().darker());
-		chartTheme.apply(p.getChart());
 
 		if (p.getChart().getLegend() != null)
 			p.getChart().getLegend().setFrame(BlockBorder.NONE);
@@ -433,7 +453,7 @@ public class ReportMLC
 		//	    }
 
 		int extraHeight = 0;
-		if (getProps(measures).length > 6)
+		if (getProps(measures).length > 8)
 		{
 			CategoryPlot plot = (CategoryPlot) boxPlot1.getChart().getPlot();
 			CategoryAxis xAxis = (CategoryAxis) plot.getDomainAxis();
@@ -469,8 +489,16 @@ public class ReportMLC
 		report.addGap();
 		report.addTable(rs);
 		report.addGap();
-		addImage("boxplot_" + measures + "_" + compareProp + "_" + fileSuffix, boxPlot1, new Dimension(wide ? 1800
-				: getMaxPlotWidthNarrow(), 400 + extraHeight));
+
+		int w_single = (results.getResultValues(compareProp).getNumValues() + 1) * 30; // 30 per result + 30
+		System.out.println(w_single);
+		w_single *= getProps(measures).length; // times properties
+		System.out.println(w_single);
+		w_single += 100; // 100 for border and caption
+		System.out.println(w_single);
+		int w = Math.min(w_single, wide ? 1800 : getMaxPlotWidthNarrow());
+		int h = 400 + extraHeight;
+		addImage("boxplot_" + measures + "_" + compareProp + "_" + fileSuffix, boxPlot1, new Dimension(w, h));
 
 		//		if (getProps(measures).length > 3)
 		//		{
@@ -705,7 +733,7 @@ public class ReportMLC
 		if (datasetNames == null || datasetNames.length == 0)
 			throw new IllegalArgumentException("please give a least one dataset name (-d, comma seperated)");
 
-		ReportMLC rep = new ReportMLC(outfile, "Dataset Report");
+		ReportMLC rep = new ReportMLC(outfile, "Dataset Report", "../");
 		if (datasetNames.length > 1)
 			rep.addDatasetOverviewTable(datasetNames);
 		for (String datasetName : datasetNames)
@@ -742,10 +770,12 @@ public class ReportMLC
 				endpointInfo.put(s[0].replaceAll(" ", "-").replaceAll("_", "-").toLowerCase(), s[1]);
 		}
 
-		ReportMLC rep = new ReportMLC(reportFile, "Predicted endpoints", di.hasRealData() && di.hasCompoundInfoData());
+		ReportMLC rep = new ReportMLC(reportFile, "Predicted endpoints", di.hasRealData() && di.hasCompoundInfoData(),
+				"../../");
 		String info;
 		if (modelName != null)
-			info = "This is the predicted enpoint table for model " + rep.report.encodeLink(".", modelName) + ".";
+			info = "This is the predicted enpoint table for model "
+					+ rep.report.encodeLink(".", ModelInfo.get(modelName).getAlias()) + ".";
 		else
 			info = "This is the predicted enpoint table for dataset " + datasetName + ".";
 		rep.report.addParagraph(info);
@@ -779,28 +809,24 @@ public class ReportMLC
 				res.setResultValue(r, "active", di.getEndpointDiscDescription(true, l));
 				res.setResultValue(r, "inactive", di.getEndpointDiscDescription(false, l));
 
-				String uri = rep.createImage(datasetName + "_realValueHistogrammZoom_" + l,
-						di.plotRealValueHistogram(l, true), new Dimension(600, 300));
-				res.setResultValue(r, "histogram", rep.report.getImage(uri, 300, 150));
-
 				if (di.hasCompoundInfoData())
 				{
-					List<Double> acc = di.getStudyDurationValues(l, StudyDuration.accute);
-					res.setResultValue(r, "#sub-" + StudyDuration.accute, acc.size());// + " " + DoubleArraySummary.create(acc));
-					List<Double> chr = di.getStudyDurationValues(l, StudyDuration.chronic);
-					res.setResultValue(r, "#sub-" + StudyDuration.chronic, chr.size());// + " " + DoubleArraySummary.create(chr));
+					//					List<Double> acc = di.getStudyDurationValues(l, StudyDuration.accute);
+					//					res.setResultValue(r, "#sub-" + StudyDuration.accute, acc.size());// + " " + DoubleArraySummary.create(acc));
+					//					List<Double> chr = di.getStudyDurationValues(l, StudyDuration.chronic);
+					//					res.setResultValue(r, "#sub-" + StudyDuration.chronic, chr.size());// + " " + DoubleArraySummary.create(chr));
 
 					String uriA = rep.createImage(datasetName + "_realValueAccuteHistogrammZoom_" + l,
 							di.plotRealValueHistogram(l, true, StudyDuration.accute), new Dimension(600, 300));
-					res.setResultValue(r, "histogram-accute", rep.report.getImage(uriA, 300, 150));
+					res.setResultValue(r, "sub-accute", rep.report.getImage(uriA, 300, 150));
 
 					String uriB = rep.createImage(datasetName + "_realValueChronicHistogrammZoom_" + l,
 							di.plotRealValueHistogram(l, true, StudyDuration.chronic), new Dimension(600, 300));
-					res.setResultValue(r, "histogram-chronic", rep.report.getImage(uriB, 300, 150));
+					res.setResultValue(r, "sub-chronic", rep.report.getImage(uriB, 300, 150));
 
-					String uri2 = rep.createImage(datasetName + "_realValueStudyDurationHistogrammZoom_" + l,
-							di.plotRealValueStudyDurationHistogram(l, true), new Dimension(600, 300));
-					res.setResultValue(r, "histogram-study", rep.report.getImage(uri2, 300, 150));
+					//					String uri2 = rep.createImage(datasetName + "_realValueStudyDurationHistogrammZoom_" + l,
+					//							di.plotRealValueStudyDurationHistogram(l, true), new Dimension(600, 300));
+					//					res.setResultValue(r, "histogram-study", rep.report.getImage(uri2, 300, 150));
 
 					//					List<Double> inh = di.getRouteValues(l, Route.inhalation);
 					//					res.setResultValue(r, Route.inhalation.toString(),
@@ -808,6 +834,12 @@ public class ReportMLC
 					//					List<Double> oral = di.getRouteValues(l, Route.oral);
 					//					res.setResultValue(r, Route.oral.toString(), oral.size() + " " + DoubleArraySummary.create(oral));
 
+				}
+				else
+				{
+					String uri = rep.createImage(datasetName + "_realValueHistogrammZoom_" + l,
+							di.plotRealValueHistogram(l, true), new Dimension(600, 300));
+					res.setResultValue(r, "histogram", rep.report.getImage(uri, 300, 150));
 				}
 			}
 
@@ -889,9 +921,10 @@ public class ReportMLC
 			}
 		}
 
-		ReportMLC rep = new ReportMLC(Settings.categoryTableFile(modelName, categoryKey), "Category" + name);
+		ReportMLC rep = new ReportMLC(Settings.categoryTableFile(modelName, categoryKey), "Category" + name,
+				"../../../");
 		rep.report.addParagraph("This is a category compound table for model "
-				+ rep.report.encodeLink("../", modelName) + ".");
+				+ rep.report.encodeLink("../", mi.getAlias()) + ".");
 		if (description != null)
 		{
 			rep.report.addGap();
@@ -908,9 +941,9 @@ public class ReportMLC
 	public static void compoundTable(String modelName) throws Exception
 	{
 		ModelInfo mi = ModelInfo.get(modelName);
-		ReportMLC rep = new ReportMLC(Settings.compoundTableFile(modelName), "Training dataset compounds");
+		ReportMLC rep = new ReportMLC(Settings.compoundTableFile(modelName), "Training dataset compounds", "../../");
 		rep.report.addParagraph("This is the training dataset compound table for model "
-				+ rep.report.encodeLink(".", modelName) + ".");
+				+ rep.report.encodeLink(".", mi.getAlias()) + ".");
 		rep.report.addGap();
 
 		ResultSet res = new ResultSet();
@@ -1112,4 +1145,146 @@ public class ReportMLC
 		//				break;
 	}
 
+	public static void format_poster_chart(ChartPanel p)
+	{
+		p.getChart().setTitle("");
+		List<Title> subtitles = new ArrayList<Title>();
+		subtitles.add(p.getChart().getLegend());
+		p.getChart().setSubtitles(subtitles);
+
+		StandardChartTheme chartTheme = (StandardChartTheme) StandardChartTheme.createJFreeTheme();
+		Font extraLargeFont = new Font("Trebuchet MS", Font.PLAIN, chartTheme.getExtraLargeFont().getSize() + 4);
+		Font largeFont = new Font("Trebuchet MS", Font.PLAIN, chartTheme.getLargeFont().getSize() + 4);
+		Font regularFont = new Font("Trebuchet MS", Font.PLAIN, chartTheme.getRegularFont().getSize() + 4);
+		Font smallFont = new Font("Trebuchet MS", Font.PLAIN, chartTheme.getSmallFont().getSize() + 4);
+		chartTheme.setExtraLargeFont(extraLargeFont);
+		chartTheme.setLargeFont(largeFont);
+		chartTheme.setRegularFont(regularFont);
+		chartTheme.setSmallFont(smallFont);
+		//		chartTheme.setChartBackgroundPaint(Color.WHITE);
+		//		chartTheme.setPlotBackgroundPaint(Color.decode("#eeeeee"));
+		//		chartTheme.setRangeGridlinePaint(Color.decode("#eeeeee").darker().darker());
+		chartTheme.apply(p.getChart());
+
+		p.getChart().getPlot().setBackgroundPaint(Color.WHITE);
+		if (p.getChart().getPlot() instanceof XYPlot)
+			((XYPlot) p.getChart().getPlot()).setRangeGridlinePaint(Color.GRAY);
+		else
+			((CategoryPlot) p.getChart().getPlot()).setRangeGridlinePaint(Color.GRAY);
+		p.getChart().setBackgroundPaint(new Color(0, 0, 0, 0));
+
+	}
+
+	public static void poster_pics()
+	{
+		String dir = "/home/martin/documents/bmbf/mlc-poster-pics/";
+
+		String datasetName = "dataE_noV_Ca15-20c20_PCFP1";
+		MultiLabelInstances data = getData(datasetName);
+		MLCDataInfo di = MLCDataInfo.get(data);
+		//		ResultSet res = new ResultSet();
+		File f = new File(Settings.endpointInfo(datasetName));
+		HashMap<String, String> endpointInfo = null;
+		if (f.exists())
+		{
+			endpointInfo = new HashMap<String, String>();
+			CSVFile csv = FileUtil.readCSV(f.getAbsolutePath());
+			for (String[] s : csv.content)
+				endpointInfo.put(s[0].replaceAll(" ", "-").replaceAll("_", "-").toLowerCase(), s[1]);
+		}
+		for (int l = 0; l < data.getNumLabels(); l++)
+		{
+			Attribute a = data.getDataSet().attribute(data.getLabelIndices()[l]);
+			String labelName = a.name();
+			if (labelName.equals("rbc"))
+			{
+				for (StudyDuration dur : StudyDuration.values())
+				{
+					ChartPanel plot = di.plotRealValueHistogram(l, true, dur);
+					format_poster_chart(plot);
+					Dimension dim = new Dimension(600, 200);
+					System.out.println("created image: " + FreeChartUtil.toFile(dir + dur + ".png", plot, dim));
+				}
+			}
+		}
+
+		String experimentName = "BR-MLCs-2-Impu";
+		String datasetNames[] = { "dataE_noV_Ca15-20c20_PCFP1" };
+		System.out.println("reading data");
+		ResultSet resultsOrig = ResultSetIO.parseFromFile(new File(Settings.resultFile(experimentName, datasetNames)));
+		String compareProp = "mlc-algorithm";
+
+		{
+			ResultSet results = resultsOrig.filter(new ResultSetFilter()
+			{
+				@Override
+				public boolean accept(Result result)
+				{
+					return result.getValue("imputation").equals("false")
+							&& result.getValue("mlc-algorithm").equals("ECC");
+				}
+			});
+			//		results.removePropery("imputation");
+			String prop = "auc";
+			Double numLabelsInt = Double.parseDouble(results.getUniqueValue("num-labels") + "");
+			List<String> catProps = new ArrayList<String>();
+			for (int i = 0; i < numLabelsInt; i++)
+				catProps.add("macro-" + prop + "#" + i);
+			List<String> catPropsDisp = new ArrayList<String>();
+			for (int i = 0; i < numLabelsInt; i++)
+				catPropsDisp.add(results.getUniqueValue("label#" + i).toString());
+			System.out.println("Endpoint " + prop + " for different " + compareProp);
+			ChartPanel boxPlot2 = results
+					.boxPlot("", "AUC", new String[] {}, compareProp, catProps, catPropsDisp, 0.05);
+			format_poster_chart(boxPlot2);
+			CategoryPlot plot = (CategoryPlot) boxPlot2.getChart().getPlot();
+			CategoryAxis xAxis = (CategoryAxis) plot.getDomainAxis();
+			xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
+			Dimension dim = new Dimension(1400/*1800*/, 500/*800*/);
+			System.out.println("created image: " + FreeChartUtil.toFile(dir + "endpoints.png", boxPlot2, dim));
+		}
+
+		{
+			ResultSet results = resultsOrig.filter(new ResultSetFilter()
+			{
+				@Override
+				public boolean accept(Result result)
+				{
+					String nimpu[] = { "ECC", "BR" };
+					String impu[] = { "PCT", "MLkNN", "HOMER" };
+					if (result.getValue("imputation").equals("true"))
+					{
+						if (ArrayUtil.indexOf(impu, result.getValue("mlc-algorithm")) != -1)
+							return true;
+						if (ArrayUtil.indexOf(nimpu, result.getValue("mlc-algorithm")) != -1)
+							return false;
+					}
+					else if (result.getValue("imputation").equals("false"))
+					{
+						if (ArrayUtil.indexOf(impu, result.getValue("mlc-algorithm")) != -1)
+							return false;
+						if (ArrayUtil.indexOf(nimpu, result.getValue("mlc-algorithm")) != -1)
+							return true;
+					}
+					throw new IllegalArgumentException("to handle: " + result.getValue("imputation") + " "
+							+ result.getValue("mlc-algorithm"));
+				}
+			});
+			for (int i = 0; i < results.getNumResults(); i++)
+				if (results.getResultValue(i, "mlc-algorithm").toString().equals("BR"))
+					results.setResultValue(i, "mlc-algorithm", "Single endpoint prediction");
+			results.sortResults("mlc-algorithm");
+			//		results.removePropery("imputation");
+			List<String> catProps = ArrayUtil.toList(getProps(ReportMLC.PerformanceMeasures.all));
+			List<String> dispProps = new ArrayList<String>();
+			for (String p : catProps)
+				dispProps.add(p.replaceAll("macro-", ""));
+			ChartPanel boxPlot1 = results.boxPlot("", "Performance", new String[] {}, compareProp, catProps, dispProps,
+					0.05);
+			format_poster_chart(boxPlot1);
+			Dimension dim = new Dimension(1400/*1800*/, 400/*800*/);
+			System.out.println("created image: " + FreeChartUtil.toFile(dir + "comparison.png", boxPlot1, dim));
+		}
+
+	}
 }
