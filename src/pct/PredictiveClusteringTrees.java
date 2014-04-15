@@ -1191,8 +1191,8 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 				sum += n.length;
 				System.out.println(StringUtil.formatDouble(sum / (double) dataset.getNumInstances()) + " "
 						+ ArrayUtil.toString(n));
-				if (categories.numCategories() > 4)
-					break;
+				//				if (categories.numCategories() > 4)
+				//					break;
 			}
 		}
 		if (!cmpNeigbs)
