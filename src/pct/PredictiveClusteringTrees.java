@@ -24,6 +24,7 @@ import mulan.classifier.MultiLabelLearner;
 import mulan.classifier.NeighborMultiLabelOutput;
 import mulan.classifier.transformation.TransformationBasedMultiLabelLearner;
 import mulan.data.MultiLabelInstances;
+import mulan.evaluation.Evaluator.IndexedMultiLabelInstances;
 import util.ArrayUtil;
 import util.DoubleArraySummary;
 import util.FileUtil;
@@ -500,7 +501,9 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 			//			DebugFile.close();
 
 			if (mulan.evaluation.Settings.LIST_PCT_CATEGORIES)
-				collectedCategories.add(listCategories());
+				collectedCategories
+						.add(listCategories(instances instanceof IndexedMultiLabelInstances ? ((IndexedMultiLabelInstances) instances)
+								.getIndices() : null));
 		}
 		catch (Exception e)
 		{
@@ -1155,27 +1158,41 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 
 	public Categories listCategories()
 	{
+		return listCategories(null);
+	}
+
+	public Categories listCategories(int origIndices[])
+	{
 		boolean cmpNeigbs = computeNeighbors;
 		setComputeNeighbors(true);
+
+		//		System.out.println("index mapping: " + ArrayUtil.toString(origIndices));
 
 		Categories categories = new Categories();
 		int sum = 0;
 		for (int i = 0; i < dataset.getNumInstances(); i++)
 		{
 			Instance inst = dataset.getDataSet().get(i);
+			int thisIdx = i;
+			if (origIndices != null)
+				thisIdx = origIndices[i];
 
-			if (!categories.includes(i))
+			if (!categories.includes(thisIdx))
 			{
 				int n[] = makePredictionInternal(inst).getNeighborInstances();
-				if (ArrayUtil.indexOf(n, i) == -1)
-					throw new Error("index " + i + " not included in neighbors: " + ArrayUtil.toString(n));
+				//				System.out.println("neighbor train indices: " + ArrayUtil.toString(n));
+				if (origIndices != null)
+					for (int j = 0; j < n.length; j++)
+						n[j] = origIndices[n[j]];
+				if (ArrayUtil.indexOf(n, thisIdx) == -1)
+					throw new Error("index " + thisIdx + " not included in neighbors: " + ArrayUtil.toString(n));
 
 				categories.add(n);
 				sum += n.length;
 				System.out.println(StringUtil.formatDouble(sum / (double) dataset.getNumInstances()) + " "
 						+ ArrayUtil.toString(n));
-				//				if (categories.numCategories() > 4)
-				//					break;
+				if (categories.numCategories() > 4)
+					break;
 			}
 		}
 		if (!cmpNeigbs)
