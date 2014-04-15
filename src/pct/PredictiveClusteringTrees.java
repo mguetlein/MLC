@@ -403,6 +403,13 @@ public class PredictiveClusteringTrees extends TransformationBasedMultiLabelLear
 			// necessary to write pseudo test file since test file needs to exist when calling Clus
 			//			String testArffPath = "./dataset_test.arff";
 			FileUtil.copy(trainArffPath, testArffPath);
+			if (mulan.evaluation.Settings.LIST_PCT_CATEGORIES)
+			{
+				int idx = 1;
+				while (new File("/tmp/pct_train_" + idx).exists())
+					idx++;
+				FileUtil.copy(trainArffPath, "/tmp/pct_train_" + idx);
+			}
 			//			writeArff(testArffPath, dataset.getDataSet());
 
 			String appName = "pct-model_t" + System.currentTimeMillis() + "_h" + clus.hashCode();
